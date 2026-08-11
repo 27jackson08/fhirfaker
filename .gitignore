@@ -1,0 +1,8 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+build/
+# Dev/CI tooling: the validator jar and FHIR spec archives are fetched, not vendored.
+.tools/

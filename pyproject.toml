@@ -1,0 +1,39 @@
+[project]
+# Placeholder name — the FHIR trademark policy rules out `fhirforge`/`synthfhir`,
+# and the final name is settled before first publish (build doc Section 15).
+name = "pkg"
+version = "0.1.0"
+description = "Clinically coherent synthetic FHIR(R) R4 test data for Python"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "pydantic>=2.0",
+    "numpy>=1.24",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "hypothesis>=6.0",
+    "ruff>=0.6",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["pkg"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "conformance: runs the HL7 validator (slow, needs a JVM)",
+    "fidelity: statistical assertions over large seeded samples (slow)",
+]
+
+[tool.ruff]
+line-length = 90
+# Generated code is not hand-maintained and does not follow the house style.
+extend-exclude = ["pkg/models/r4.py"]

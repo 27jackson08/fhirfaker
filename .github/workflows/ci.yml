@@ -1,0 +1,88 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    # Nightly full conformance matrix + fidelity report.
+    - cron: "0 6 * * *"
+
+env:
+  VALIDATOR_URL: https://github.com/hapifhir/org.hl7.fhir.core/releases/latest/download/validator_cli.jar
+
+jobs:
+  # Fast gate. No JVM — this is the loop contributors wait on.
+  unit:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: Install
+        run: uv pip install --system -e ".[dev]"
+      - name: Lint
+        run: ruff check pkg tests
+      - name: Unit, property and determinism tests
+        run: pytest tests/ -q -m "not conformance and not fidelity" --cov=pkg --cov-report=term-missing
+
+  # Authoritative conformance gate. The JVM lives HERE and only here — it is never a
+  # runtime or install dependency of the published package (build doc Section 10).
+  conformance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: astral-sh/setup-uv@v5
+      - name: Install
+        run: uv pip install --system -e ".[dev]"
+      - name: Fetch HL7 validator
+        run: |
+          mkdir -p .tools
+          curl -sSL -o .tools/validator_cli.jar "$VALIDATOR_URL"
+      - name: Cache FHIR package registry
+        uses: actions/cache@v4
+        with:
+          path: ~/.fhir
+          key: fhir-packages-us-core-6.1.0
+      - name: Fetch R4 spec definitions
+        run: |
+          mkdir -p .tools/spec
+          curl -sSL -o .tools/spec/definitions.json.zip https://hl7.org/fhir/R4/definitions.json.zip
+          (cd .tools/spec && unzip -o -q definitions.json.zip)
+      - name: Verify generated models match the spec
+        run: |
+          python -m pkg.spec.codegen
+          git diff --exit-code pkg/models/r4.py \
+            || (echo "::error::pkg/models/r4.py is stale — run 'python -m pkg.spec.codegen' and commit" && exit 1)
+      - name: US Core conformance
+        # On PRs this runs a small sample to keep the loop tight; nightly runs the
+        # full profile x resource-type matrix.
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            pytest tests/ -q -m conformance --conformance-scale=full
+          else
+            pytest tests/ -q -m conformance --conformance-scale=sample
+          fi
+
+  # Statistical evidence for the clinical-coherence claim (build doc Section 8).
+  # Nightly only: N=10,000 patients per profile is too slow for a PR gate.
+  fidelity:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: Install
+        run: uv pip install --system -e ".[dev]"
+      - name: Fidelity report
+        run: pytest tests/ -q -m fidelity
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fidelity-report
+          path: build/fidelity-report.md
