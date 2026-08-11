@@ -1,16 +1,14 @@
-"""Bundle generation.
+"""Bundle generation — the public API.
 
-Phase 1 wires the resource graph and proves each type is US Core-conformant. The
-observation VALUES here are placeholders drawn from plausible ranges but sampled
-independently — that is exactly the naive approach the build doc argues against
-(Section 8). Phase 3 replaces this with the copula-based correlation engine; until
-then this module makes no clinical-coherence claim.
+A bundle is produced from a single profile draw, so the Conditions, Observations and
+MedicationRequests inside it all come from one coherent sample rather than being
+decided independently. That is the whole point of the correlation engine
+(build doc Section 8).
 """
 
 from __future__ import annotations
 
 from datetime import date, timedelta
-from decimal import Decimal
 
 import numpy as np
 
@@ -26,8 +24,10 @@ from pkg.builders.orders import (
 )
 from pkg.builders.people import build_patient, build_practitioner
 from pkg.core.bundle import Entry, build_transaction_bundle, to_json  # noqa: F401
-from pkg.core.ids import deterministic_uuid, urn_uuid
+from pkg.core.ids import deterministic_uuid, stable_digest, urn_uuid
 from pkg.models.r4 import Bundle, CodeableConcept
+from pkg.profiles.base import ProfileDraw, draw
+from pkg.profiles.library import get_profile
 from pkg.terminology import codes
 
 # Injected rather than read from the clock: any datetime.now() call would destroy the
@@ -39,6 +39,29 @@ DEFAULT_REFERENCE_DATE = date(2026, 1, 1)
 # extensible binding degrade to a warning rather than embed an unlicensed code.
 AMBULATORY_VISIT_TYPE = CodeableConcept(text="Ambulatory visit")
 
+SEX_TO_FHIR_GENDER = {"F": "female", "M": "male"}
+
+# Analyte -> (LOINC code, unit). Drives which lab Observations a bundle emits.
+LAB_ANALYTES = (
+    ("hba1c", codes.HBA1C, codes.UNIT_PERCENT),
+    ("glucose", codes.GLUCOSE, codes.UNIT_MG_DL),
+    ("creatinine", codes.CREATININE, codes.UNIT_MG_DL),
+    ("egfr", codes.EGFR, codes.UNIT_EGFR),
+)
+
+
+def _birth_date(rng, age_range: tuple[int, int], reference: date) -> tuple[date, float]:
+    low, high = age_range
+    age = int(rng.integers(low, high + 1))
+    day_offset = int(rng.integers(0, 365))
+    born = reference - timedelta(days=age * 365 + day_offset)
+    return born, (reference - born).days / 365.25
+
+
+def _require_sex(sex: str) -> None:
+    if sex not in SEX_TO_FHIR_GENDER:
+        raise ValueError(f"sex must be one of {sorted(SEX_TO_FHIR_GENDER)}, got {sex!r}")
+
 
 def generate_patient(
     *,
@@ -48,124 +71,172 @@ def generate_patient(
     reference_date: date = DEFAULT_REFERENCE_DATE,
     index: int = 0,
 ):
-    """Generate a single US Core Patient (no clinical history)."""
+    """Generate a single US Core Patient with no clinical history."""
+    _require_sex(sex)
     rng = np.random.default_rng([seed, index])
-    low, high = age_range
-    age = int(rng.integers(low, high + 1))
-    day_offset = int(rng.integers(0, 365))
-    birth_date = reference_date - timedelta(days=age * 365 + day_offset)
-
+    born, _ = _birth_date(rng, age_range, reference_date)
     return build_patient(
         resource_id=deterministic_uuid(seed, "patient", index),
         sex=sex,
-        birth_date=birth_date,
+        birth_date=born,
         family_index=int(rng.integers(0, 10)),
         given_index=int(rng.integers(0, 10)),
     )
 
 
+def generate_draw(
+    *,
+    profile: str = "type2_diabetes",
+    seed: int,
+    sex: str = "F",
+    age_years: float = 55.0,
+    index: int = 0,
+) -> ProfileDraw:
+    """Draw clinical values without building FHIR — useful for analysis and testing."""
+    _require_sex(sex)
+    # The profile key enters the seed so two profiles sharing a marginal do not draw
+    # identical values at the same seed. stable_digest, not hash(): the built-in is
+    # salted per process and would break byte-identical output across runs.
+    rng = np.random.default_rng([seed, index, stable_digest(profile)])
+    return draw(get_profile(profile, sex), rng=rng, age_years=age_years, sex=sex)
+
+
 def generate_bundle(
     *,
+    profile: str = "type2_diabetes",
     seed: int,
     sex: str = "F",
     age_range: tuple[int, int] = (45, 65),
     reference_date: date = DEFAULT_REFERENCE_DATE,
     index: int = 0,
 ) -> Bundle:
-    """Generate a transaction Bundle for one patient with a type 2 diabetes history."""
-    patient = generate_patient(
-        seed=seed, sex=sex, age_range=age_range, reference_date=reference_date, index=index
+    """Generate a transaction Bundle for one patient drawn from `profile`."""
+    _require_sex(sex)
+
+    rng = np.random.default_rng([seed, index])
+    born, age_years = _birth_date(rng, age_range, reference_date)
+
+    patient = build_patient(
+        resource_id=deterministic_uuid(seed, "patient", index),
+        sex=sex,
+        birth_date=born,
+        family_index=int(rng.integers(0, 10)),
+        given_index=int(rng.integers(0, 10)),
     )
     practitioner = build_practitioner(
         resource_id=deterministic_uuid(seed, "practitioner", index),
         family_index=3,
         given_index=5,
     )
+    drawn = generate_draw(
+        profile=profile, seed=seed, sex=sex, age_years=age_years, index=index
+    )
 
-    urn = {
-        role: urn_uuid(seed, role, index)
-        for role in (
-            "patient", "practitioner", "encounter", "condition-t2dm",
-            "obs-hba1c", "obs-glucose", "obs-bp", "medreq-metformin", "report-lab",
-        )
-    }
+    def urn(role: str) -> str:
+        return urn_uuid(seed, role, index)
+
+    def rid(role: str) -> str:
+        return deterministic_uuid(seed, role, index)
 
     visit = reference_date.isoformat()
-    visit_start = f"{visit}T09:00:00Z"
-    visit_end = f"{visit}T09:30:00Z"
+    start, end = f"{visit}T09:00:00Z", f"{visit}T09:30:00Z"
 
-    encounter = build_encounter(
-        resource_id=deterministic_uuid(seed, "encounter", index),
-        subject_urn=urn["patient"],
-        start=visit_start,
-        end=visit_end,
-        type_concept=AMBULATORY_VISIT_TYPE,
-    )
-    condition = build_condition(
-        resource_id=deterministic_uuid(seed, "condition-t2dm", index),
-        code=codes.T2DM_NO_COMPLICATIONS,
-        subject_urn=urn["patient"],
-        encounter_urn=urn["encounter"],
-        onset_date=(reference_date - timedelta(days=730)).isoformat(),
+    entries = [
+        Entry(urn("patient"), patient),
+        Entry(urn("practitioner"), practitioner),
+        Entry(
+            urn("encounter"),
+            build_encounter(
+                resource_id=rid("encounter"),
+                subject_urn=urn("patient"),
+                start=start,
+                end=end,
+                type_concept=AMBULATORY_VISIT_TYPE,
+            ),
+        ),
+    ]
+
+    for position, code in enumerate(drawn.conditions):
+        role = f"condition-{position}"
+        entries.append(
+            Entry(
+                urn(role),
+                build_condition(
+                    resource_id=rid(role),
+                    code=code,
+                    subject_urn=urn("patient"),
+                    encounter_urn=urn("encounter"),
+                    onset_date=(reference_date - timedelta(days=730)).isoformat(),
+                ),
+            )
+        )
+
+    lab_urns = []
+    for analyte, code, unit in LAB_ANALYTES:
+        if analyte not in drawn.analytes:
+            continue
+        role = f"obs-{analyte}"
+        lab_urns.append(urn(role))
+        entries.append(
+            Entry(
+                urn(role),
+                build_lab_observation(
+                    resource_id=rid(role),
+                    code=code,
+                    subject_urn=urn("patient"),
+                    encounter_urn=urn("encounter"),
+                    performer_urn=urn("practitioner"),
+                    effective=start,
+                    value=drawn.analytes[analyte],
+                    unit=unit,
+                ),
+            )
+        )
+
+    entries.append(
+        Entry(
+            urn("obs-bp"),
+            build_blood_pressure(
+                resource_id=rid("obs-bp"),
+                subject_urn=urn("patient"),
+                encounter_urn=urn("encounter"),
+                performer_urn=urn("practitioner"),
+                effective=start,
+                systolic=drawn.analytes["systolic"],
+                diastolic=drawn.analytes["diastolic"],
+            ),
+        )
     )
 
-    # Placeholder values — see the module docstring. Not yet jointly sampled.
-    hba1c = build_lab_observation(
-        resource_id=deterministic_uuid(seed, "obs-hba1c", index),
-        code=codes.HBA1C,
-        subject_urn=urn["patient"],
-        encounter_urn=urn["encounter"],
-        performer_urn=urn["practitioner"],
-        effective=visit_start,
-        value=Decimal("7.8"),
-        unit=codes.UNIT_PERCENT,
-    )
-    glucose = build_lab_observation(
-        resource_id=deterministic_uuid(seed, "obs-glucose", index),
-        code=codes.GLUCOSE_FASTING,
-        subject_urn=urn["patient"],
-        encounter_urn=urn["encounter"],
-        performer_urn=urn["practitioner"],
-        effective=visit_start,
-        value=Decimal(152),
-        unit=codes.UNIT_MG_DL,
-    )
-    blood_pressure = build_blood_pressure(
-        resource_id=deterministic_uuid(seed, "obs-bp", index),
-        subject_urn=urn["patient"],
-        encounter_urn=urn["encounter"],
-        performer_urn=urn["practitioner"],
-        effective=visit_start,
-        systolic=Decimal(138),
-        diastolic=Decimal(84),
-    )
-    medication = build_medication_request(
-        resource_id=deterministic_uuid(seed, "medreq-metformin", index),
-        medication=codes.METFORMIN_500,
-        subject_urn=urn["patient"],
-        requester_urn=urn["practitioner"],
-        encounter_urn=urn["encounter"],
-        authored_on=visit,
-    )
-    report = build_diagnostic_report(
-        resource_id=deterministic_uuid(seed, "report-lab", index),
-        subject_urn=urn["patient"],
-        performer_urn=urn["practitioner"],
-        effective=visit_start,
-        issued=visit_end,
-        result_urns=[urn["obs-hba1c"], urn["obs-glucose"]],
-    )
+    for position, code in enumerate(drawn.medications):
+        role = f"medreq-{position}"
+        entries.append(
+            Entry(
+                urn(role),
+                build_medication_request(
+                    resource_id=rid(role),
+                    medication=code,
+                    subject_urn=urn("patient"),
+                    requester_urn=urn("practitioner"),
+                    encounter_urn=urn("encounter"),
+                    authored_on=visit,
+                ),
+            )
+        )
 
-    return build_transaction_bundle(
-        [
-            Entry(urn["patient"], patient),
-            Entry(urn["practitioner"], practitioner),
-            Entry(urn["encounter"], encounter),
-            Entry(urn["condition-t2dm"], condition),
-            Entry(urn["obs-hba1c"], hba1c),
-            Entry(urn["obs-glucose"], glucose),
-            Entry(urn["obs-bp"], blood_pressure),
-            Entry(urn["medreq-metformin"], medication),
-            Entry(urn["report-lab"], report),
-        ]
-    )
+    if lab_urns:
+        entries.append(
+            Entry(
+                urn("report-lab"),
+                build_diagnostic_report(
+                    resource_id=rid("report-lab"),
+                    subject_urn=urn("patient"),
+                    performer_urn=urn("practitioner"),
+                    effective=start,
+                    issued=end,
+                    result_urns=lab_urns,
+                ),
+            )
+        )
+
+    return build_transaction_bundle(entries)

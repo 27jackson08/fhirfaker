@@ -41,11 +41,25 @@ class Code:
 
 # --- LOINC: labs -----------------------------------------------------------------
 HBA1C = Code(systems.LOINC, "4548-4", "Hemoglobin A1c/Hemoglobin.total in Blood")
+# 2345-7 rather than the fasting-specific 1558-6: the ADAG relationship this project
+# anchors glucose to describes *average* glucose, so a fasting-specific code would
+# misdescribe the quantity being generated. See correlation/relations.py.
+GLUCOSE = Code(systems.LOINC, "2345-7", "Glucose [Mass/volume] in Serum or Plasma")
 GLUCOSE_FASTING = Code(
     systems.LOINC, "1558-6", "Fasting glucose [Mass/volume] in Serum or Plasma"
 )
 CREATININE = Code(
     systems.LOINC, "2160-0", "Creatinine [Mass/volume] in Serum or Plasma"
+)
+# Display strings are checked by the HL7 validator, not just the codes. This one was
+# first taken from a third-party code listing that used the older "/1.73 sq M.predicted"
+# phrasing and was rejected: "Wrong Display Name ... Valid display is one of 3 choices".
+# Take displays from LOINC itself, never from a secondary aggregator.
+EGFR = Code(
+    systems.LOINC,
+    "98979-8",
+    "Glomerular filtration rate [Volume Rate/Area] in Serum, Plasma or Blood by "
+    "Creatinine-based formula (CKD-EPI 2021)/1.73 sq M",
 )
 
 # --- LOINC: vitals ---------------------------------------------------------------
@@ -75,6 +89,14 @@ T2DM_NO_COMPLICATIONS = Code(
 ESSENTIAL_HYPERTENSION = Code(
     systems.ICD10CM, "I10", "Essential (primary) hypertension"
 )
+# ICD-10-CM splits stage 3 by eGFR band. The CKD profile picks the code that matches
+# the eGFR it actually drew, rather than always emitting the unspecified code — the
+# coded diagnosis and the lab value have to agree for the data to be coherent.
+CKD_STAGE_3_UNSPECIFIED = Code(
+    systems.ICD10CM, "N18.30", "Chronic kidney disease, stage 3 unspecified"
+)
+CKD_STAGE_3A = Code(systems.ICD10CM, "N18.31", "Chronic kidney disease, stage 3a")
+CKD_STAGE_3B = Code(systems.ICD10CM, "N18.32", "Chronic kidney disease, stage 3b")
 
 # --- HL7 workflow/category codes -------------------------------------------------
 CATEGORY_LABORATORY = Code(systems.OBSERVATION_CATEGORY, "laboratory", "Laboratory")
@@ -99,3 +121,8 @@ UNIT_MMHG = ("mmHg", "mm[Hg]")
 UNIT_BPM = ("beats/minute", "/min")
 UNIT_CM = ("cm", "cm")
 UNIT_KG = ("kg", "kg")
+# UCUM curly-brace annotation: the 1.73 m2 normalisation is an annotation, not a unit.
+# The human-readable unit must carry the annotation too — the validator warns when the
+# UCUM code has one and Quantity.unit does not, because annotations are ignored during
+# unit comparison and the two strings then disagree about what was measured.
+UNIT_EGFR = ("mL/min/{1.73_m2}", "mL/min/{1.73_m2}")

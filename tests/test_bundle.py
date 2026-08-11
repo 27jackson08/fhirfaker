@@ -12,11 +12,12 @@ from pkg.core.bundle import URN_UUID_RE, dangling_references, to_json
 from pkg.core.safety import HTEST_CODE
 from pkg.generate import generate_bundle
 
-EXPECTED_TYPES = [
-    "Patient", "Practitioner", "Encounter", "Condition",
-    "Observation", "Observation", "Observation",
-    "MedicationRequest", "DiagnosticReport",
-]
+PROFILES = ("healthy", "hypertension", "type2_diabetes", "ckd_stage3")
+
+# Present in every bundle regardless of profile. Conditions and MedicationRequests
+# are profile-dependent, so asserting an exact entry list would just encode today's
+# draw rather than an invariant.
+ALWAYS_PRESENT = {"Patient", "Practitioner", "Encounter", "Observation", "DiagnosticReport"}
 
 
 @pytest.fixture(scope="module")
@@ -29,8 +30,17 @@ def payload(bundle):
     return json.loads(to_json(bundle))
 
 
-def test_bundle_contains_expected_resource_types(payload):
-    assert [e["resource"]["resourceType"] for e in payload["entry"]] == EXPECTED_TYPES
+def test_bundle_contains_the_core_resource_types(payload):
+    present = {e["resource"]["resourceType"] for e in payload["entry"]}
+    assert ALWAYS_PRESENT <= present
+
+
+def test_healthy_profile_emits_no_conditions_or_prescriptions():
+    """A healthy patient carrying a diagnosis would be incoherent by construction."""
+    healthy = json.loads(to_json(generate_bundle(profile="healthy", seed=42)))
+    types = [e["resource"]["resourceType"] for e in healthy["entry"]]
+    assert "Condition" not in types
+    assert "MedicationRequest" not in types
 
 
 def test_no_dangling_references(bundle):
@@ -83,17 +93,33 @@ def test_quantity_values_serialize_as_json_numbers(bundle):
     assert not quoted, f"numeric values serialized as strings: {quoted}"
 
 
-def test_decimal_precision_is_preserved_exactly(bundle):
-    payload = json.loads(to_json(bundle), parse_float=Decimal, parse_int=Decimal)
-    observations = [
-        e["resource"] for e in payload["entry"]
-        if e["resource"]["resourceType"] == "Observation"
-    ]
-    values = [o["valueQuantity"]["value"] for o in observations if "valueQuantity" in o]
-    assert Decimal("7.8") in values
-    # 152, not 152.0 — trailing-zero drift would change the significant figures.
-    assert Decimal(152) in values
-    assert "152.0" not in to_json(bundle)
+def test_decimal_precision_matches_laboratory_reporting(bundle):
+    """Each analyte keeps the precision a lab would actually report.
+
+    Significant figures are an assertion in FHIR: emitting 95.0 where the lab reports
+    95 claims a precision the measurement does not have, and float round-tripping
+    introduces exactly that drift.
+    """
+    text = to_json(bundle)
+    payload = json.loads(text, parse_float=Decimal, parse_int=Decimal)
+    by_code = {}
+    for entry in payload["entry"]:
+        resource = entry["resource"]
+        if resource["resourceType"] == "Observation" and "valueQuantity" in resource:
+            by_code[resource["code"]["coding"][0]["code"]] = resource["valueQuantity"]["value"]
+
+    expected_decimal_places = {
+        "4548-4": 1,   # HbA1c, reported to 0.1 %
+        "2345-7": 0,   # glucose, reported as whole mg/dL
+        "2160-0": 2,   # creatinine, reported to 0.01 mg/dL
+        "98979-8": 0,  # eGFR, reported as a whole number
+    }
+    for code, places in expected_decimal_places.items():
+        value = by_code[code]
+        assert -value.as_tuple().exponent == places, f"{code} -> {value}"
+
+    # Whole numbers must not acquire a trailing .0 on the way out.
+    assert not re.search(r'"value": \d+\.0\b', text)
 
 
 def test_sentinel_never_leaks_into_output(bundle):
@@ -115,3 +141,42 @@ def test_bundle_is_byte_identical_across_runs():
 
 def test_different_seeds_produce_different_bundles():
     assert to_json(generate_bundle(seed=42)) != to_json(generate_bundle(seed=43))
+
+
+@pytest.mark.parametrize("profile", PROFILES)
+def test_every_profile_produces_a_referentially_intact_bundle(profile):
+    built = generate_bundle(profile=profile, seed=42, sex="F")
+    assert dangling_references(built) == set()
+    assert json.loads(to_json(built))["entry"]
+
+
+def test_profiles_do_not_collide_at_the_same_seed():
+    """Two profiles sharing a marginal must not draw identical values.
+
+    They did until the profile key entered the RNG seed: `healthy` and
+    `hypertension` share the normoglycaemic marginals and emitted the same HbA1c,
+    glucose and creatinine for a given seed.
+    """
+    rendered = {p: to_json(generate_bundle(profile=p, seed=42)) for p in PROFILES}
+    assert len(set(rendered.values())) == len(PROFILES)
+
+
+def test_output_does_not_depend_on_python_hash_randomization():
+    """`hash()` is salted per process; anything seeded from it breaks determinism."""
+    from pkg.core.ids import stable_digest
+
+    assert stable_digest("type2_diabetes") == stable_digest("type2_diabetes")
+    assert stable_digest("healthy") != stable_digest("hypertension")
+
+
+def test_ckd_condition_code_agrees_with_the_generated_egfr():
+    """The coded diagnosis and the lab value must not contradict each other."""
+    from pkg.correlation.relations import ckd_stage_for
+    from pkg.generate import generate_draw
+
+    for seed in range(20):
+        drawn = generate_draw(profile="ckd_stage3", seed=seed, sex="M", age_years=58.0)
+        expected = {"G3a": "N18.31", "G3b": "N18.32"}[ckd_stage_for(drawn.raw["egfr"])]
+        assert any(c.code == expected for c in drawn.conditions), (
+            f"seed {seed}: eGFR {drawn.raw['egfr']:.1f} should code {expected}"
+        )

@@ -412,6 +412,37 @@ documentation, and each would otherwise be rediscovered the hard way.
   RXCUIs for "metformin 500 MG Oral Tablet": `860975` is the 24-hour extended-release product
   and `861007` is immediate-release. Taking the first hit would have shipped the wrong drug
   formulation silently — precisely the class of error this project exists to avoid.
+- **Display strings are validated too, not just codes.** LOINC `98979-8` was correct but its
+  display was taken from a third-party code aggregator using older phrasing, and the validator
+  rejected it: *"Wrong Display Name … Valid display is one of 3 choices"*. Take displays from
+  the source vocabulary, never from a secondary listing.
+
+### Phase 3 findings — the correlation engine
+
+- **Truncation attenuates both the moments and the correlation.** Bounding HbA1c at the 6.5%
+  diagnostic threshold pulls its realized SD from 0.90 to 0.78. Calibrating the ADAG regression
+  against the *nominal* SD inflated the generated slope from 28.7 to 33.0 — a 15% error that
+  looks like nothing in the code. Calibration must use post-truncation moments, and the latent
+  copula correlation must be *solved for* rather than set to `sqrt(R²)`, or the realized R²
+  lands at 0.827 instead of 0.840.
+- **Do not assert a regression's intercept.** The ADAG intercept extrapolates to HbA1c = 0,
+  roughly 7 SD below anything observed, so a 0.7% slope difference shows up there as a 3.7%
+  intercept error while the fitted line is accurate everywhere it is used. Asserting predicted
+  values across the clinical range (6.5–9.5%) is both more meaningful and more robust; the
+  generated line tracks ADAG to within 0.6 mg/dL across that span.
+- **Staging boundaries must tile the line.** KDIGO ranges written as `(…, 44.9)` and
+  `(45.0, …)` leave a gap that a continuous eGFR of 44.988 falls straight into. Half-open
+  intervals, always.
+- **`hash()` is salted per process.** Seeding anything from Python's built-in `hash()` of a
+  string breaks byte-identical output across runs while looking perfectly deterministic within
+  one. The determinism contract needs a stable digest (blake2b here), and a test that pins it.
+- **The profile key has to enter the RNG seed.** Without it, two profiles sharing a marginal —
+  `healthy` and `hypertension` both use the normoglycaemic distributions — emit identical
+  HbA1c, glucose and creatinine for the same seed.
+- **Derived codes beat fixed ones.** ICD-10-CM splits CKD stage 3 into `N18.31` (3a) and
+  `N18.32` (3b) by eGFR band. Emitting a fixed code would let the coded diagnosis contradict
+  the lab value in the same bundle; picking the code from the drawn eGFR is the coherence
+  claim working at the smallest scale.
 
 ---
 

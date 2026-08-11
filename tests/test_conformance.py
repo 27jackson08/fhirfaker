@@ -25,6 +25,9 @@ ACCEPTED_WARNING_FRAGMENTS = (
     # 11502-2 "Laboratory report" is a LOINC document code, which is semantically
     # right for DiagnosticReport.code even though the lab-test value set excludes it.
     "US Core Laboratory Test Codes",
+    # Generic best-practice advice fired by ANY annotated UCUM code.
+    # mL/min/{1.73_m2} is the standard representation for eGFR.
+    "UCUM Codes that contain human readable annotations",
 )
 
 
@@ -82,6 +85,18 @@ def test_full_bundle_is_us_core_conformant(written, conformance_seeds):
                 + "; ".join(f"{i.location} :: {i.message}" for i in result.errors)
             )
     assert not failures, "US Core conformance errors:\n" + "\n".join(failures)
+
+
+@pytest.mark.parametrize(
+    "profile", ["healthy", "hypertension", "type2_diabetes", "ckd_stage3"]
+)
+def test_every_clinical_profile_is_conformant(written, profile):
+    """Each profile emits a different resource mix, so each needs its own gate."""
+    path = written(generate_bundle(profile=profile, seed=42, sex="F"), f"bundle-{profile}")
+    result = validate(path)
+    assert result.ok, f"{profile}:\n" + "\n".join(
+        f"  {i.location} :: {i.message}" for i in result.errors
+    )
 
 
 def test_bundle_raises_no_unexamined_warnings(written):
