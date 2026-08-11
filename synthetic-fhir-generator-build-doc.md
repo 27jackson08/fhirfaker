@@ -98,7 +98,11 @@ R4 4.0.1 is a frozen spec, so the generated models are not a moving maintenance 
 ## 5. Scope (v1)
 
 ### In scope
-- **Resource types:** Patient, Encounter, Condition, Observation (vitals + labs), MedicationRequest, DiagnosticReport, AllergyIntolerance
+- **Resource types:** Patient, Encounter, Condition, Observation (vitals + labs), MedicationRequest, DiagnosticReport, AllergyIntolerance, **Practitioner**
+  - Practitioner was not in the v1 draft. US Core's MedicationRequest profile requires
+    `requester`, and a dangling reference is not conformant, so the profile pulls it in.
+    Found by the Phase 1 validator run, not by reading the IG. Expect the same pressure
+    from Organization/Location if Encounter's must-support set is tightened later.
 - **FHIR version:** R4 4.0.1, US Core 6.1.0 profiles
 - **Bundle types:** `transaction` bundles with proper `urn:uuid:` internal references
 - **Terminology:** LOINC (labs/vitals), RxNorm (medications), ICD-10-CM (conditions) — see Section 6 for the licensing constraints that actually apply
@@ -144,10 +148,17 @@ Public domain in the US (CMS/NCHS). Note the distinction: WHO's base ICD-10 is c
 ### SNOMED CT — stay out, as v1 correctly concluded
 Requires an affiliate license outside member countries; sub-licensees are explicitly barred from redistributing or modifying content or derivatives. **Do not embed SNOMED codes in v1.** If added later, gate it behind a user-supplied license or a local terminology server rather than shipping codes in the repo.
 
-> **Open tension to resolve empirically.** US Core's Condition profiles bind to a value set that
-> includes ICD-10-CM, so US Core conformance *should* be reachable without SNOMED — but SNOMED is
-> preferred in practice for problem lists. Do not assert this either way in the README. The
-> validator settles it in Phase 0, which is one more reason to phase validation first (Section 12).
+> **RESOLVED in Phase 1, empirically.** A US Core Condition coded with ICD-10-CM
+> (`E11.9`) validates against `us-core-condition-problems-health-concerns` with **zero errors and
+> zero warnings**. The no-SNOMED decision costs nothing on Condition. Do not soften this in the
+> README — it is measured, not assumed.
+>
+> **But the cost reappears on Encounter.** `Encounter.type` binds to a value set drawn from CPT-4
+> (AMA-licensed) and SNOMED CT. We assert `text` only and take a warning. Full warning-free US Core
+> Encounter conformance is therefore *not reachable* under the current licensing position. State
+> this plainly in the README rather than letting a reviewer discover it: it is a real limit of the
+> no-SNOMED/no-CPT stance, and the honest framing is that errors are zero while one binding
+> degrades to a warning. Details in `CONFORMANCE.md`.
 
 **Curation scale:** roughly 30–50 LOINC codes, 20–30 RxNorm drugs, 15–20 ICD-10-CM codes. Full coverage is a maintenance burden with no v1 payoff. Attach per-code provenance and license metadata in the terminology tables so any emitted code traces back to a licensed source.
 
@@ -374,9 +385,33 @@ If the mark is used descriptively, include: *"FHIR® is the registered trademark
 - ~~How many clinical profiles for v1~~ → **Resolved:** 4 (diabetes, hypertension, CKD, healthy baseline). More dilutes correlation-engine quality.
 - ~~Whether HL7 validator integration is in scope for v1~~ → **Resolved:** yes, and it gates releases. See Section 10.
 - ~~FHIR version and model layer~~ → **Resolved:** R4 4.0.1, self-owned pydantic v2 models. See Section 4.
+- ~~Whether US Core Condition conformance is achievable with ICD-10-CM alone~~ → **Resolved in Phase 1: yes**, zero errors and zero warnings. See Section 6.
 - **Still open:** MIT vs Apache 2.0.
 - **Still open:** final name (Section 15).
-- **Still open, resolved empirically in Phase 0:** whether US Core Condition conformance is achievable with ICD-10-CM alone.
+- **New, opened by Phase 1:** whether to offer an opt-in hook for users who *hold* a SNOMED/CPT licence to supply their own Encounter.type and Condition codes. That would close the one remaining binding gap without shipping licensed content — the mechanism Section 6 already proposes for SNOMED generally.
+
+---
+
+## 18. Implementation Notes (findings that cost time)
+
+Recorded because each of these was discovered by running the validator, not by reading
+documentation, and each would otherwise be rediscovered the hard way.
+
+- **FHIR `decimal` must serialize as a JSON number.** pydantic's `model_dump(mode="json")`
+  turns `Decimal` into a *string*, which the validator rejects outright: "the primitive value
+  must be a number." Using `float` instead would silence it while quietly destroying
+  significant figures (`1.50` and `1.5` are different assertions in FHIR). The fix is to keep
+  `Decimal` through the model and unquote it during JSON encoding.
+- **Example URLs are rejected in `identifier.system`.** `example.org` is IANA-reserved and
+  therefore collision-safe, but the validator refuses it. Collision-safety and spec-conformance
+  are separate requirements; `urn:uuid:` satisfies both.
+- **Do not mint checksum-valid NPIs.** US Core marks NPI must-support for Practitioner, but a
+  valid NPI could collide with a real clinician. A synthetic identifier system is the right
+  trade: structural realism is not worth impersonating a real provider.
+- **Verify terminology codes against an authority, never from memory.** RxNav returned two
+  RXCUIs for "metformin 500 MG Oral Tablet": `860975` is the 24-hour extended-release product
+  and `861007` is immediate-release. Taking the first hit would have shipped the wrong drug
+  formulation silently — precisely the class of error this project exists to avoid.
 
 ---
 

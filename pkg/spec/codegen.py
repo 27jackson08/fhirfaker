@@ -29,6 +29,10 @@ TARGET_RESOURCES = [
     "DiagnosticReport",
     "AllergyIntolerance",
     "Bundle",
+    # Not in the build doc's original scope list. US Core pulls it in: the
+    # MedicationRequest profile requires a requester, and a dangling reference is not
+    # conformant. Discovered by the Phase 1 validator run, not by reading the IG.
+    "Practitioner",
 ]
 
 # FHIR primitive -> Python annotation. Dates and decimals stay strings/Decimal so we

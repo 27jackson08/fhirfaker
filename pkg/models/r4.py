@@ -239,6 +239,15 @@ class BundleEntryResponse(FHIRBase):
     outcome: dict | None = Field(default=None)
 
 
+class PractitionerQualification(FHIRBase):
+    id: str | None = Field(default=None)
+    extension: list[Extension] | None = Field(default=None)
+    identifier: list[Identifier] | None = Field(default=None)
+    code: CodeableConcept = Field()
+    period: Period | None = Field(default=None)
+    issuer: Reference | None = Field(default=None)
+
+
 class Address(FHIRBase):
     id: str | None = Field(default=None)
     extension: list[Extension] | None = Field(default=None)
@@ -944,6 +953,26 @@ class Bundle(FHIRBase):
     signature: Signature | None = Field(default=None)
 
 
+class Practitioner(FHIRBase):
+    resourceType: Literal["Practitioner"] = "Practitioner"
+    id: str | None = Field(default=None)
+    meta: Meta | None = Field(default=None)
+    implicitRules: str | None = Field(default=None)
+    language: str | None = Field(default=None)
+    text: Narrative | None = Field(default=None)
+    extension: list[Extension] | None = Field(default=None)
+    identifier: list[Identifier] | None = Field(default=None)
+    active: bool | None = Field(default=None)
+    name: list[HumanName] | None = Field(default=None)
+    telecom: list[ContactPoint] | None = Field(default=None)
+    address: list[Address] | None = Field(default=None)
+    gender: str | None = Field(default=None)
+    birthDate: str | None = Field(default=None)
+    photo: list[Attachment] | None = Field(default=None)
+    qualification: list[PractitionerQualification] | None = Field(default=None)
+    communication: list[CodeableConcept] | None = Field(default=None)
+
+
 PatientContact.model_rebuild()
 PatientCommunication.model_rebuild()
 PatientLink.model_rebuild()
@@ -967,6 +996,7 @@ BundleEntry.model_rebuild()
 BundleEntrySearch.model_rebuild()
 BundleEntryRequest.model_rebuild()
 BundleEntryResponse.model_rebuild()
+PractitionerQualification.model_rebuild()
 Address.model_rebuild()
 Age.model_rebuild()
 Annotation.model_rebuild()
@@ -1013,3 +1043,4 @@ MedicationRequest.model_rebuild()
 DiagnosticReport.model_rebuild()
 AllergyIntolerance.model_rebuild()
 Bundle.model_rebuild()
+Practitioner.model_rebuild()

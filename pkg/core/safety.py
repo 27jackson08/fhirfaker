@@ -25,6 +25,7 @@ HTEST_CODE = "HTEST"
 # context"). Collision-safety and spec-conformance are separate requirements and the
 # urn:uuid form is the only thing that satisfies both.
 SYNTHETIC_MRN_SYSTEM = "urn:uuid:6f2a1d3e-9c47-5b8a-a1f0-2d4e6c8b0a17"
+SYNTHETIC_PRACTITIONER_SYSTEM = "urn:uuid:9d81c4b2-7e35-5a09-b6f4-1c3a5e7d9b02"
 SYNTHETIC_SSN_SYSTEM = "http://hl7.org/fhir/sid/us-ssn"
 
 US_CORE_PATIENT_PROFILE = (
@@ -93,6 +94,16 @@ def synthetic_ssn(area: int, group: int, serial: int) -> Identifier:
             "identifier that could collide with a real person."
         )
     return Identifier(system=SYNTHETIC_SSN_SYSTEM, value=f"{area:03d}-{group:02d}-{serial:04d}")
+
+
+def synthetic_npi(value: str) -> Identifier:
+    """A practitioner identifier that deliberately avoids the real NPI namespace.
+
+    US Core marks NPI as must-support for Practitioner, but minting a checksum-valid
+    NPI would risk colliding with a real clinician's number. Structural realism is not
+    worth impersonating a real provider, so we assert a synthetic system instead.
+    """
+    return Identifier(system=SYNTHETIC_PRACTITIONER_SYSTEM, value=value)
 
 
 def fictional_name(family_index: int, given_index: int) -> HumanName:
