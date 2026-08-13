@@ -198,8 +198,9 @@ Stated here rather than left for you to discover.
   comes from the literature is the *dependence* structure. Calibrating marginals
   against NHANES is future work, and the fidelity report says so.
 - **One encounter per bundle.** No longitudinal history — that is Synthea's territory.
-- **Terminology is a curated subset**, sized to the profiles that exist rather than to
-  full coverage.
+- **Terminology is a curated subset** — 85 codes (40 LOINC, 23 RxNorm, 22 ICD-10-CM),
+  not full coverage. Every code *and display* is verified against its source vocabulary
+  by `python -m pkg.terminology.verify`, which runs nightly in CI.
 
 ---
 
@@ -213,6 +214,7 @@ pytest -m "not conformance"       # fast: unit, property, golden, fidelity
 pytest -m conformance             # needs a JVM; downloads ~460MB of IGs on first run
 python -m pkg.fidelity.report     # regenerate the fidelity report
 python -m pkg.spec.codegen        # regenerate models from the R4 StructureDefinitions
+python -m pkg.terminology.verify  # re-check every code against LOINC/RxNorm/ICD-10-CM
 ```
 
 `pkg/models/r4.py` is generated from the official FHIR R4 4.0.1 StructureDefinitions

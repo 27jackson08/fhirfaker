@@ -1,0 +1,139 @@
+"""Terminology table consistency.
+
+These run offline. The network check that every code and display matches its source
+vocabulary lives in `pkg/terminology/verify.py` and runs nightly, because a unit test
+that needs three external APIs is a flaky test.
+"""
+
+from __future__ import annotations
+
+import re
+from collections import Counter
+
+import pytest
+
+from pkg.terminology import systems
+from pkg.terminology.codes import Code
+from pkg.terminology.verify import registered_codes
+
+# Target subset sizes from build doc Section 6. Full coverage is a maintenance burden
+# with no v1 payoff; too few codes makes the profiles repetitive.
+TARGET_SIZES = {
+    systems.LOINC: (30, 50),
+    systems.RXNORM: (20, 30),
+    systems.ICD10CM: (15, 25),
+}
+
+LOINC_PATTERN = re.compile(r"^\d{1,5}-\d$")
+ICD10CM_PATTERN = re.compile(r"^[A-TV-Z]\d{2}(\.\d{1,4})?$")
+RXCUI_PATTERN = re.compile(r"^\d+$")
+
+
+@pytest.fixture(scope="module")
+def codes() -> tuple[Code, ...]:
+    return registered_codes()
+
+
+def test_no_code_is_registered_twice_with_different_displays(codes):
+    seen: dict[tuple[str, str], str] = {}
+    for code in codes:
+        key = (code.system, code.code)
+        if key in seen:
+            assert seen[key] == code.display, f"{key} has conflicting displays"
+        seen[key] = code.display
+
+
+def test_every_code_has_a_display(codes):
+    for code in codes:
+        assert code.display.strip(), f"{code.system}#{code.code} has an empty display"
+
+
+def test_displays_are_not_truncated_or_placeholder(codes):
+    for code in codes:
+        assert not code.display.endswith("..."), f"{code.code} display looks truncated"
+        assert "TODO" not in code.display.upper()
+
+
+@pytest.mark.parametrize(
+    "system,pattern",
+    [
+        (systems.LOINC, LOINC_PATTERN),
+        (systems.ICD10CM, ICD10CM_PATTERN),
+        (systems.RXNORM, RXCUI_PATTERN),
+    ],
+)
+def test_codes_are_well_formed_for_their_system(codes, system, pattern):
+    for code in codes:
+        if code.system == system:
+            assert pattern.match(code.code), f"{code.code} is malformed for {system}"
+
+
+@pytest.mark.parametrize("system,bounds", TARGET_SIZES.items())
+def test_subset_sizes_match_the_curation_target(codes, system, bounds):
+    low, high = bounds
+    count = sum(1 for c in codes if c.system == system)
+    assert low <= count <= high, f"{system} has {count} codes, target {low}-{high}"
+
+
+def test_no_snomed_codes_are_shipped(codes):
+    """SNOMED CT is excluded by design — redistribution needs an affiliate licence."""
+    assert not [c for c in codes if c.system == systems.SNOMED]
+    assert not [c for c in codes if "snomed" in c.system.lower()]
+
+
+def test_every_code_uses_a_known_system(codes):
+    known = {
+        value for name, value in vars(systems).items()
+        if not name.startswith("_") and isinstance(value, str)
+    }
+    for code in codes:
+        assert code.system in known, f"{code.code} uses unregistered system {code.system}"
+
+
+def test_codeable_concept_round_trips(codes):
+    for code in codes:
+        concept = code.concept()
+        assert concept.coding[0].code == code.code
+        assert concept.coding[0].system == code.system
+        assert concept.text == code.display
+
+
+def test_display_text_can_be_overridden():
+    code = Code(systems.LOINC, "4548-4", "Hemoglobin A1c/Hemoglobin.total in Blood")
+    assert code.concept("HbA1c").text == "HbA1c"
+
+
+def test_ckd_stage_codes_cover_every_kdigo_band():
+    """A missing stage code would silently fall back to the unspecified one."""
+    from pkg.terminology import codes as table
+
+    for expected in ("N18.1", "N18.2", "N18.30", "N18.31", "N18.32", "N18.4", "N18.5"):
+        assert any(c.code == expected for c in registered_codes()), expected
+    assert table.CKD_STAGE_3A.code == "N18.31"
+    assert table.CKD_STAGE_3B.code == "N18.32"
+
+
+def test_metformin_constants_do_not_mix_release_profiles():
+    """861007 is immediate-release; 860975 is 24 HR extended-release."""
+    from pkg.terminology import codes as table
+
+    assert table.METFORMIN_500.code == "861007"
+    assert "Extended Release" not in table.METFORMIN_500.display
+    assert "860975" not in {c.code for c in registered_codes()}
+
+
+def test_units_pair_a_display_with_a_ucum_code():
+    from pkg.terminology import codes as table
+
+    units = [
+        value for name, value in vars(table).items()
+        if name.startswith("UNIT_") and isinstance(value, tuple)
+    ]
+    assert units
+    for display, ucum in units:
+        assert display and ucum
+
+
+def test_registered_codes_is_deduplicated(codes):
+    counts = Counter((c.system, c.code) for c in codes)
+    assert not [key for key, n in counts.items() if n > 1]

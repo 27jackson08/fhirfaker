@@ -70,6 +70,20 @@ jobs:
             pytest tests/ -q -m conformance --conformance-scale=sample
           fi
 
+  # Re-check every shipped code against its source vocabulary. Curated subsets go
+  # stale (build doc Section 14), and a display that drifts is rejected outright by
+  # the HL7 validator. Nightly because it depends on three external APIs.
+  terminology:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: Install
+        run: uv pip install --system -e ".[dev]"
+      - name: Verify codes against LOINC, RxNorm and ICD-10-CM
+        run: python -m pkg.terminology.verify
+
   # Statistical evidence for the clinical-coherence claim (build doc Section 8).
   # Nightly only: N=10,000 patients per profile is too slow for a PR gate.
   fidelity:

@@ -328,7 +328,7 @@ Two tiers, both in v1:
 |---|---|---|---|
 | **0. Walking skeleton** | Vendor R4 SDs, codegen, validator harness | One `Patient` passes the HL7 validator against US Core 6.1.0 | **done** |
 | **1. Core resources** | Encounter, Condition, Observation, MedicationRequest, DiagnosticReport, AllergyIntolerance; bundle assembly + reference wiring | Each resource type validator-green as it lands | **done** |
-| **2. Terminology** | Curated LOINC/RxNorm/ICD-10-CM subsets with provenance metadata | Every emitted code traces to a licensed, recorded source | **partial** — provenance and licensing discipline are in place, but the subset is sized to the profiles that exist (~12 LOINC, 3 RxNorm, 5 ICD-10-CM) rather than the target volumes |
+| **2. Terminology** | Curated LOINC/RxNorm/ICD-10-CM subsets with provenance metadata | Every emitted code traces to a licensed, recorded source | **done** — 85 codes (40 LOINC, 23 RxNorm, 22 ICD-10-CM), all verified against their source vocabularies |
 | **3. Correlation engine** | Copula sampling + `relations.py`; 4 profiles | **The differentiator — allocate the most time here** | **done** — 10/10 fidelity checks |
 | **4. Fidelity + determinism** | Fidelity report generation, golden snapshots | Report published; drift fails CI | **done** — NHANES marginal calibration deferred and disclosed |
 | **5. Ship** | CLI, packaging, docs, README positioning, name decision + rename pass | PyPI 0.1.0 | **partial** — CLI, README and packaging done; name and licence still open |
@@ -357,7 +357,13 @@ This is a multi-week project at a realistic pace alongside everything else curre
 - **JVM in CI undercuts the "no JVM" pitch.** Mitigated by stating clearly that it is dev/CI-only. Left unstated, it reads as a contradiction.
 - **Codegen maintenance.** Owning the models means owning spec updates. Mitigated by narrow scope (8 resources, write-side only) and by R4 4.0.1 being frozen.
 - **Statistical test flakiness.** See Section 11.
-- **Terminology maintenance.** Curated subsets go stale. Plan periodic review, not a one-time load.
+- ~~**Terminology maintenance.** Curated subsets go stale.~~ → **Mitigated.**
+  `python -m pkg.terminology.verify` re-checks every shipped code *and display* against LOINC,
+  RxNorm and ICD-10-CM, and runs nightly in CI. The registry is introspected rather than
+  hand-listed, so a newly added code cannot escape verification by being forgotten. RxNorm
+  lookups go through the RxNav `/Prescribe/` endpoints, which serve only Current Prescribable
+  Content — a code outside the openly-redistributable subset returns nothing rather than
+  silently passing, so the licence boundary is enforced by the lookup rather than by memory.
 - **Correlation engine complexity underestimated.** This is the hard, valuable part. If time runs short, fewer well-done profiles beat more shallow ones.
 - **Trademark exposure.** See Section 15. Settle before first publish, not after traction.
 - **Distribution, not just quality, drives adoption.** Even a genuinely differentiated tool needs a launch — a blog post, a Show HN, an awesome-list inclusion. Building it well is necessary but not sufficient.
