@@ -1,0 +1,37 @@
+{
+  "resourceType": "Patient",
+  "id": "96baad95-bc36-5844-bc19-86cb1d4022a3",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient"
+    ],
+    "security": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+        "code": "HTEST",
+        "display": "test health data"
+      }
+    ]
+  },
+  "text": {
+    "status": "generated",
+    "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Emet Dummett, male, born 1979-04-06.</p></div>"
+  },
+  "identifier": [
+    {
+      "system": "urn:uuid:6f2a1d3e-9c47-5b8a-a1f0-2d4e6c8b0a17",
+      "value": "96BAAD95"
+    }
+  ],
+  "name": [
+    {
+      "use": "official",
+      "family": "Dummett",
+      "given": [
+        "Emet"
+      ]
+    }
+  ],
+  "gender": "male",
+  "birthDate": "1979-04-06"
+}

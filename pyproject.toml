@@ -11,6 +11,9 @@ dependencies = [
     "numpy>=1.24",
 ]
 
+[project.scripts]
+pkg = "pkg.cli:main"
+
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",

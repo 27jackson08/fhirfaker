@@ -193,8 +193,9 @@ def render_markdown(checks: list[Check], *, size: int, seed: int) -> str:
 def main() -> None:
     checks = run_all()
     markdown = render_markdown(checks, size=DEFAULT_SAMPLE_SIZE, seed=DEFAULT_SEED)
-    out = Path("build") / "fidelity-report.md"
-    out.parent.mkdir(parents=True, exist_ok=True)
+    # Committed at the repo root next to CONFORMANCE.md: the report is published
+    # evidence, so it must live somewhere the README can link to.
+    out = Path(__file__).resolve().parents[2] / "FIDELITY.md"
     out.write_text(markdown)
     print(markdown)
     failed = [c for c in checks if not c.passed]

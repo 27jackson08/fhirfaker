@@ -14,6 +14,17 @@ def pytest_addoption(parser):
             "full: the whole profile x resource-type matrix, for the nightly run."
         ),
     )
+    parser.addoption(
+        "--update-golden",
+        action="store_true",
+        default=False,
+        help="Rewrite golden snapshot files instead of comparing against them.",
+    )
+
+
+@pytest.fixture(scope="session")
+def update_golden(request) -> bool:
+    return bool(request.config.getoption("--update-golden"))
 
 
 @pytest.fixture(scope="session")

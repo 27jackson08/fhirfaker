@@ -324,14 +324,17 @@ Two tiers, both in v1:
 
 **v1 put validation at Phase 4. Invert it.** Standing up the conformance harness first means conformance bugs surface *while* each resource is being written, instead of after everything is built on a wrong foundation.
 
-| Phase | Content | Exit criterion |
-|---|---|---|
-| **0. Walking skeleton** | Vendor R4 SDs, codegen, validator harness | One `Patient` passes the HL7 validator against US Core 6.1.0 |
-| **1. Core resources** | Encounter, Condition, Observation, MedicationRequest, DiagnosticReport, AllergyIntolerance; bundle assembly + reference wiring | Each resource type validator-green as it lands |
-| **2. Terminology** | Curated LOINC/RxNorm/ICD-10-CM subsets with provenance metadata | Every emitted code traces to a licensed, recorded source |
-| **3. Correlation engine** | Copula sampling + `relations.py`; 4 profiles | **The differentiator — allocate the most time here** |
-| **4. Fidelity + determinism** | Fidelity report generation, golden snapshots | Report published; drift fails CI |
-| **5. Ship** | CLI, packaging, docs, README positioning, name decision + rename pass | PyPI 0.1.0 |
+| Phase | Content | Exit criterion | Status |
+|---|---|---|---|
+| **0. Walking skeleton** | Vendor R4 SDs, codegen, validator harness | One `Patient` passes the HL7 validator against US Core 6.1.0 | **done** |
+| **1. Core resources** | Encounter, Condition, Observation, MedicationRequest, DiagnosticReport, AllergyIntolerance; bundle assembly + reference wiring | Each resource type validator-green as it lands | **done** |
+| **2. Terminology** | Curated LOINC/RxNorm/ICD-10-CM subsets with provenance metadata | Every emitted code traces to a licensed, recorded source | **partial** — provenance and licensing discipline are in place, but the subset is sized to the profiles that exist (~12 LOINC, 3 RxNorm, 5 ICD-10-CM) rather than the target volumes |
+| **3. Correlation engine** | Copula sampling + `relations.py`; 4 profiles | **The differentiator — allocate the most time here** | **done** — 10/10 fidelity checks |
+| **4. Fidelity + determinism** | Fidelity report generation, golden snapshots | Report published; drift fails CI | **done** — NHANES marginal calibration deferred and disclosed |
+| **5. Ship** | CLI, packaging, docs, README positioning, name decision + rename pass | PyPI 0.1.0 | **partial** — CLI, README and packaging done; name and licence still open |
+
+**Not yet built:** AllergyIntolerance has a builder but no profile emits it. Longitudinal
+history remains out of scope by design.
 
 This is a multi-week project at a realistic pace alongside everything else currently open. It is not a weekend project if Phase 3 is done properly rather than skipped.
 
