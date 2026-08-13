@@ -55,10 +55,10 @@ every release. The full matrix is published in [CONFORMANCE.md](CONFORMANCE.md).
 
 | Profile | Entries | Errors | Warnings |
 |---|---:|---:|---:|
-| healthy | 9 | **0** | 3 |
-| hypertension | 11 | **0** | 5 |
-| type2_diabetes | 12 | **0** | 5 |
-| ckd_stage3 | 12 | **0** | 5 |
+| healthy | 16 | **0** | 3 |
+| hypertension | 19 | **0** | 5 |
+| type2_diabetes | 20 | **0** | 5 |
+| ckd_stage3 | 20 | **0** | 5 |
 
 All five remaining warnings are examined and documented with reasons; a *new* warning
 fails the build.
@@ -75,12 +75,18 @@ The claim is checked statistically on every run and published as a
 
 | Check | Observed | Expected | Source |
 |---|---:|---:|---|
-| ADAG slope | 28.51 | 28.70 | Nathan 2008 |
-| **ADAG R²** | **0.841** | **0.840** | Nathan 2008 |
+| ADAG slope | 28.46 | 28.70 | Nathan 2008 |
+| **ADAG R²** | **0.845** | **0.840** | Nathan 2008 |
 | glucose at HbA1c 8.0% | 183.0 | 182.9 mg/dL | Nathan 2008 |
 | eGFR consistent with creatinine | exact | exact | CKD-EPI 2021 |
+| LDL consistent with panel | exact | exact | Friedewald 1972 |
+| BMI consistent with height/weight | exact | exact | WHO |
 | CKD stage-3 eGFR within band | 100% | 100% | KDIGO 2012 |
-| T2DM hypertension comorbidity | 0.703 | 0.700 | profile config |
+| triglyceride/HDL correlation | −0.383 | −0.400 | profile config |
+| diabetic obesity rate | 0.612 | 0.600 | profile config |
+
+All 15 checks pass. Three of them are *identities* rather than correlations — eGFR,
+LDL and BMI are computed from their inputs, so a bundle cannot contradict itself.
 
 **The R² is the load-bearing number.** The ADAG relationship is
 `eAG = 28.7 × HbA1c − 46.7` with R² = 0.84. A generator that derives glucose
@@ -150,10 +156,14 @@ open("fixture.json", "w").write(to_json(bundle))
 
 | Key | Population |
 |---|---|
-| `healthy` | Healthy baseline, no conditions or prescriptions |
+| `healthy` | No chronic disease. Incidental raised LDL and obesity still occur at typical adult rates — suppressing them would make the data less realistic, not more |
 | `hypertension` | Essential hypertension on lisinopril |
-| `type2_diabetes` | Diagnosed, moderately controlled; ~70% hypertension comorbidity |
+| `type2_diabetes` | Diagnosed, moderately controlled; ~70% hypertension comorbidity, diabetic dyslipidaemia, ~60% obesity |
 | `ckd_stage3` | CKD stage 3, eGFR sampled in band and creatinine inverted from it |
+
+Each bundle carries a full lipid panel, renal panel, glycaemic markers and vitals.
+Diagnosis codes follow the values drawn: a diabetic whose eGFR falls below 60 is coded
+`E11.22` (diabetes *with* CKD) plus the matching KDIGO stage, not `E11.9`.
 
 ### CLI
 

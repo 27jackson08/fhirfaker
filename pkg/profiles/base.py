@@ -112,6 +112,22 @@ def draw(
     else:
         raise ValueError(f"unknown egfr_mode {profile.egfr_mode!r}")
 
+    # LDL is calculated from the rest of the panel, never sampled beside it — a lipid
+    # panel whose four numbers disagree is the exact incoherence this engine exists
+    # to prevent. The triglyceride marginal is bounded below Friedewald's validity
+    # threshold, so the formula's domain holds by construction.
+    if {"cholesterol_total", "hdl", "triglycerides"} <= raw.keys():
+        raw["ldl"] = relations.friedewald_ldl(
+            total_cholesterol=raw["cholesterol_total"],
+            hdl=raw["hdl"],
+            triglycerides=raw["triglycerides"],
+        )
+
+    if {"weight_kg", "height_cm"} <= raw.keys():
+        raw["bmi"] = relations.body_mass_index(
+            weight_kg=raw["weight_kg"], height_cm=raw["height_cm"]
+        )
+
     conditions = list(profile.primary_conditions)
     if profile.derived_conditions is not None:
         conditions.extend(profile.derived_conditions(raw))

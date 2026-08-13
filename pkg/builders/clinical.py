@@ -127,6 +127,41 @@ def build_blood_pressure(
     )
 
 
+def build_vital_observation(
+    *,
+    resource_id: str,
+    code: codes.Code,
+    profile: str,
+    subject_urn: str,
+    effective: str,
+    value: Decimal,
+    unit: tuple[str, str],
+    encounter_urn: str | None = None,
+    performer_urn: str | None = None,
+) -> Observation:
+    """A US Core vital-sign Observation (height, weight, BMI).
+
+    Same shape as a lab result but categorised vital-signs and asserting the specific
+    US Core vitals profile, whose value[x] must be a UCUM Quantity.
+    """
+    display_unit, ucum_code = unit
+    return Observation(
+        id=resource_id,
+        meta=htest_meta(profile),
+        text=synthetic_narrative(f"{code.display}: {value} {display_unit} (synthetic)."),
+        status="final",
+        category=[codes.CATEGORY_VITAL_SIGNS.concept()],
+        code=code.concept(),
+        subject=_ref(subject_urn),
+        encounter=_ref(encounter_urn) if encounter_urn else None,
+        effectiveDateTime=effective,
+        performer=[_ref(performer_urn)] if performer_urn else None,
+        valueQuantity=Quantity(
+            value=value, unit=display_unit, system=UCUM, code=ucum_code
+        ),
+    )
+
+
 def build_allergy_intolerance(
     *,
     resource_id: str,

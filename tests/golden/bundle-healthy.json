@@ -399,6 +399,475 @@
       }
     },
     {
+      "fullUrl": "urn:uuid:2f01197f-39e6-588c-997a-3de1e42c5926",
+      "resource": {
+        "resourceType": "Observation",
+        "meta": {
+          "profile": [
+            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-observation-lab"
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Cholesterol [Mass/volume] in Serum or Plasma: 147 mg/dL (synthetic).</p></div>"
+        },
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory",
+                "display": "Laboratory"
+              }
+            ],
+            "text": "Laboratory"
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "2093-3",
+              "display": "Cholesterol [Mass/volume] in Serum or Plasma"
+            }
+          ],
+          "text": "Cholesterol [Mass/volume] in Serum or Plasma"
+        },
+        "subject": {
+          "reference": "urn:uuid:96baad95-bc36-5844-bc19-86cb1d4022a3"
+        },
+        "encounter": {
+          "reference": "urn:uuid:8fa28d90-ba30-55d7-9a22-e529d75cd9ce"
+        },
+        "effectiveDateTime": "2026-01-01T09:00:00Z",
+        "performer": [
+          {
+            "reference": "urn:uuid:20fd4d99-998d-58f3-a37e-9f165f9df6bb"
+          }
+        ],
+        "valueQuantity": {
+          "value": 147,
+          "unit": "mg/dL",
+          "system": "http://unitsofmeasure.org",
+          "code": "mg/dL"
+        }
+      },
+      "request": {
+        "method": "POST",
+        "url": "Observation"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:7c847f7e-9052-54fb-b816-e626b52213d4",
+      "resource": {
+        "resourceType": "Observation",
+        "meta": {
+          "profile": [
+            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-observation-lab"
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Cholesterol in HDL [Mass/volume] in Serum or Plasma: 48 mg/dL (synthetic).</p></div>"
+        },
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory",
+                "display": "Laboratory"
+              }
+            ],
+            "text": "Laboratory"
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "2085-9",
+              "display": "Cholesterol in HDL [Mass/volume] in Serum or Plasma"
+            }
+          ],
+          "text": "Cholesterol in HDL [Mass/volume] in Serum or Plasma"
+        },
+        "subject": {
+          "reference": "urn:uuid:96baad95-bc36-5844-bc19-86cb1d4022a3"
+        },
+        "encounter": {
+          "reference": "urn:uuid:8fa28d90-ba30-55d7-9a22-e529d75cd9ce"
+        },
+        "effectiveDateTime": "2026-01-01T09:00:00Z",
+        "performer": [
+          {
+            "reference": "urn:uuid:20fd4d99-998d-58f3-a37e-9f165f9df6bb"
+          }
+        ],
+        "valueQuantity": {
+          "value": 48,
+          "unit": "mg/dL",
+          "system": "http://unitsofmeasure.org",
+          "code": "mg/dL"
+        }
+      },
+      "request": {
+        "method": "POST",
+        "url": "Observation"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:9ac538e0-d5b6-59a8-b0c6-c05b3ace8efe",
+      "resource": {
+        "resourceType": "Observation",
+        "meta": {
+          "profile": [
+            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-observation-lab"
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Cholesterol in LDL [Mass/volume] in Serum or Plasma by calculation: 73 mg/dL (synthetic).</p></div>"
+        },
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory",
+                "display": "Laboratory"
+              }
+            ],
+            "text": "Laboratory"
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "13457-7",
+              "display": "Cholesterol in LDL [Mass/volume] in Serum or Plasma by calculation"
+            }
+          ],
+          "text": "Cholesterol in LDL [Mass/volume] in Serum or Plasma by calculation"
+        },
+        "subject": {
+          "reference": "urn:uuid:96baad95-bc36-5844-bc19-86cb1d4022a3"
+        },
+        "encounter": {
+          "reference": "urn:uuid:8fa28d90-ba30-55d7-9a22-e529d75cd9ce"
+        },
+        "effectiveDateTime": "2026-01-01T09:00:00Z",
+        "performer": [
+          {
+            "reference": "urn:uuid:20fd4d99-998d-58f3-a37e-9f165f9df6bb"
+          }
+        ],
+        "valueQuantity": {
+          "value": 73,
+          "unit": "mg/dL",
+          "system": "http://unitsofmeasure.org",
+          "code": "mg/dL"
+        }
+      },
+      "request": {
+        "method": "POST",
+        "url": "Observation"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:0097021c-0dad-552e-873f-19d2ab7d5c1c",
+      "resource": {
+        "resourceType": "Observation",
+        "meta": {
+          "profile": [
+            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-observation-lab"
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Triglyceride [Mass/volume] in Serum or Plasma: 131 mg/dL (synthetic).</p></div>"
+        },
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory",
+                "display": "Laboratory"
+              }
+            ],
+            "text": "Laboratory"
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "2571-8",
+              "display": "Triglyceride [Mass/volume] in Serum or Plasma"
+            }
+          ],
+          "text": "Triglyceride [Mass/volume] in Serum or Plasma"
+        },
+        "subject": {
+          "reference": "urn:uuid:96baad95-bc36-5844-bc19-86cb1d4022a3"
+        },
+        "encounter": {
+          "reference": "urn:uuid:8fa28d90-ba30-55d7-9a22-e529d75cd9ce"
+        },
+        "effectiveDateTime": "2026-01-01T09:00:00Z",
+        "performer": [
+          {
+            "reference": "urn:uuid:20fd4d99-998d-58f3-a37e-9f165f9df6bb"
+          }
+        ],
+        "valueQuantity": {
+          "value": 131,
+          "unit": "mg/dL",
+          "system": "http://unitsofmeasure.org",
+          "code": "mg/dL"
+        }
+      },
+      "request": {
+        "method": "POST",
+        "url": "Observation"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:d95f2250-e757-56d2-8343-e18ee4fc0399",
+      "resource": {
+        "resourceType": "Observation",
+        "meta": {
+          "profile": [
+            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-body-height"
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Body height: 149 cm (synthetic).</p></div>"
+        },
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "vital-signs",
+                "display": "Vital Signs"
+              }
+            ],
+            "text": "Vital Signs"
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "8302-2",
+              "display": "Body height"
+            }
+          ],
+          "text": "Body height"
+        },
+        "subject": {
+          "reference": "urn:uuid:96baad95-bc36-5844-bc19-86cb1d4022a3"
+        },
+        "encounter": {
+          "reference": "urn:uuid:8fa28d90-ba30-55d7-9a22-e529d75cd9ce"
+        },
+        "effectiveDateTime": "2026-01-01T09:00:00Z",
+        "performer": [
+          {
+            "reference": "urn:uuid:20fd4d99-998d-58f3-a37e-9f165f9df6bb"
+          }
+        ],
+        "valueQuantity": {
+          "value": 149,
+          "unit": "cm",
+          "system": "http://unitsofmeasure.org",
+          "code": "cm"
+        }
+      },
+      "request": {
+        "method": "POST",
+        "url": "Observation"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:868f28a3-df83-519f-9357-633f1f4b5986",
+      "resource": {
+        "resourceType": "Observation",
+        "meta": {
+          "profile": [
+            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-body-weight"
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Body weight: 47.6 kg (synthetic).</p></div>"
+        },
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "vital-signs",
+                "display": "Vital Signs"
+              }
+            ],
+            "text": "Vital Signs"
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "29463-7",
+              "display": "Body weight"
+            }
+          ],
+          "text": "Body weight"
+        },
+        "subject": {
+          "reference": "urn:uuid:96baad95-bc36-5844-bc19-86cb1d4022a3"
+        },
+        "encounter": {
+          "reference": "urn:uuid:8fa28d90-ba30-55d7-9a22-e529d75cd9ce"
+        },
+        "effectiveDateTime": "2026-01-01T09:00:00Z",
+        "performer": [
+          {
+            "reference": "urn:uuid:20fd4d99-998d-58f3-a37e-9f165f9df6bb"
+          }
+        ],
+        "valueQuantity": {
+          "value": 47.6,
+          "unit": "kg",
+          "system": "http://unitsofmeasure.org",
+          "code": "kg"
+        }
+      },
+      "request": {
+        "method": "POST",
+        "url": "Observation"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:aeca45ce-c592-5cc4-9283-d083c9211381",
+      "resource": {
+        "resourceType": "Observation",
+        "meta": {
+          "profile": [
+            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-bmi"
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Body mass index (BMI) [Ratio]: 21.4 kg/m2 (synthetic).</p></div>"
+        },
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "vital-signs",
+                "display": "Vital Signs"
+              }
+            ],
+            "text": "Vital Signs"
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "39156-5",
+              "display": "Body mass index (BMI) [Ratio]"
+            }
+          ],
+          "text": "Body mass index (BMI) [Ratio]"
+        },
+        "subject": {
+          "reference": "urn:uuid:96baad95-bc36-5844-bc19-86cb1d4022a3"
+        },
+        "encounter": {
+          "reference": "urn:uuid:8fa28d90-ba30-55d7-9a22-e529d75cd9ce"
+        },
+        "effectiveDateTime": "2026-01-01T09:00:00Z",
+        "performer": [
+          {
+            "reference": "urn:uuid:20fd4d99-998d-58f3-a37e-9f165f9df6bb"
+          }
+        ],
+        "valueQuantity": {
+          "value": 21.4,
+          "unit": "kg/m2",
+          "system": "http://unitsofmeasure.org",
+          "code": "kg/m2"
+        }
+      },
+      "request": {
+        "method": "POST",
+        "url": "Observation"
+      }
+    },
+    {
       "fullUrl": "urn:uuid:d080cda9-98c0-52d9-8213-dabb97974d76",
       "resource": {
         "resourceType": "Observation",
@@ -562,6 +1031,18 @@
           },
           {
             "reference": "urn:uuid:627d9d4e-b040-5e24-8e25-77124e1efd0d"
+          },
+          {
+            "reference": "urn:uuid:2f01197f-39e6-588c-997a-3de1e42c5926"
+          },
+          {
+            "reference": "urn:uuid:7c847f7e-9052-54fb-b816-e626b52213d4"
+          },
+          {
+            "reference": "urn:uuid:9ac538e0-d5b6-59a8-b0c6-c05b3ace8efe"
+          },
+          {
+            "reference": "urn:uuid:0097021c-0dad-552e-873f-19d2ab7d5c1c"
           }
         ]
       },

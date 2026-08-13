@@ -86,6 +86,49 @@ def ckd_epi_2021_creatinine(*, egfr: float, age_years: float, sex: str) -> float
     return kappa * (egfr / base) ** (1.0 / exponent)
 
 
+# --- Friedewald ------------------------------------------------------------------
+# Friedewald WT, Levy RI, Fredrickson DS, Clin Chem 18(6):499-502, 1972.
+#   LDL-C = TC - HDL-C - (TG / 5)      [mg/dL]
+#
+# Another deterministic identity, not a correlation: a lipid panel that samples LDL
+# independently of its three inputs can contradict itself inside one bundle.
+FRIEDEWALD_TRIGLYCERIDE_DIVISOR = 5.0
+
+# The equation is not valid at high triglycerides — the VLDL-cholesterol estimate
+# TG/5 breaks down. Labs suppress the calculated LDL above this threshold.
+FRIEDEWALD_MAX_TRIGLYCERIDES = 400.0
+
+
+def friedewald_ldl(
+    *, total_cholesterol: float, hdl: float, triglycerides: float
+) -> float:
+    """Calculated LDL cholesterol in mg/dL (Friedewald 1972).
+
+    Raises above the validity threshold rather than returning a number a laboratory
+    would refuse to report. Profiles bound their triglyceride marginal below it, so
+    the truncation bound enforces the formula's domain by construction.
+    """
+    if triglycerides >= FRIEDEWALD_MAX_TRIGLYCERIDES:
+        raise ValueError(
+            f"Friedewald is not valid at triglycerides >= "
+            f"{FRIEDEWALD_MAX_TRIGLYCERIDES} mg/dL (got {triglycerides}); a laboratory "
+            "would suppress the calculated LDL rather than report one."
+        )
+    return total_cholesterol - hdl - (triglycerides / FRIEDEWALD_TRIGLYCERIDE_DIVISOR)
+
+
+# --- Body mass index -------------------------------------------------------------
+# WHO definition. BMI = kg / m^2; obesity is BMI >= 30.
+OBESITY_BMI_THRESHOLD = 30.0
+OVERWEIGHT_BMI_THRESHOLD = 25.0
+
+
+def body_mass_index(*, weight_kg: float, height_cm: float) -> float:
+    if height_cm <= 0:
+        raise ValueError(f"height must be positive, got {height_cm}")
+    return weight_kg / (height_cm / 100.0) ** 2
+
+
 # --- CKD staging -----------------------------------------------------------------
 # KDIGO 2012 GFR categories, as half-open intervals [low, high).
 #
@@ -120,6 +163,13 @@ REPORTING_PRECISION = {
     "creatinine": "0.01",
     "egfr": "1",
     "blood_pressure": "1",
+    "cholesterol_total": "1",
+    "hdl": "1",
+    "ldl": "1",
+    "triglycerides": "1",
+    "height_cm": "1",
+    "weight_kg": "0.1",
+    "bmi": "0.1",
 }
 
 

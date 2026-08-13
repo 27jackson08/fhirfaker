@@ -448,6 +448,16 @@ documentation, and each would otherwise be rediscovered the hard way.
 - **The profile key has to enter the RNG seed.** Without it, two profiles sharing a marginal —
   `healthy` and `hypertension` both use the normoglycaemic distributions — emit identical
   HbA1c, glucose and creatinine for the same seed.
+- **Every deterministic identity you can add is free coherence.** Friedewald
+  (`LDL = TC - HDL - TG/5`) and BMI (`kg/m²`) join CKD-EPI as computed rather than sampled
+  values. Each one removes a way the bundle could contradict itself, and each is verifiable
+  exactly rather than statistically. Friedewald also has a documented validity limit
+  (TG < 400 mg/dL) which the triglyceride marginal's truncation bound enforces by
+  construction, so the code can raise rather than emit a number a lab would suppress.
+- **Watch for distributions that should differ but don't.** Giving every profile one weight
+  marginal left diabetic patients with the same BMI as the general population — contradicting
+  the strongest association in type 2 diabetes. Individually every value looked fine; only a
+  cross-profile comparison exposed it.
 - **Derived codes beat fixed ones.** ICD-10-CM splits CKD stage 3 into `N18.31` (3a) and
   `N18.32` (3b) by eGFR band. Emitting a fixed code would let the coded diagnosis contradict
   the lab value in the same bundle; picking the code from the drawn eGFR is the coherence

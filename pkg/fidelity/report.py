@@ -141,12 +141,80 @@ def vitals_checks(size: int, seed: int) -> list[Check]:
     ]
 
 
+def lipid_checks(size: int, seed: int) -> list[Check]:
+    """The lipid panel must be internally consistent and clinically patterned."""
+    rng = np.random.default_rng(seed + 4)
+    profile = get_profile("type2_diabetes", "M")
+
+    worst_error = 0.0
+    for _ in range(size):
+        drawn = draw(profile, rng=rng, age_years=55.0, sex="M")
+        expected = relations.friedewald_ldl(
+            total_cholesterol=drawn.raw["cholesterol_total"],
+            hdl=drawn.raw["hdl"],
+            triglycerides=drawn.raw["triglycerides"],
+        )
+        worst_error = max(worst_error, abs(expected - drawn.raw["ldl"]))
+
+    sample = profile.joint.sample(np.random.default_rng(seed + 5), size=size)
+    tg_hdl = float(np.corrcoef(sample["triglycerides"], sample["hdl"])[0, 1])
+
+    return [
+        Check("LDL consistent with panel (Friedewald)", worst_error, 0.0, 1e-9,
+              "mg/dL", "Friedewald 1972"),
+        # Inverse by construction: high-triglyceride/high-HDL patients barely exist.
+        Check("triglyceride/HDL correlation", tg_hdl, -0.40, 0.05, "",
+              "profile config"),
+    ]
+
+
+def anthropometric_checks(size: int, seed: int) -> list[Check]:
+    """BMI must follow from height and weight, and differ by profile."""
+    rng = np.random.default_rng(seed + 6)
+
+    worst_error = 0.0
+    obese = 0
+    drawn_count = 0
+    # Both sexes: the weight marginals differ, so a single-sex sample would not
+    # describe the population the profile actually generates.
+    for sex in ("F", "M"):
+        diabetic = get_profile("type2_diabetes", sex)
+        for _ in range(size // 2):
+            drawn = draw(diabetic, rng=rng, age_years=55.0, sex=sex)
+            expected = relations.body_mass_index(
+                weight_kg=drawn.raw["weight_kg"], height_cm=drawn.raw["height_cm"]
+            )
+            worst_error = max(worst_error, abs(expected - drawn.raw["bmi"]))
+            obese += drawn.raw["bmi"] >= relations.OBESITY_BMI_THRESHOLD
+            drawn_count += 1
+
+    healthy_profile = get_profile("healthy", "F")
+    healthy_bmi = np.median([
+        draw(healthy_profile, rng=rng, age_years=55.0, sex="F").raw["bmi"]
+        for _ in range(size)
+    ])
+
+    return [
+        Check("BMI consistent with height and weight", worst_error, 0.0, 1e-9,
+              "kg/m2", "WHO"),
+        # Type 2 diabetes carries a markedly higher BMI than the typical adult; equal
+        # distributions would contradict the strongest association in the disease.
+        # 55-65% obesity is the range reported for US type 2 diabetes populations.
+        Check("diabetic obesity rate", obese / drawn_count, 0.60, 0.05, "fraction",
+              "profile config"),
+        Check("typical-adult median BMI", float(healthy_bmi), 26.5, 1.5, "kg/m2",
+              "profile config"),
+    ]
+
+
 def run_all(size: int = DEFAULT_SAMPLE_SIZE, seed: int = DEFAULT_SEED) -> list[Check]:
     return [
         *adag_checks(size, seed),
         *ckd_epi_checks(min(size, 2_000), seed),
         *comorbidity_checks(min(size, 5_000), seed),
         *vitals_checks(size, seed),
+        *lipid_checks(min(size, 2_000), seed),
+        *anthropometric_checks(min(size, 2_000), seed),
     ]
 
 

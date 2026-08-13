@@ -35,12 +35,65 @@ def test_bundle_contains_the_core_resource_types(payload):
     assert ALWAYS_PRESENT <= present
 
 
-def test_healthy_profile_emits_no_conditions_or_prescriptions():
-    """A healthy patient carrying a diagnosis would be incoherent by construction."""
-    healthy = json.loads(to_json(generate_bundle(profile="healthy", seed=42)))
-    types = [e["resource"]["resourceType"] for e in healthy["entry"]]
-    assert "Condition" not in types
+# Chronic disease codes. "Healthy baseline" means free of these — it does not mean
+# free of every finding: a typical adult population carries incidental raised LDL and
+# obesity at real rates, and suppressing those would make the data less realistic, not
+# more. Coding them is the coherence rule working (see profiles.library).
+CHRONIC_DISEASE_PREFIXES = ("E11", "I10", "N18", "I50", "I25")
+
+
+def _condition_codes(payload) -> list[str]:
+    return [
+        coding["code"]
+        for entry in payload["entry"]
+        if entry["resource"]["resourceType"] == "Condition"
+        for coding in entry["resource"]["code"]["coding"]
+    ]
+
+
+@pytest.mark.parametrize("seed", range(12))
+def test_healthy_profile_never_carries_a_chronic_disease_diagnosis(seed):
+    payload = json.loads(to_json(generate_bundle(profile="healthy", seed=seed)))
+    for code in _condition_codes(payload):
+        assert not code.startswith(CHRONIC_DISEASE_PREFIXES), (
+            f"seed {seed}: healthy baseline emitted chronic disease code {code}"
+        )
+
+
+@pytest.mark.parametrize("seed", range(12))
+def test_healthy_profile_prescribes_nothing(seed):
+    payload = json.loads(to_json(generate_bundle(profile="healthy", seed=seed)))
+    types = [e["resource"]["resourceType"] for e in payload["entry"]]
     assert "MedicationRequest" not in types
+
+
+@pytest.mark.parametrize("seed", range(12))
+def test_diabetes_code_never_contradicts_the_generated_egfr(seed):
+    """E11.9 'without complications' beside an eGFR of 45 is a contradiction."""
+    from pkg.generate import generate_draw
+
+    drawn = generate_draw(profile="type2_diabetes", seed=seed, sex="F", age_years=58.0)
+    emitted = {c.code for c in drawn.conditions}
+    if drawn.raw["egfr"] < 60.0:
+        assert "E11.22" in emitted, f"seed {seed}: eGFR {drawn.raw['egfr']:.0f} needs E11.22"
+        assert "E11.9" not in emitted
+    else:
+        assert "E11.22" not in emitted
+
+
+@pytest.mark.parametrize("seed", range(12))
+def test_lipid_panel_is_internally_consistent(seed):
+    """LDL is calculated from the panel, so the four numbers cannot disagree."""
+    from pkg.correlation.relations import friedewald_ldl
+    from pkg.generate import generate_draw
+
+    drawn = generate_draw(profile="type2_diabetes", seed=seed, sex="M", age_years=58.0)
+    expected = friedewald_ldl(
+        total_cholesterol=drawn.raw["cholesterol_total"],
+        hdl=drawn.raw["hdl"],
+        triglycerides=drawn.raw["triglycerides"],
+    )
+    assert drawn.raw["ldl"] == pytest.approx(expected, abs=1e-9)
 
 
 def test_no_dangling_references(bundle):

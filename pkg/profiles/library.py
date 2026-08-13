@@ -53,6 +53,73 @@ NORMOGLYCAEMIC = (
 # physiologically absurd pairs like 170/55.
 BP_CORRELATION = 0.60
 
+# Triglycerides and HDL are inversely related — the classic dyslipidaemia pattern.
+# Drawing them independently would produce high-TG/high-HDL patients that essentially
+# do not exist.
+TG_HDL_CORRELATION = -0.40
+HEIGHT_WEIGHT_CORRELATION = 0.45
+
+# Upper bound sits below Friedewald's validity threshold (400 mg/dL), so the
+# calculated LDL is always one a laboratory would actually report.
+_TG_MAX = 380.0
+
+NORMOLIPIDAEMIC = (
+    Marginal("cholesterol_total", mean=190.0, sd=32.0, low=110.0, high=310.0),
+    Marginal("triglycerides", mean=115.0, sd=45.0, low=40.0, high=_TG_MAX),
+)
+# Diabetic dyslipidaemia: higher triglycerides, lower HDL, at similar total
+# cholesterol. This is the characteristic pattern, not a generic "worse lipids".
+DYSLIPIDAEMIC = (
+    Marginal("cholesterol_total", mean=200.0, sd=35.0, low=110.0, high=330.0),
+    Marginal("triglycerides", mean=185.0, sd=70.0, low=50.0, high=_TG_MAX),
+)
+HDL_BY_SEX = {
+    "F": Marginal("hdl", mean=55.0, sd=13.0, low=22.0, high=110.0),
+    "M": Marginal("hdl", mean=46.0, sd=12.0, low=20.0, high=100.0),
+}
+HDL_LOW_BY_SEX = {
+    "F": Marginal("hdl", mean=46.0, sd=11.0, low=20.0, high=95.0),
+    "M": Marginal("hdl", mean=39.0, sd=10.0, low=18.0, high=85.0),
+}
+# Height is the same population either way; only weight shifts. Giving every profile
+# one weight distribution left diabetic patients with the same BMI as everyone else,
+# which contradicts the single strongest association in type 2 diabetes.
+_HEIGHT_BY_SEX = {
+    "F": Marginal("height_cm", mean=163.0, sd=6.8, low=140.0, high=188.0),
+    "M": Marginal("height_cm", mean=176.0, sd=7.2, low=150.0, high=200.0),
+}
+ANTHROPOMETRICS_TYPICAL = {
+    sex: (
+        _HEIGHT_BY_SEX[sex],
+        Marginal("weight_kg", mean=weight, sd=sd, low=low, high=high),
+    )
+    for sex, weight, sd, low, high in (
+        ("F", 70.0, 14.0, 40.0, 135.0),
+        ("M", 83.0, 15.0, 48.0, 150.0),
+    )
+}
+# Type 2 diabetes carries a markedly higher BMI distribution than the typical adult.
+# Weights are set so the generated obesity rate lands near 60%, the middle of the
+# 55-65% range reported for US type 2 diabetes populations — chosen from the target
+# rate rather than tuned until the number looked acceptable.
+ANTHROPOMETRICS_RAISED_BMI = {
+    sex: (
+        _HEIGHT_BY_SEX[sex],
+        Marginal("weight_kg", mean=weight, sd=sd, low=low, high=high),
+    )
+    for sex, weight, sd, low, high in (
+        ("F", 84.0, 18.0, 45.0, 170.0),
+        ("M", 97.0, 19.0, 52.0, 185.0),
+    )
+}
+
+
+def _lipid_and_body_correlations() -> list[tuple[str, str, float]]:
+    return [
+        ("triglycerides", "hdl", TG_HDL_CORRELATION),
+        ("height_cm", "weight_kg", HEIGHT_WEIGHT_CORRELATION),
+    ]
+
 
 def _adag_calibrated_glucose(hba1c: Marginal) -> tuple[Marginal, float]:
     """Derive the glucose marginal and correlation from the published ADAG fit.
@@ -90,38 +157,103 @@ def _joint(*marginals, correlations=()) -> JointModel:
     return JointModel(marginals=tuple(marginals), correlations=tuple(correlations))
 
 
+def _metabolic_conditions(raw: dict[str, float]) -> tuple:
+    """Conditions implied by the values actually drawn.
+
+    Coding that follows from the labs rather than sitting beside them. A bundle whose
+    LDL is 190 mg/dL but whose problem list is silent is not coherent data.
+    """
+    found = []
+    if raw.get("ldl", 0.0) >= 160.0:
+        found.append(codes.PURE_HYPERCHOLESTEROLEMIA)
+    elif raw.get("triglycerides", 0.0) >= 200.0 or raw.get("ldl", 0.0) >= 130.0:
+        found.append(codes.HYPERLIPIDEMIA)
+    if raw.get("bmi", 0.0) >= relations.OBESITY_BMI_THRESHOLD:
+        found.append(codes.OBESITY)
+    return tuple(found)
+
+
 def healthy(sex: str) -> ClinicalProfile:
     hba1c, glucose = NORMOGLYCAEMIC
+    cholesterol, triglycerides = NORMOLIPIDAEMIC
+    height, weight = ANTHROPOMETRICS_TYPICAL[sex]
     return ClinicalProfile(
         key="healthy",
         display="Healthy baseline",
         joint=_joint(
             hba1c, glucose, CREATININE_BY_SEX[sex], *NORMOTENSIVE,
+            cholesterol, triglycerides, HDL_BY_SEX[sex], height, weight,
             correlations=[
                 ("hba1c", "glucose", 0.55),
                 ("systolic", "diastolic", BP_CORRELATION),
+                *_lipid_and_body_correlations(),
             ],
         ),
+        derived_conditions=_metabolic_conditions,
         egfr_mode=EGFR_FROM_CREATININE,
     )
+
+
+HYPERGLYCEMIA_HBA1C_THRESHOLD = 9.0
+CKD_EGFR_THRESHOLD = 60.0
+
+# KDIGO stage -> ICD-10-CM code.
+_STAGE_TO_ICD10 = {
+    "G1": codes.CKD_STAGE_1,
+    "G2": codes.CKD_STAGE_2,
+    "G3a": codes.CKD_STAGE_3A,
+    "G3b": codes.CKD_STAGE_3B,
+    "G4": codes.CKD_STAGE_4,
+    "G5": codes.CKD_STAGE_5,
+}
+
+
+def _ckd_code_for(egfr: float):
+    return _STAGE_TO_ICD10.get(relations.ckd_stage_for(egfr), codes.CKD_UNSPECIFIED)
+
+
+def _diabetes_conditions(raw: dict[str, float]) -> tuple:
+    """Pick the diabetes code the drawn labs actually support.
+
+    ICD-10-CM distinguishes diabetes *with* named complications from diabetes without
+    them. Emitting E11.9 "without complications" next to an eGFR of 45 is a
+    contradiction inside one bundle — the kind a reviewer spots immediately — so the
+    code is selected from the values rather than fixed by the profile.
+    """
+    egfr = raw.get("egfr", float("inf"))
+    hba1c = raw.get("hba1c", 0.0)
+
+    if egfr < CKD_EGFR_THRESHOLD:
+        found = [codes.T2DM_WITH_CKD, _ckd_code_for(egfr)]
+    elif hba1c >= HYPERGLYCEMIA_HBA1C_THRESHOLD:
+        found = [codes.T2DM_WITH_HYPERGLYCEMIA]
+    else:
+        found = [codes.T2DM_NO_COMPLICATIONS]
+
+    return (*found, *_metabolic_conditions(raw))
 
 
 def type2_diabetes(sex: str) -> ClinicalProfile:
     """Diagnosed, moderately controlled type 2 diabetes."""
     hba1c = Marginal("hba1c", mean=7.8, sd=0.90, low=6.5, high=12.0)
     glucose, rho = _adag_calibrated_glucose(hba1c)
+    cholesterol, triglycerides = DYSLIPIDAEMIC
+    height, weight = ANTHROPOMETRICS_RAISED_BMI[sex]
 
     return ClinicalProfile(
         key="type2_diabetes",
         display="Type 2 diabetes (moderately controlled)",
         joint=_joint(
             hba1c, glucose, CREATININE_BY_SEX[sex], *HYPERTENSIVE,
+            cholesterol, triglycerides, HDL_LOW_BY_SEX[sex], height, weight,
             correlations=[
                 ("hba1c", "glucose", rho),
                 ("systolic", "diastolic", BP_CORRELATION),
+                *_lipid_and_body_correlations(),
             ],
         ),
-        primary_conditions=(codes.T2DM_NO_COMPLICATIONS,),
+        # No fixed primary condition: the diabetes code depends on the draw.
+        derived_conditions=_diabetes_conditions,
         # ~70% hypertension comorbidity is a realistic co-occurrence rate for this
         # population, not decoration.
         comorbidities=(ComorbidityRule(codes.ESSENTIAL_HYPERTENSION, 0.70),),
@@ -129,9 +261,15 @@ def type2_diabetes(sex: str) -> ClinicalProfile:
             MedicationRule(codes.METFORMIN_500),
             # A second agent follows from poor control rather than a bare coin flip.
             MedicationRule(
-                codes.ATORVASTATIN_20,
-                probability=0.15,
+                codes.METFORMIN_1000,
+                probability=0.35,
                 requires=lambda a: a["hba1c"] > 8.5,
+            ),
+            # Statin follows the lipid panel, not chance.
+            MedicationRule(
+                codes.ATORVASTATIN_20,
+                probability=0.80,
+                requires=lambda a: a.get("ldl", 0.0) >= 130.0,
             ),
         ),
         egfr_mode=EGFR_FROM_CREATININE,
@@ -140,28 +278,37 @@ def type2_diabetes(sex: str) -> ClinicalProfile:
 
 def hypertension(sex: str) -> ClinicalProfile:
     hba1c, glucose = NORMOGLYCAEMIC
+    cholesterol, triglycerides = NORMOLIPIDAEMIC
+    height, weight = ANTHROPOMETRICS_TYPICAL[sex]
     return ClinicalProfile(
         key="hypertension",
         display="Essential hypertension",
         joint=_joint(
             hba1c, glucose, CREATININE_BY_SEX[sex], *HYPERTENSIVE,
+            cholesterol, triglycerides, HDL_BY_SEX[sex], height, weight,
             correlations=[
                 ("hba1c", "glucose", 0.55),
                 ("systolic", "diastolic", BP_CORRELATION),
+                *_lipid_and_body_correlations(),
             ],
         ),
         primary_conditions=(codes.ESSENTIAL_HYPERTENSION,),
-        medications=(MedicationRule(codes.LISINOPRIL_10),),
+        derived_conditions=_metabolic_conditions,
+        medications=(
+            MedicationRule(codes.LISINOPRIL_10),
+            MedicationRule(
+                codes.ATORVASTATIN_20,
+                probability=0.60,
+                requires=lambda a: a.get("ldl", 0.0) >= 160.0,
+            ),
+        ),
         egfr_mode=EGFR_FROM_CREATININE,
     )
 
 
-def _ckd_stage_code(raw: dict[str, float]) -> tuple:
-    """Pick the ICD-10-CM stage-3 code that matches the eGFR actually drawn."""
-    stage = relations.ckd_stage_for(raw["egfr"])
-    return ({"G3a": codes.CKD_STAGE_3A, "G3b": codes.CKD_STAGE_3B}.get(
-        stage, codes.CKD_STAGE_3_UNSPECIFIED
-    ),)
+def _ckd_conditions(raw: dict[str, float]) -> tuple:
+    """The ICD-10-CM stage code matching the eGFR actually drawn, plus metabolics."""
+    return (_ckd_code_for(raw["egfr"]), *_metabolic_conditions(raw))
 
 
 def ckd_stage3(sex: str) -> ClinicalProfile:
@@ -171,15 +318,21 @@ def ckd_stage3(sex: str) -> ClinicalProfile:
     the constraint holds by construction instead of by rejection sampling.
     """
     hba1c, glucose = NORMOGLYCAEMIC
+    cholesterol, triglycerides = NORMOLIPIDAEMIC
+    height, weight = ANTHROPOMETRICS_TYPICAL[sex]
     return ClinicalProfile(
         key="ckd_stage3",
         display="Chronic kidney disease, stage 3",
         joint=_joint(
             Marginal("egfr_target", mean=45.0, sd=8.0, low=30.0, high=59.9),
             hba1c, glucose, *HYPERTENSIVE,
-            correlations=[("systolic", "diastolic", BP_CORRELATION)],
+            cholesterol, triglycerides, HDL_BY_SEX[sex], height, weight,
+            correlations=[
+                ("systolic", "diastolic", BP_CORRELATION),
+                *_lipid_and_body_correlations(),
+            ],
         ),
-        derived_conditions=_ckd_stage_code,
+        derived_conditions=_ckd_conditions,
         comorbidities=(ComorbidityRule(codes.ESSENTIAL_HYPERTENSION, 0.80),),
         medications=(MedicationRule(codes.LISINOPRIL_10),),
         egfr_mode=EGFR_FROM_TARGET,

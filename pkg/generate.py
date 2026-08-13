@@ -16,6 +16,7 @@ from pkg.builders.clinical import (
     build_blood_pressure,
     build_condition,
     build_lab_observation,
+    build_vital_observation,
 )
 from pkg.builders.orders import (
     build_diagnostic_report,
@@ -23,6 +24,7 @@ from pkg.builders.orders import (
     build_medication_request,
 )
 from pkg.builders.people import build_patient, build_practitioner
+from pkg.core import uscore
 from pkg.core.bundle import Entry, build_transaction_bundle, to_json  # noqa: F401
 from pkg.core.ids import deterministic_uuid, stable_digest, urn_uuid
 from pkg.models.r4 import Bundle, CodeableConcept
@@ -47,6 +49,17 @@ LAB_ANALYTES = (
     ("glucose", codes.GLUCOSE, codes.UNIT_MG_DL),
     ("creatinine", codes.CREATININE, codes.UNIT_MG_DL),
     ("egfr", codes.EGFR, codes.UNIT_EGFR),
+    ("cholesterol_total", codes.CHOLESTEROL_TOTAL, codes.UNIT_MG_DL),
+    ("hdl", codes.HDL, codes.UNIT_MG_DL),
+    ("ldl", codes.LDL_CALCULATED, codes.UNIT_MG_DL),
+    ("triglycerides", codes.TRIGLYCERIDES, codes.UNIT_MG_DL),
+)
+
+# Analyte -> (LOINC code, US Core vitals profile, unit).
+VITAL_ANALYTES = (
+    ("height_cm", codes.BODY_HEIGHT, uscore.BODY_HEIGHT, codes.UNIT_CM),
+    ("weight_kg", codes.BODY_WEIGHT, uscore.BODY_WEIGHT, codes.UNIT_KG),
+    ("bmi", codes.BMI, uscore.BMI, codes.UNIT_KG_M2),
 )
 
 
@@ -183,6 +196,27 @@ def generate_bundle(
                 build_lab_observation(
                     resource_id=rid(role),
                     code=code,
+                    subject_urn=urn("patient"),
+                    encounter_urn=urn("encounter"),
+                    performer_urn=urn("practitioner"),
+                    effective=start,
+                    value=drawn.analytes[analyte],
+                    unit=unit,
+                ),
+            )
+        )
+
+    for analyte, code, vital_profile, unit in VITAL_ANALYTES:
+        if analyte not in drawn.analytes:
+            continue
+        role = f"obs-{analyte}"
+        entries.append(
+            Entry(
+                urn(role),
+                build_vital_observation(
+                    resource_id=rid(role),
+                    code=code,
+                    profile=vital_profile,
                     subject_urn=urn("patient"),
                     encounter_urn=urn("encounter"),
                     performer_urn=urn("practitioner"),
