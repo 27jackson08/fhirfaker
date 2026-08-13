@@ -123,6 +123,121 @@ COMMON_DRUG_ALLERGIES = (
     AllergyRule(codes.ALLERGEN_SULFAMETHOXAZOLE, 0.03),
     AllergyRule(codes.ALLERGEN_CODEINE, 0.02),
     AllergyRule(codes.ALLERGEN_IBUPROFEN, 0.01),
+    AllergyRule(codes.ALLERGEN_AMOXICILLIN, 0.02),
+    AllergyRule(codes.ALLERGEN_ASPIRIN, 0.01),
+)
+
+
+# --- routine panels ---------------------------------------------------------------
+# A real ambulatory visit draws a comprehensive metabolic panel and a CBC alongside
+# whatever the presenting problem needs. Centred on standard adult reference
+# intervals, bounded at the limits a laboratory would flag rather than reject.
+COMPREHENSIVE_METABOLIC = (
+    Marginal("sodium", mean=140.0, sd=2.4, low=128.0, high=150.0),
+    Marginal("potassium", mean=4.2, sd=0.34, low=3.0, high=5.8),
+    Marginal("chloride", mean=102.0, sd=2.9, low=90.0, high=114.0),
+    Marginal("co2", mean=25.0, sd=2.4, low=15.0, high=34.0),
+    Marginal("calcium", mean=9.5, sd=0.40, low=7.5, high=11.5),
+    Marginal("albumin", mean=4.2, sd=0.34, low=2.5, high=5.4),
+    Marginal("bun", mean=15.0, sd=4.0, low=4.0, high=45.0),
+    Marginal("alt", mean=25.0, sd=11.0, low=5.0, high=90.0),
+    Marginal("ast", mean=24.0, sd=9.0, low=8.0, high=80.0),
+    Marginal("alkaline_phosphatase", mean=76.0, sd=21.0, low=25.0, high=180.0),
+    Marginal("bilirubin_total", mean=0.7, sd=0.28, low=0.1, high=2.0),
+)
+CBC_BY_SEX = {
+    "F": (
+        Marginal("hemoglobin", mean=13.6, sd=1.05, low=8.0, high=17.0),
+        Marginal("hematocrit", mean=40.5, sd=3.1, low=25.0, high=51.0),
+        Marginal("rbc", mean=4.55, sd=0.38, low=3.0, high=6.0),
+    ),
+    "M": (
+        Marginal("hemoglobin", mean=15.1, sd=1.15, low=9.0, high=19.0),
+        Marginal("hematocrit", mean=44.8, sd=3.4, low=28.0, high=56.0),
+        Marginal("rbc", mean=5.05, sd=0.42, low=3.4, high=6.6),
+    ),
+}
+CBC_SHARED = (
+    Marginal("wbc", mean=7.1, sd=1.8, low=2.5, high=16.0),
+    Marginal("platelets", mean=262.0, sd=58.0, low=90.0, high=480.0),
+)
+ROUTINE_VITALS = (
+    Marginal("heart_rate", mean=74.0, sd=10.0, low=45.0, high=120.0),
+    Marginal("respiratory_rate", mean=16.0, sd=2.3, low=10.0, high=26.0),
+    Marginal("body_temperature", mean=36.8, sd=0.30, low=35.5, high=38.5),
+    Marginal("oxygen_saturation", mean=97.2, sd=1.4, low=88.0, high=100.0),
+)
+
+# Haemoglobin, haematocrit and red cell count measure the same underlying red cell
+# mass — the clinical rule of thumb is Hct ~ 3 x Hgb. Sampling them independently
+# produces a CBC no haematology analyser could ever emit.
+RED_CELL_CORRELATIONS = (
+    ("hemoglobin", "hematocrit", 0.93),
+    ("hemoglobin", "rbc", 0.86),
+    ("hematocrit", "rbc", 0.87),
+)
+# Urea nitrogen tracks renal function, so it must move with creatinine.
+BUN_CREATININE_CORRELATION = 0.55
+# Sodium and chloride move together; the aminotransferases share a liver signal.
+ELECTROLYTE_CORRELATIONS = (
+    ("sodium", "chloride", 0.65),
+    ("alt", "ast", 0.72),
+)
+
+
+def _routine_marginals(sex: str) -> tuple:
+    return (*COMPREHENSIVE_METABOLIC, *CBC_BY_SEX[sex], *CBC_SHARED, *ROUTINE_VITALS)
+
+
+def _routine_correlations(*, has_creatinine: bool = True) -> list[tuple[str, str, float]]:
+    """The CKD profile derives creatinine from a target eGFR rather than sampling it,
+    so the BUN/creatinine correlation has nothing to attach to there."""
+    pairs = [*RED_CELL_CORRELATIONS, *ELECTROLYTE_CORRELATIONS]
+    if has_creatinine:
+        pairs.append(("bun", "creatinine", BUN_CREATININE_CORRELATION))
+    return pairs
+
+
+# Background chronic conditions and their treatments, common in any 45-65 population
+# and independent of the profile's presenting problem. Each drug is gated on its
+# diagnosis so a prescription never appears without a reason on the problem list.
+BACKGROUND_COMORBIDITIES = (
+    ComorbidityRule(codes.HYPOTHYROIDISM, 0.09),
+    ComorbidityRule(codes.ATHEROSCLEROTIC_HEART_DISEASE, 0.07),
+)
+BACKGROUND_MEDICATIONS = (
+    MedicationRule(codes.LEVOTHYROXINE_50, 0.85, requires_condition="E03.9"),
+    MedicationRule(codes.ASPIRIN_81, 0.70, requires_condition="I25.10"),
+    MedicationRule(codes.SIMVASTATIN_20, 0.35, requires_condition="I25.10"),
+    MedicationRule(codes.OMEPRAZOLE_20, 0.10),
+    MedicationRule(codes.SERTRALINE_50, 0.07),
+    MedicationRule(codes.GABAPENTIN_300, 0.05),
+)
+# Combination therapy is the norm in hypertension, so these are independent draws
+# rather than a single pick — most treated patients are on two or more agents.
+ANTIHYPERTENSIVES = (
+    MedicationRule(codes.LISINOPRIL_10, 0.45),
+    MedicationRule(codes.AMLODIPINE_5, 0.28),
+    MedicationRule(codes.HYDROCHLOROTHIAZIDE_25, 0.24),
+    MedicationRule(codes.LOSARTAN_50, 0.18),
+    MedicationRule(codes.CARVEDILOL_12_5, 0.11),
+    # Higher doses follow poor control, not chance.
+    MedicationRule(
+        codes.LISINOPRIL_20, 0.30, requires=lambda a: a.get("systolic", 0.0) >= 160.0
+    ),
+    MedicationRule(
+        codes.AMLODIPINE_10, 0.25, requires=lambda a: a.get("systolic", 0.0) >= 165.0
+    ),
+)
+# Albuminuria is the other axis of KDIGO staging and the earliest marker of diabetic
+# kidney disease, so it belongs wherever the kidney is the point.
+ALBUMINURIA = (
+    Marginal("uacr", mean=45.0, sd=60.0, low=2.0, high=900.0),
+    Marginal("microalbumin_urine", mean=30.0, sd=35.0, low=1.0, high=400.0),
+)
+ALBUMINURIA_NORMAL = (
+    Marginal("uacr", mean=12.0, sd=9.0, low=2.0, high=120.0),
+    Marginal("microalbumin_urine", mean=9.0, sd=7.0, low=1.0, high=90.0),
 )
 
 
@@ -195,10 +310,12 @@ def healthy(sex: str) -> ClinicalProfile:
         joint=_joint(
             hba1c, glucose, CREATININE_BY_SEX[sex], *NORMOTENSIVE,
             cholesterol, triglycerides, HDL_BY_SEX[sex], height, weight,
+            *ALBUMINURIA_NORMAL, *_routine_marginals(sex),
             correlations=[
                 ("hba1c", "glucose", 0.55),
                 ("systolic", "diastolic", BP_CORRELATION),
                 *_lipid_and_body_correlations(),
+                *_routine_correlations(),
             ],
         ),
         derived_conditions=_metabolic_conditions,
@@ -208,6 +325,8 @@ def healthy(sex: str) -> ClinicalProfile:
 
 
 HYPERGLYCEMIA_HBA1C_THRESHOLD = 9.0
+# KDIGO A3 (severely increased albuminuria) begins at 300 mg/g.
+ALBUMINURIA_UACR_THRESHOLD = 300.0
 CKD_EGFR_THRESHOLD = 60.0
 
 # KDIGO stage -> ICD-10-CM code.
@@ -238,6 +357,10 @@ def _diabetes_conditions(raw: dict[str, float]) -> tuple:
 
     if egfr < CKD_EGFR_THRESHOLD:
         found = [codes.T2DM_WITH_CKD, _ckd_code_for(egfr)]
+    elif raw.get("uacr", 0.0) >= ALBUMINURIA_UACR_THRESHOLD:
+        # Raised albumin:creatinine with preserved eGFR is diabetic nephropathy
+        # before it is diabetic CKD — the earliest stage the coding distinguishes.
+        found = [codes.T2DM_WITH_NEPHROPATHY]
     elif hba1c >= HYPERGLYCEMIA_HBA1C_THRESHOLD:
         found = [codes.T2DM_WITH_HYPERGLYCEMIA]
     else:
@@ -259,31 +382,48 @@ def type2_diabetes(sex: str) -> ClinicalProfile:
         joint=_joint(
             hba1c, glucose, CREATININE_BY_SEX[sex], *HYPERTENSIVE,
             cholesterol, triglycerides, HDL_LOW_BY_SEX[sex], height, weight,
+            *ALBUMINURIA, *_routine_marginals(sex),
             correlations=[
                 ("hba1c", "glucose", rho),
                 ("systolic", "diastolic", BP_CORRELATION),
                 *_lipid_and_body_correlations(),
+                *_routine_correlations(),
             ],
         ),
         # No fixed primary condition: the diabetes code depends on the draw.
         derived_conditions=_diabetes_conditions,
         # ~70% hypertension comorbidity is a realistic co-occurrence rate for this
         # population, not decoration.
-        comorbidities=(ComorbidityRule(codes.ESSENTIAL_HYPERTENSION, 0.70),),
+        comorbidities=(
+            ComorbidityRule(codes.ESSENTIAL_HYPERTENSION, 0.70),
+            *BACKGROUND_COMORBIDITIES,
+        ),
         medications=(
-            MedicationRule(codes.METFORMIN_500),
-            # A second agent follows from poor control rather than a bare coin flip.
+            MedicationRule(codes.METFORMIN_500, 0.60),
+            # Escalation follows poor control rather than a bare coin flip.
             MedicationRule(
-                codes.METFORMIN_1000,
-                probability=0.35,
-                requires=lambda a: a["hba1c"] > 8.5,
+                codes.METFORMIN_1000, 0.35, requires=lambda a: a["hba1c"] > 8.5
             ),
-            # Statin follows the lipid panel, not chance.
             MedicationRule(
-                codes.ATORVASTATIN_20,
-                probability=0.80,
-                requires=lambda a: a.get("ldl", 0.0) >= 130.0,
+                codes.GLIPIZIDE_5, 0.18, requires=lambda a: a["hba1c"] > 8.0
             ),
+            MedicationRule(
+                codes.SITAGLIPTIN_100, 0.15, requires=lambda a: a["hba1c"] > 8.0
+            ),
+            MedicationRule(
+                codes.GLIMEPIRIDE_2, 0.10, requires=lambda a: a["hba1c"] > 9.0
+            ),
+            MedicationRule(codes.EMPAGLIFLOZIN_10, 0.14),
+            # Diabetes lowers the statin threshold; guidelines treat it as a
+            # cardiovascular risk equivalent.
+            MedicationRule(
+                codes.ATORVASTATIN_20, 0.55, requires=lambda a: a.get("ldl", 0.0) >= 100.0
+            ),
+            MedicationRule(
+                codes.ATORVASTATIN_40, 0.30, requires=lambda a: a.get("ldl", 0.0) >= 160.0
+            ),
+            *ANTIHYPERTENSIVES,
+            *BACKGROUND_MEDICATIONS,
         ),
         allergies=COMMON_DRUG_ALLERGIES,
         egfr_mode=EGFR_FROM_CREATININE,
@@ -300,22 +440,27 @@ def hypertension(sex: str) -> ClinicalProfile:
         joint=_joint(
             hba1c, glucose, CREATININE_BY_SEX[sex], *HYPERTENSIVE,
             cholesterol, triglycerides, HDL_BY_SEX[sex], height, weight,
+            *ALBUMINURIA_NORMAL, *_routine_marginals(sex),
             correlations=[
                 ("hba1c", "glucose", 0.55),
                 ("systolic", "diastolic", BP_CORRELATION),
                 *_lipid_and_body_correlations(),
+                *_routine_correlations(),
             ],
         ),
         primary_conditions=(codes.ESSENTIAL_HYPERTENSION,),
         derived_conditions=_metabolic_conditions,
         medications=(
-            MedicationRule(codes.LISINOPRIL_10),
+            *ANTIHYPERTENSIVES,
             MedicationRule(
-                codes.ATORVASTATIN_20,
-                probability=0.60,
-                requires=lambda a: a.get("ldl", 0.0) >= 160.0,
+                codes.ATORVASTATIN_20, 0.60, requires=lambda a: a.get("ldl", 0.0) >= 160.0
             ),
+            MedicationRule(
+                codes.ROSUVASTATIN_10, 0.25, requires=lambda a: a.get("ldl", 0.0) >= 190.0
+            ),
+            *BACKGROUND_MEDICATIONS,
         ),
+        comorbidities=BACKGROUND_COMORBIDITIES,
         allergies=COMMON_DRUG_ALLERGIES,
         egfr_mode=EGFR_FROM_CREATININE,
     )
@@ -342,14 +487,26 @@ def ckd_stage3(sex: str) -> ClinicalProfile:
             Marginal("egfr_target", mean=45.0, sd=8.0, low=30.0, high=59.9),
             hba1c, glucose, *HYPERTENSIVE,
             cholesterol, triglycerides, HDL_BY_SEX[sex], height, weight,
+            *ALBUMINURIA, *_routine_marginals(sex),
             correlations=[
                 ("systolic", "diastolic", BP_CORRELATION),
                 *_lipid_and_body_correlations(),
+                *_routine_correlations(has_creatinine=False),
             ],
         ),
         derived_conditions=_ckd_conditions,
-        comorbidities=(ComorbidityRule(codes.ESSENTIAL_HYPERTENSION, 0.80),),
-        medications=(MedicationRule(codes.LISINOPRIL_10),),
+        comorbidities=(
+            ComorbidityRule(codes.ESSENTIAL_HYPERTENSION, 0.80),
+            *BACKGROUND_COMORBIDITIES,
+        ),
+        medications=(
+            *ANTIHYPERTENSIVES,
+            MedicationRule(codes.FUROSEMIDE_40, 0.30),
+            MedicationRule(
+                codes.ATORVASTATIN_20, 0.45, requires=lambda a: a.get("ldl", 0.0) >= 100.0
+            ),
+            *BACKGROUND_MEDICATIONS,
+        ),
         allergies=COMMON_DRUG_ALLERGIES,
         egfr_mode=EGFR_FROM_TARGET,
     )

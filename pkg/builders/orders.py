@@ -76,20 +76,26 @@ def build_medication_request(
 def build_diagnostic_report(
     *,
     resource_id: str,
+    code: codes.Code,
     subject_urn: str,
     effective: str,
     issued: str,
     result_urns: list[str],
     performer_urn: str | None = None,
 ) -> DiagnosticReport:
-    """A US Core laboratory DiagnosticReport tying together its member Observations."""
+    """A US Core laboratory DiagnosticReport tying together its member Observations.
+
+    `code` is the panel's own LOINC code. The generic "Laboratory report" document
+    code (11502-2) is excluded from US Core's lab test value set for good reason —
+    it describes the document, not what was measured.
+    """
     return DiagnosticReport(
         id=resource_id,
         meta=htest_meta(uscore.DIAGNOSTIC_REPORT_LAB),
         text=synthetic_narrative("Laboratory report (synthetic)."),
         status="final",
         category=[codes.SERVICE_SECTION_LAB.concept()],
-        code=codes.LAB_REPORT.concept(),
+        code=code.concept(),
         subject=_ref(subject_urn),
         effectiveDateTime=effective,
         issued=issued,

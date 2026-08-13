@@ -22,9 +22,6 @@ ACCEPTED_WARNING_FRAGMENTS = (
     "could not be found, so the code cannot be validated",
     # VSAC snapshot from 2017; RXCUI 861007 is current prescribable content.
     "Medication Clinical Drug",
-    # 11502-2 "Laboratory report" is a LOINC document code, which is semantically
-    # right for DiagnosticReport.code even though the lab-test value set excludes it.
-    "US Core Laboratory Test Codes",
     # Generic best-practice advice fired by ANY annotated UCUM code.
     # mL/min/{1.73_m2} is the standard representation for eGFR.
     "UCUM Codes that contain human readable annotations",

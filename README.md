@@ -55,13 +55,14 @@ every release. The full matrix is published in [CONFORMANCE.md](CONFORMANCE.md).
 
 | Profile | Entries | Errors | Warnings |
 |---|---:|---:|---:|
-| healthy | 16-17 | **0** | 3 |
-| hypertension | 19 | **0** | 5 |
-| type2_diabetes | 20 | **0** | 5 |
-| ckd_stage3 | 20 | **0** | 5 |
+| healthy | 42 | **0** | 2 |
+| hypertension | 45 | **0** | 4 |
+| type2_diabetes | 51 | **0** | 10 |
+| ckd_stage3 | 51 | **0** | 10 |
 
-All five remaining warnings are examined and documented with reasons; a *new* warning
-fails the build.
+Every remaining warning is examined and documented with a reason; a *new* warning
+fails the build. Counts scale with medication count — each RxNorm-coded prescription
+raises the same two validator-environment warnings.
 
 ### 2. Verified fidelity — the actual differentiator
 
@@ -178,7 +179,9 @@ Weights are normalised, so counts and ratios both work. The default mix is
 illustrative rather than an epidemiological claim — real prevalences overlap heavily
 and these profiles are mutually exclusive.
 
-Each bundle carries a full lipid panel, renal panel, glycaemic markers and vitals.
+Each bundle carries a comprehensive metabolic panel, CBC, lipid panel, HbA1c,
+albuminuria, seven vital signs and the patient's medications and allergies — grouped
+into DiagnosticReports under the panel LOINC codes a laboratory actually reports.
 Diagnosis codes follow the values drawn: a diabetic whose eGFR falls below 60 is coded
 `E11.22` (diabetes *with* CKD) plus the matching KDIGO stage, not `E11.9`.
 
@@ -226,7 +229,7 @@ Stated here rather than left for you to discover.
   comes from the literature is the *dependence* structure. Calibrating marginals
   against NHANES is future work, and the fidelity report says so.
 - **One encounter per bundle.** No longitudinal history — that is Synthea's territory.
-- **Terminology is a curated subset** — 91 codes (40 LOINC, 29 RxNorm, 22 ICD-10-CM),
+- **Terminology is a curated subset** — 104 codes (42 LOINC, 29 RxNorm, 22 ICD-10-CM),
   not full coverage. Every code *and display* is verified against its source vocabulary
   by `python -m pkg.terminology.verify`, which runs nightly in CI.
 

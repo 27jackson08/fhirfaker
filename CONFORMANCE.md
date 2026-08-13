@@ -15,10 +15,13 @@ resolved.
 
 | Profile | Entries | Errors | Warnings |
 |---|---:|---:|---:|
-| healthy | 9 | **0** | 3 |
-| hypertension | 11 | **0** | 5 |
-| type2_diabetes | 12 | **0** | 5 |
-| ckd_stage3 | 12 | **0** | 5 |
+| healthy | 42 | **0** | 2 |
+| hypertension | 45 | **0** | 4 |
+| type2_diabetes | 51 | **0** | 10 |
+| ckd_stage3 | 51 | **0** | 10 |
+
+Warning counts scale with the number of medications, because each RxNorm-coded
+MedicationRequest raises the same two version/value-set warnings described below.
 
 | Resource | Profile | Errors |
 |---|---|---:|
@@ -28,6 +31,8 @@ resolved.
 | Condition | us-core-condition-problems-health-concerns | 0 |
 | Observation (lab) | us-core-observation-lab | 0 |
 | Observation (BP) | us-core-blood-pressure | 0 |
+| Observation (vitals) | us-core-body-height / -body-weight / -bmi / -heart-rate / -respiratory-rate / -body-temperature / -pulse-oximetry | 0 |
+| AllergyIntolerance | us-core-allergyintolerance | 0 |
 | MedicationRequest | us-core-medicationrequest | 0 |
 | DiagnosticReport | us-core-diagnosticreport-lab | 0 |
 
@@ -68,15 +73,15 @@ endpoint, so it is current prescribable content. The mismatch is between the
 validator's bundled RxNorm release and the value set binding's pinned version — an
 environment artefact, not a defect in the generated data.
 
-### 5. `DiagnosticReport.code` — not in US Core Laboratory Test Codes
+### ~~5. `DiagnosticReport.code` — not in US Core Laboratory Test Codes~~ RESOLVED
 
-**Why it stays.** LOINC `11502-2` is "Laboratory report", a document-class code, which
-is semantically correct for a multi-analyte report. The US Core value set admits only
-lab *test* codes, so satisfying it would mean coding a four-analyte report as if it
-were a single test. Silencing the warning would make the data less accurate.
+This warning is gone. Results are now grouped into the panels a laboratory actually
+reports — comprehensive metabolic, CBC, lipid, HbA1c, albuminuria — and each
+DiagnosticReport carries that panel's own LOINC code, which *is* in the value set.
+The earlier generic "Laboratory report" (11502-2) is a document code.
 
-Revisit when a profile emits a defined panel: that panel's LOINC code is both in the
-value set and semantically right.
+Resolved exactly as this section predicted: by making the data more accurate rather
+than by suppressing the warning.
 
 ## Notes
 

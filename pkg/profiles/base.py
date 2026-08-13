@@ -47,9 +47,20 @@ class MedicationRule:
     code: Code
     probability: float = 1.0
     requires: Callable[[dict[str, float]], bool] | None = None
+    # An ICD-10-CM code that must already be on the problem list. Without this a
+    # patient can be prescribed levothyroxine with no thyroid diagnosis anywhere in
+    # the bundle — individually plausible, collectively incoherent.
+    requires_condition: str | None = None
 
-    def applies(self, analytes: dict[str, float], rng: np.random.Generator) -> bool:
+    def applies(
+        self,
+        analytes: dict[str, float],
+        rng: np.random.Generator,
+        conditions: frozenset[str] = frozenset(),
+    ) -> bool:
         if self.requires is not None and not self.requires(analytes):
+            return False
+        if self.requires_condition is not None and self.requires_condition not in conditions:
             return False
         return bool(rng.random() < self.probability)
 
@@ -149,7 +160,10 @@ def draw(
         if rng.random() < rule.probability:
             conditions.append(rule.code)
 
-    medications = [rule.code for rule in profile.medications if rule.applies(raw, rng)]
+    coded = frozenset(c.code for c in conditions)
+    medications = [
+        rule.code for rule in profile.medications if rule.applies(raw, rng, coded)
+    ]
     allergies = [rule.code for rule in profile.allergies if rng.random() < rule.probability]
 
     analytes = {

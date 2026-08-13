@@ -152,8 +152,15 @@ BMI = Code(systems.LOINC, "39156-5", "Body mass index (BMI) [Ratio]")
 HEART_RATE = Code(systems.LOINC, "8867-4", "Heart rate")
 RESPIRATORY_RATE = Code(systems.LOINC, "9279-1", "Respiratory rate")
 BODY_TEMPERATURE = Code(systems.LOINC, "8310-5", "Body temperature")
+# US Core's pulse-oximetry profile *slices* Observation.code and requires BOTH of
+# these codings — 2708-6 is the "magic" code the base FHIR oxygensat profile demands,
+# and 59408-5 identifies the method. One coding alone fails validation with
+# "a matching slice is required, but not found".
 OXYGEN_SATURATION = Code(
     systems.LOINC, "59408-5", "Oxygen saturation in Arterial blood by Pulse oximetry"
+)
+OXYGEN_SATURATION_ARTERIAL = Code(
+    systems.LOINC, "2708-6", "Oxygen saturation in Arterial blood"
 )
 
 # =================================================================================
@@ -310,6 +317,31 @@ ALLERGY_ACTIVE = Code(systems.ALLERGY_CLINICAL, "active", "Active")
 ALLERGY_CONFIRMED = Code(systems.ALLERGY_VER_STATUS, "confirmed", "Confirmed")
 ENCOUNTER_AMBULATORY = Code(systems.ACT_CODE, "AMB", "ambulatory")
 SERVICE_SECTION_LAB = Code(systems.DIAGNOSTIC_SERVICE_SECTION, "LAB", "Laboratory")
+
+# =================================================================================
+# Reserved — defined but deliberately not emitted
+# =================================================================================
+# Terminology that is dead by accident is a defect; terminology that is dead on
+# purpose needs a reason. `test_terminology.py` enforces that every code is either
+# emitted somewhere or listed here.
+RESERVED_CODES = {
+    # 2345-7 is used instead: the ADAG anchor describes average, not fasting, glucose.
+    "GLUCOSE_FASTING": "superseded by GLUCOSE (2345-7); kept as the fasting-specific alternative",
+    # Retired as a DiagnosticReport.code in favour of real panel codes, which are in
+    # US Core's lab test value set. Kept because it is the correct code for a
+    # multi-analyte report document and callers may want it.
+    "LAB_REPORT": "retired in favour of panel codes; correct for a report document",
+    # The CKD profiles always resolve to a specific sub-stage from the drawn eGFR.
+    "CKD_STAGE_3_UNSPECIFIED": "profiles always resolve 3a/3b from eGFR",
+    # Every Condition emitted so far is a problem-list item.
+    "CATEGORY_ENCOUNTER_DIAGNOSIS": "no profile emits encounter-diagnosis Conditions yet",
+    # These need clinical machinery this generator does not have. Coding them without
+    # the findings that justify them would be exactly the incoherence the correlation
+    # engine exists to prevent, so they wait for a profile that earns them.
+    "HEART_FAILURE": "no profile generates the ejection fraction or symptoms to support it",
+    "LONG_TERM_INSULIN_USE": "no profile prescribes insulin, so the status code has no basis",
+    "T2DM_WITH_NEUROPATHY": "no neuropathy finding is generated to support the complication",
+}
 
 # =================================================================================
 # UCUM units — (human-readable display, UCUM code)

@@ -137,3 +137,50 @@ def test_units_pair_a_display_with_a_ucum_code():
 def test_registered_codes_is_deduplicated(codes):
     counts = Counter((c.system, c.code) for c in codes)
     assert not [key for key, n in counts.items() if n > 1]
+
+
+def test_every_defined_code_is_either_emitted_or_explicitly_reserved():
+    """Terminology dead by accident is a defect; dead on purpose needs a reason.
+
+    Expanding the subset to hit a target size once left 55 of 101 codes defined and
+    never emitted — verified against their source vocabularies, documented, and
+    completely unused. This is the guard that stops that recurring.
+    """
+    import subprocess
+    from pathlib import Path
+
+    from pkg.terminology import codes as table
+
+    package = Path(__file__).resolve().parents[1] / "pkg"
+    defined = {
+        name for name, value in vars(table).items() if isinstance(value, Code)
+    }
+    source = subprocess.run(
+        ["grep", "-rho", "codes[.][A-Z_0-9]*", str(package), "--include=*.py"],
+        capture_output=True,
+        text=True,
+        check=False,
+    ).stdout
+    referenced = {token.split(".", 1)[1] for token in source.split()}
+
+    unaccounted = sorted(defined - referenced - set(table.RESERVED_CODES))
+    assert not unaccounted, (
+        "these codes are defined but never emitted and not listed in RESERVED_CODES:\n  "
+        + "\n  ".join(unaccounted)
+        + "\n\nEither emit them from a profile or add them to RESERVED_CODES with a reason."
+    )
+
+
+def test_reserved_codes_all_exist():
+    """A stale RESERVED_CODES entry would silently widen the exemption."""
+    from pkg.terminology import codes as table
+
+    for name in table.RESERVED_CODES:
+        assert isinstance(getattr(table, name, None), Code), f"{name} no longer exists"
+
+
+def test_reserved_codes_each_carry_a_reason():
+    from pkg.terminology import codes as table
+
+    for name, reason in table.RESERVED_CODES.items():
+        assert reason.strip(), f"{name} is reserved without a reason"

@@ -170,6 +170,14 @@ REPORTING_PRECISION = {
     "height_cm": "1",
     "weight_kg": "0.1",
     "bmi": "0.1",
+    "sodium": "1", "potassium": "0.1", "chloride": "1", "co2": "1",
+    "calcium": "0.1", "albumin": "0.1", "bun": "1",
+    "alt": "1", "ast": "1", "alkaline_phosphatase": "1", "bilirubin_total": "0.1",
+    "hemoglobin": "0.1", "hematocrit": "0.1", "rbc": "0.01",
+    "wbc": "0.1", "platelets": "1",
+    "heart_rate": "1", "respiratory_rate": "1",
+    "body_temperature": "0.1", "oxygen_saturation": "1",
+    "uacr": "1", "microalbumin_urine": "1",
 }
 
 

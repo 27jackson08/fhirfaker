@@ -5,21 +5,21 @@ Regenerated per release from n=10,000 draws, seed 20260101.
 
 | Check | Observed | Expected | Delta | Tolerance | Source | |
 |---|---:|---:|---:|---:|---|:--:|
-| ADAG slope | 28.46 | 28.7 | -0.239 | ±1 | Nathan 2008 | PASS |
-| ADAG R^2 | 0.845 | 0.84 | +0.00501 | ±0.02 | Nathan 2008 | PASS |
-| glucose at HbA1c 6.5% | 140.3 | 139.8 | +0.419 | ±5 | Nathan 2008 | PASS |
-| glucose at HbA1c 8.0% | 183 | 182.9 | +0.0605 | ±5 | Nathan 2008 | PASS |
-| glucose at HbA1c 9.5% | 225.7 | 225.9 | -0.298 | ±5 | Nathan 2008 | PASS |
+| ADAG slope | 28.74 | 28.7 | +0.044 | ±1 | Nathan 2008 | PASS |
+| ADAG R^2 | 0.8454 | 0.84 | +0.00536 | ±0.02 | Nathan 2008 | PASS |
+| glucose at HbA1c 6.5% | 139.7 | 139.8 | -0.125 | ±5 | Nathan 2008 | PASS |
+| glucose at HbA1c 8.0% | 182.8 | 182.9 | -0.0587 | ±5 | Nathan 2008 | PASS |
+| glucose at HbA1c 9.5% | 226 | 225.9 | +0.00726 | ±5 | Nathan 2008 | PASS |
 | CKD stage-3 eGFR within band | 1 | 1 | +0 | ±0 | KDIGO 2012 | PASS |
 | eGFR consistent with creatinine | 0 | 0 | +0 | ±1e-09 | CKD-EPI 2021 | PASS |
 | ICD-10 stage code matches eGFR | 1 | 1 | +0 | ±0 | ICD-10-CM | PASS |
-| T2DM hypertension comorbidity | 0.7026 | 0.7 | +0.0026 | ±0.0259 | profile config | PASS |
-| systolic/diastolic correlation | 0.5942 | 0.6 | -0.00578 | ±0.05 | profile config | PASS |
+| T2DM hypertension comorbidity | 0.708 | 0.7 | +0.008 | ±0.0259 | profile config | PASS |
+| systolic/diastolic correlation | 0.6019 | 0.6 | +0.00193 | ±0.05 | profile config | PASS |
 | LDL consistent with panel (Friedewald) | 0 | 0 | +0 | ±1e-09 | Friedewald 1972 | PASS |
-| triglyceride/HDL correlation | -0.383 | -0.4 | +0.017 | ±0.05 | profile config | PASS |
+| triglyceride/HDL correlation | -0.3912 | -0.4 | +0.00883 | ±0.05 | profile config | PASS |
 | BMI consistent with height and weight | 0 | 0 | +0 | ±1e-09 | WHO | PASS |
-| diabetic obesity rate | 0.6145 | 0.6 | +0.0145 | ±0.05 | profile config | PASS |
-| typical-adult median BMI | 26.39 | 26.5 | -0.115 | ±1.5 | profile config | PASS |
+| diabetic obesity rate | 0.5785 | 0.6 | -0.0215 | ±0.05 | profile config | PASS |
+| typical-adult median BMI | 26.52 | 26.5 | +0.0201 | ±1.5 | profile config | PASS |
 
 **15/15 passed.**
 

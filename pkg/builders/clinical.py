@@ -138,6 +138,7 @@ def build_vital_observation(
     unit: tuple[str, str],
     encounter_urn: str | None = None,
     performer_urn: str | None = None,
+    additional_codes: tuple[codes.Code, ...] = (),
 ) -> Observation:
     """A US Core vital-sign Observation (height, weight, BMI).
 
@@ -145,13 +146,19 @@ def build_vital_observation(
     US Core vitals profile, whose value[x] must be a UCUM Quantity.
     """
     display_unit, ucum_code = unit
+    # Some US Core vitals profiles slice Observation.code and require more than one
+    # coding — pulse oximetry needs both the method code and the base oxygensat code.
+    concept = CodeableConcept(
+        coding=[code.coding(), *(extra.coding() for extra in additional_codes)],
+        text=code.display,
+    )
     return Observation(
         id=resource_id,
         meta=htest_meta(profile),
         text=synthetic_narrative(f"{code.display}: {value} {display_unit} (synthetic)."),
         status="final",
         category=[codes.CATEGORY_VITAL_SIGNS.concept()],
-        code=code.concept(),
+        code=concept,
         subject=_ref(subject_urn),
         encounter=_ref(encounter_urn) if encounter_urn else None,
         effectiveDateTime=effective,

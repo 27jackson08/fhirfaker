@@ -44,16 +44,67 @@ AMBULATORY_VISIT_TYPE = CodeableConcept(text="Ambulatory visit")
 
 SEX_TO_FHIR_GENDER = {"F": "female", "M": "male"}
 
-# Analyte -> (LOINC code, unit). Drives which lab Observations a bundle emits.
-LAB_ANALYTES = (
-    ("hba1c", codes.HBA1C, codes.UNIT_PERCENT),
-    ("glucose", codes.GLUCOSE, codes.UNIT_MG_DL),
-    ("creatinine", codes.CREATININE, codes.UNIT_MG_DL),
-    ("egfr", codes.EGFR, codes.UNIT_EGFR),
-    ("cholesterol_total", codes.CHOLESTEROL_TOTAL, codes.UNIT_MG_DL),
-    ("hdl", codes.HDL, codes.UNIT_MG_DL),
-    ("ldl", codes.LDL_CALCULATED, codes.UNIT_MG_DL),
-    ("triglycerides", codes.TRIGLYCERIDES, codes.UNIT_MG_DL),
+# Laboratory results are grouped into the panels a laboratory actually reports, and
+# each panel's DiagnosticReport carries that panel's own LOINC code. A single report
+# coded "Laboratory report" (11502-2) is a *document* code, which US Core's lab test
+# value set rightly excludes — using real panel codes is both more accurate and
+# removes the warning that came with the generic one.
+LAB_PANELS = (
+    (
+        "cmp",
+        codes.PANEL_METABOLIC_COMPREHENSIVE,
+        (
+            ("sodium", codes.SODIUM, codes.UNIT_MMOL_L),
+            ("potassium", codes.POTASSIUM, codes.UNIT_MMOL_L),
+            ("chloride", codes.CHLORIDE, codes.UNIT_MMOL_L),
+            ("co2", codes.CO2, codes.UNIT_MMOL_L),
+            ("calcium", codes.CALCIUM, codes.UNIT_MG_DL),
+            ("albumin", codes.ALBUMIN, codes.UNIT_G_DL),
+            ("bun", codes.BUN, codes.UNIT_MG_DL),
+            ("creatinine", codes.CREATININE, codes.UNIT_MG_DL),
+            # Laboratories report eGFR alongside creatinine on the same panel.
+            ("egfr", codes.EGFR, codes.UNIT_EGFR),
+            ("glucose", codes.GLUCOSE, codes.UNIT_MG_DL),
+            ("alt", codes.ALT, codes.UNIT_IU_L),
+            ("ast", codes.AST, codes.UNIT_IU_L),
+            ("alkaline_phosphatase", codes.ALKALINE_PHOSPHATASE, codes.UNIT_IU_L),
+            ("bilirubin_total", codes.BILIRUBIN_TOTAL, codes.UNIT_MG_DL),
+        ),
+    ),
+    (
+        "cbc",
+        codes.PANEL_CBC,
+        (
+            ("hemoglobin", codes.HEMOGLOBIN, codes.UNIT_G_DL),
+            ("hematocrit", codes.HEMATOCRIT, codes.UNIT_PERCENT),
+            ("rbc", codes.RBC, codes.UNIT_M_PER_UL),
+            ("wbc", codes.WBC, codes.UNIT_K_PER_UL),
+            ("platelets", codes.PLATELETS, codes.UNIT_K_PER_UL),
+        ),
+    ),
+    (
+        "lipid",
+        codes.PANEL_LIPID,
+        (
+            ("cholesterol_total", codes.CHOLESTEROL_TOTAL, codes.UNIT_MG_DL),
+            ("hdl", codes.HDL, codes.UNIT_MG_DL),
+            ("ldl", codes.LDL_CALCULATED, codes.UNIT_MG_DL),
+            ("triglycerides", codes.TRIGLYCERIDES, codes.UNIT_MG_DL),
+        ),
+    ),
+    (
+        "hba1c",
+        codes.HBA1C,
+        (("hba1c", codes.HBA1C, codes.UNIT_PERCENT),),
+    ),
+    (
+        "albuminuria",
+        codes.UACR,
+        (
+            ("uacr", codes.UACR, codes.UNIT_MG_G),
+            ("microalbumin_urine", codes.MICROALBUMIN_URINE, codes.UNIT_MG_DL),
+        ),
+    ),
 )
 
 # Analyte -> (LOINC code, US Core vitals profile, unit).
@@ -61,7 +112,19 @@ VITAL_ANALYTES = (
     ("height_cm", codes.BODY_HEIGHT, uscore.BODY_HEIGHT, codes.UNIT_CM),
     ("weight_kg", codes.BODY_WEIGHT, uscore.BODY_WEIGHT, codes.UNIT_KG),
     ("bmi", codes.BMI, uscore.BMI, codes.UNIT_KG_M2),
+    ("heart_rate", codes.HEART_RATE, uscore.HEART_RATE, codes.UNIT_BPM),
+    ("respiratory_rate", codes.RESPIRATORY_RATE, uscore.RESPIRATORY_RATE,
+     codes.UNIT_BREATHS_MIN),
+    ("body_temperature", codes.BODY_TEMPERATURE, uscore.BODY_TEMPERATURE,
+     codes.UNIT_CELSIUS),
+    ("oxygen_saturation", codes.OXYGEN_SATURATION, uscore.PULSE_OXIMETRY,
+     codes.UNIT_PERCENT),
 )
+
+# Vitals whose US Core profile requires extra codings on Observation.code.
+VITAL_EXTRA_CODES = {
+    "oxygen_saturation": (codes.OXYGEN_SATURATION_ARTERIAL,),
+}
 
 
 def _birth_date(rng, age_range: tuple[int, int], reference: date) -> tuple[date, float]:
@@ -240,27 +303,31 @@ def generate_bundle(
             )
         )
 
-    lab_urns = []
-    for analyte, code, unit in LAB_ANALYTES:
-        if analyte not in drawn.analytes:
-            continue
-        role = f"obs-{analyte}"
-        lab_urns.append(urn(role))
-        entries.append(
-            Entry(
-                urn(role),
-                build_lab_observation(
-                    resource_id=rid(role),
-                    code=code,
-                    subject_urn=urn("patient"),
-                    encounter_urn=urn("encounter"),
-                    performer_urn=urn("practitioner"),
-                    effective=start,
-                    value=drawn.analytes[analyte],
-                    unit=unit,
-                ),
+    panel_members: list[tuple[str, object, list[str]]] = []
+    for panel_key, panel_code, members in LAB_PANELS:
+        member_urns = []
+        for analyte, code, unit in members:
+            if analyte not in drawn.analytes:
+                continue
+            role = f"obs-{analyte}"
+            member_urns.append(urn(role))
+            entries.append(
+                Entry(
+                    urn(role),
+                    build_lab_observation(
+                        resource_id=rid(role),
+                        code=code,
+                        subject_urn=urn("patient"),
+                        encounter_urn=urn("encounter"),
+                        performer_urn=urn("practitioner"),
+                        effective=start,
+                        value=drawn.analytes[analyte],
+                        unit=unit,
+                    ),
+                )
             )
-        )
+        if member_urns:
+            panel_members.append((panel_key, panel_code, member_urns))
 
     for analyte, code, vital_profile, unit in VITAL_ANALYTES:
         if analyte not in drawn.analytes:
@@ -279,6 +346,7 @@ def generate_bundle(
                     effective=start,
                     value=drawn.analytes[analyte],
                     unit=unit,
+                    additional_codes=VITAL_EXTRA_CODES.get(analyte, ()),
                 ),
             )
         )
@@ -328,17 +396,19 @@ def generate_bundle(
             )
         )
 
-    if lab_urns:
+    for panel_key, panel_code, member_urns in panel_members:
+        role = f"report-{panel_key}"
         entries.append(
             Entry(
-                urn("report-lab"),
+                urn(role),
                 build_diagnostic_report(
-                    resource_id=rid("report-lab"),
+                    resource_id=rid(role),
+                    code=panel_code,
                     subject_urn=urn("patient"),
                     performer_urn=urn("practitioner"),
                     effective=start,
                     issued=end,
-                    result_urns=lab_urns,
+                    result_urns=member_urns,
                 ),
             )
         )
