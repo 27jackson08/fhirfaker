@@ -129,6 +129,167 @@ class Marginal:
         return mean, math.sqrt(max(variance, 0.0))
 
 
+@dataclass(frozen=True)
+class LogNormalMarginal:
+    """A truncated log-normal marginal, for right-skewed analytes.
+
+    Diabetic HbA1c and triglycerides have a mode near their lower bound and a long
+    upper tail. `fit_truncated_normal` refuses them outright rather than returning a
+    poor fit, which is the correct behaviour and also the reason this type exists.
+
+    Parameterised by the median (exp(mu), a natural centre for a skewed quantity) and
+    the log-scale sigma, which is recovered from the quartile ratio:
+    sigma = ln(Q3/Q1) / 1.349.
+
+    The Gaussian copula in `engine.py` only needs `ppf`, so mixing marginal families
+    inside one joint model costs nothing — which is why a copula was chosen over
+    ad-hoc conditional rules in the first place.
+    """
+
+    name: str
+    median: float
+    sigma: float
+    low: float
+    high: float
+
+    def __post_init__(self) -> None:
+        if self.median <= 0 or self.low <= 0:
+            raise ValueError(f"{self.name}: log-normal requires positive support")
+        if self.sigma <= 0:
+            raise ValueError(f"{self.name}: sigma must be positive")
+        if not self.low < self.high:
+            raise ValueError(f"{self.name}: low must be below high")
+
+    @property
+    def mu(self) -> float:
+        return math.log(self.median)
+
+    def _bounds(self) -> tuple[float, float]:
+        return (
+            (math.log(self.low) - self.mu) / self.sigma,
+            (math.log(self.high) - self.mu) / self.sigma,
+        )
+
+    def ppf(self, u: np.ndarray) -> np.ndarray:
+        alpha, beta = self._bounds()
+        a = standard_normal_cdf(alpha)
+        b = standard_normal_cdf(beta)
+        return np.exp(self.mu + self.sigma * standard_normal_ppf(a + np.asarray(u) * (b - a)))
+
+    def moments(self) -> tuple[float, float]:
+        """Analytic mean and SD of the truncated log-normal."""
+        alpha, beta = self._bounds()
+        z = float(standard_normal_cdf(beta) - standard_normal_cdf(alpha))
+        if z <= 0:
+            raise ValueError(f"{self.name}: truncation bounds enclose no probability")
+
+        def shifted(k: int) -> float:
+            return float(
+                standard_normal_cdf(beta - k * self.sigma)
+                - standard_normal_cdf(alpha - k * self.sigma)
+            )
+
+        first = math.exp(self.mu + self.sigma**2 / 2) * shifted(1) / z
+        second = math.exp(2 * self.mu + 2 * self.sigma**2) * shifted(2) / z
+        return first, math.sqrt(max(second - first**2, 0.0))
+
+
+_NORMAL_QUARTILE = 0.6744897501960817
+
+
+def lognormal_from_quartiles(
+    name: str,
+    *,
+    median: float,
+    q1: float,
+    q3: float,
+    low: float,
+    high: float,
+    iterations: int = 200,
+    tolerance: float = 1e-9,
+) -> LogNormalMarginal:
+    """Fit a log-normal whose *truncated* median matches the empirical one.
+
+    Sigma comes from the quartile ratio, which is robust as long as both quartiles
+    sit inside the bounds. The location then has to be solved rather than set to the
+    empirical median: truncating diabetic HbA1c at 6.5 removes about a quarter of the
+    fitted distribution's lower tail, which dragged the realized median from 7.4 up
+    to 7.8. Anywhere the bound is a population definition rather than a rare-value
+    guard, this correction matters.
+    """
+    if not 0 < q1 < q3:
+        raise ValueError(f"{name}: quartiles must be positive and ordered")
+    if not low < median < high:
+        raise ValueError(f"{name}: median {median} must lie inside ({low}, {high})")
+
+    sigma = math.log(q3 / q1) / (2 * _NORMAL_QUARTILE)
+    location = median
+    for _ in range(iterations):
+        candidate = LogNormalMarginal(
+            name=name, median=location, sigma=sigma, low=low, high=high
+        )
+        realized = float(candidate.ppf(np.array([0.5]))[0])
+        if abs(realized - median) < tolerance:
+            return candidate
+        # Both the location and the realized median are log-scale quantities, so
+        # correcting multiplicatively converges far faster than an additive step.
+        location *= median / realized
+        if not low < location < high:
+            break
+    raise ValueError(
+        f"{name}: could not fit a log-normal with truncated median {median} inside "
+        f"[{low}, {high}] at sigma {sigma:.4g}"
+    )
+
+
+# A joint model may mix families: the copula only ever calls `ppf`, so a skewed
+# analyte can use a log-normal while its neighbours stay normal.
+AnyMarginal = Marginal | LogNormalMarginal
+
+
+def fit_truncated_normal(
+    name: str,
+    *,
+    target_mean: float,
+    target_sd: float,
+    low: float,
+    high: float,
+    iterations: int = 200,
+    tolerance: float = 1e-6,
+) -> Marginal:
+    """Solve for the Marginal whose *truncated* moments match the targets.
+
+    Passing an empirical mean and SD straight into `Marginal` sets the parameters of
+    the untruncated normal, not of the distribution that actually gets sampled. When
+    a bound sits near the centre the two diverge badly: NHANES puts diabetic HbA1c at
+    a median of 7.4 with the 2.5th centile at 6.5, and using those directly produced
+    a realized median of 7.85 with two-thirds of the intended spread.
+
+    Fixed-point iteration on (mean, sd) — the map is a contraction here, and the
+    result is deterministic, so calibrated marginals do not drift between runs.
+    """
+    if not low < target_mean < high:
+        raise ValueError(
+            f"{name}: target mean {target_mean} must lie inside ({low}, {high})"
+        )
+    mean, sd = target_mean, target_sd
+    for _ in range(iterations):
+        candidate = Marginal(name, mean=min(max(mean, low + 1e-9), high - 1e-9),
+                             sd=max(sd, 1e-9), low=low, high=high)
+        realized_mean, realized_sd = candidate.moments()
+        mean_error = target_mean - realized_mean
+        sd_ratio = target_sd / realized_sd if realized_sd > 0 else 1.0
+        if abs(mean_error) < tolerance and abs(sd_ratio - 1.0) < tolerance:
+            return candidate
+        mean += mean_error
+        sd *= sd_ratio
+    raise ValueError(
+        f"{name}: could not fit a truncated normal with mean {target_mean} and sd "
+        f"{target_sd} inside [{low}, {high}]. The targets are probably not "
+        "attainable for this shape — check for strong skew."
+    )
+
+
 def correlation_from_r_squared(r_squared: float) -> float:
     """rho = sqrt(R^2) for a simple linear regression.
 

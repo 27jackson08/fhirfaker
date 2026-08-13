@@ -1,0 +1,224 @@
+"""Derive marginal distributions from NHANES.
+
+The build doc's honest caveat was that marginals were "clinically-informed estimates,
+not fits to a named cohort". This closes that: it reads the NHANES 2017-March 2020
+pre-pandemic public files, restricts to the generator's target age band, stratifies by
+sex and by glycaemic status, and reports the moments a profile should use.
+
+Offline, like `pkg/spec/codegen.py` — nothing here runs on the generation path.
+
+    python -m pkg.calibration.nhanes --data-dir <dir>
+
+Files (https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/):
+    P_DEMO P_GHB P_BIOPRO P_TCHOL P_HDL P_TRIGLY P_BMX P_BPXO P_CBC
+"""
+
+from __future__ import annotations
+
+import argparse
+from dataclasses import dataclass
+from pathlib import Path
+
+import numpy as np
+
+from pkg.calibration.xpt import read_xpt
+
+# NHANES variable -> the analyte name this project uses.
+VARIABLES = {
+    "P_GHB": {"LBXGH": "hba1c"},
+    "P_BIOPRO": {
+        "LBXSCR": "creatinine", "LBXSGL": "glucose", "LBXSBU": "bun",
+        "LBXSNASI": "sodium", "LBXSKSI": "potassium", "LBXSCLSI": "chloride",
+        "LBXSC3SI": "co2", "LBXSCA": "calcium", "LBXSAL": "albumin",
+        "LBXSATSI": "alt", "LBXSASSI": "ast", "LBXSAPSI": "alkaline_phosphatase",
+        "LBXSTB": "bilirubin_total",
+    },
+    "P_TCHOL": {"LBXTC": "cholesterol_total"},
+    "P_HDL": {"LBDHDD": "hdl"},
+    "P_TRIGLY": {"LBXTR": "triglycerides", "LBDLDL": "ldl"},
+    "P_BMX": {"BMXHT": "height_cm", "BMXWT": "weight_kg", "BMXBMI": "bmi"},
+    "P_BPXO": {"BPXOSY1": "systolic", "BPXODI1": "diastolic"},
+    "P_CBC": {
+        "LBXHGB": "hemoglobin", "LBXHCT": "hematocrit", "LBXRBCSI": "rbc",
+        "LBXWBCSI": "wbc", "LBXPLTSI": "platelets",
+    },
+}
+
+AGE_LOW, AGE_HIGH = 45, 65
+DIABETES_HBA1C = 6.5  # ADA diagnostic threshold.
+
+# NHANES codes sex as 1 = male, 2 = female.
+_SEX = {1.0: "M", 2.0: "F"}
+
+
+# A normal SD equals IQR / 1.349. For a skewed analyte the raw SD is inflated by the
+# upper tail, and feeding it to a symmetric truncated normal produces a distribution
+# that matches neither the centre nor the spread.
+IQR_TO_SD = 1.349
+
+
+@dataclass(frozen=True)
+class Moments:
+    analyte: str
+    stratum: str
+    n: int
+    mean: float
+    sd: float
+    median: float
+    robust_sd: float
+    q1: float
+    q3: float
+    p2_5: float
+    p97_5: float
+
+    @property
+    def skew_ratio(self) -> float:
+        """How much the raw SD exceeds the robust one. >1.3 means visibly skewed."""
+        return self.sd / self.robust_sd if self.robust_sd else float("inf")
+
+    def as_marginal(self) -> str:
+        """The Marginal(...) literal this stratum implies.
+
+        Centre and spread come from the median and IQR so a skewed analyte is not
+        modelled around a mean its own tail dragged upward.
+        """
+        return (
+            f'Marginal("{self.analyte}", mean={self.median:.4g}, '
+            f"sd={self.robust_sd:.4g}, low={self.p2_5:.4g}, high={self.p97_5:.4g})"
+        )
+
+
+def load(data_dir: Path) -> dict[float, dict[str, float]]:
+    """Join every file on SEQN into one record per respondent."""
+    people: dict[float, dict[str, float]] = {}
+
+    _, demo = read_xpt(data_dir / "P_DEMO.xpt")
+    for row in demo:
+        seqn = row.get("SEQN")
+        age, sex = row.get("RIDAGEYR"), row.get("RIAGENDR")
+        if seqn is None or age is None or sex not in _SEX:
+            continue
+        people[seqn] = {"age": age, "sex": _SEX[sex]}
+
+    for stem, mapping in VARIABLES.items():
+        path = data_dir / f"{stem}.xpt"
+        if not path.exists():
+            print(f"  (skipping missing {path.name})")
+            continue
+        _, rows = read_xpt(path)
+        for row in rows:
+            record = people.get(row.get("SEQN"))
+            if record is None:
+                continue
+            for source, analyte in mapping.items():
+                value = row.get(source)
+                if isinstance(value, float):
+                    record[analyte] = value
+    return people
+
+
+def in_band(people: dict[float, dict], sex: str, diabetic: bool | None) -> list[dict]:
+    selected = []
+    for record in people.values():
+        if not AGE_LOW <= record["age"] <= AGE_HIGH or record["sex"] != sex:
+            continue
+        hba1c = record.get("hba1c")
+        if diabetic is not None:
+            if hba1c is None:
+                continue
+            if (hba1c >= DIABETES_HBA1C) != diabetic:
+                continue
+        selected.append(record)
+    return selected
+
+
+def moments(records: list[dict], analyte: str, stratum: str) -> Moments | None:
+    values = np.array([r[analyte] for r in records if analyte in r], dtype=float)
+    if values.size < 30:
+        return None
+    q1, q3 = np.percentile(values, [25.0, 75.0])
+    return Moments(
+        analyte=analyte,
+        stratum=stratum,
+        n=int(values.size),
+        mean=float(values.mean()),
+        sd=float(values.std(ddof=1)),
+        median=float(np.median(values)),
+        robust_sd=float((q3 - q1) / IQR_TO_SD),
+        q1=float(q1),
+        q3=float(q3),
+        # Truncation bounds at the 2.5th/97.5th centiles: wide enough not to distort
+        # the moments, tight enough to exclude implausible tail draws.
+        p2_5=float(np.percentile(values, 2.5)),
+        p97_5=float(np.percentile(values, 97.5)),
+    )
+
+
+def report(people: dict[float, dict]) -> list[Moments]:
+    analytes = sorted({a for mapping in VARIABLES.values() for a in mapping.values()})
+    results = []
+    for sex in ("F", "M"):
+        for label, diabetic in (("all", None), ("nondiabetic", False), ("diabetic", True)):
+            records = in_band(people, sex, diabetic)
+            for analyte in analytes:
+                found = moments(records, analyte, f"{sex}/{label}")
+                if found:
+                    results.append(found)
+    return results
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--data-dir", type=Path, required=True)
+    parser.add_argument("--analytes", default="", help="comma-separated filter")
+    parser.add_argument("--emit-targets", type=Path,
+                        help="write a JSON targets file for the fidelity suite")
+    parser.add_argument("--emit-marginals", action="store_true",
+                        help="print Marginal(...) literals instead of a table")
+    args = parser.parse_args()
+
+    people = load(args.data_dir)
+    band = [r for r in people.values() if AGE_LOW <= r["age"] <= AGE_HIGH]
+    print(f"NHANES 2017-March 2020: {len(people)} respondents, "
+          f"{len(band)} aged {AGE_LOW}-{AGE_HIGH}\n")
+
+    wanted = {a.strip() for a in args.analytes.split(",") if a.strip()}
+    rows = [r for r in report(people) if not wanted or r.analyte in wanted]
+
+    if args.emit_targets:
+        import json
+
+        payload = {
+            "source": "NHANES 2017-March 2020 pre-pandemic public files",
+            "age_band": [AGE_LOW, AGE_HIGH],
+            "strata": {
+                f"{r.stratum}/{r.analyte}": {
+                    "n": r.n, "median": round(r.median, 4),
+                    "robust_sd": round(r.robust_sd, 4),
+                    "q1": round(r.q1, 4), "q3": round(r.q3, 4),
+                    "skew_ratio": round(r.skew_ratio, 3),
+                    "p2_5": round(r.p2_5, 4), "p97_5": round(r.p97_5, 4),
+                }
+                for r in rows
+            },
+        }
+        args.emit_targets.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+        print(f"wrote {len(payload['strata'])} strata to {args.emit_targets}")
+        return 0
+
+    if args.emit_marginals:
+        for row in rows:
+            print(f"# {row.stratum:16s} n={row.n:5d}  {row.as_marginal()}")
+        return 0
+
+    print(f"{'analyte':22s} {'stratum':16s} {'n':>6s} {'median':>9s} "
+          f"{'robustSD':>9s} {'rawSD':>8s} {'skew':>6s} {'p2.5':>8s} {'p97.5':>8s}")
+    for row in rows:
+        print(f"{row.analyte:22s} {row.stratum:16s} {row.n:6d} {row.median:9.3f} "
+              f"{row.robust_sd:9.3f} {row.sd:8.3f} {row.skew_ratio:6.2f} "
+              f"{row.p2_5:8.2f} {row.p97_5:8.2f}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

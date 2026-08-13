@@ -1721,7 +1721,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Cholesterol [Mass/volume] in Serum or Plasma: 200 mg/dL (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Cholesterol [Mass/volume] in Serum or Plasma: 210 mg/dL (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -1759,7 +1759,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 200,
+          "value": 210,
           "unit": "mg/dL",
           "system": "http://unitsofmeasure.org",
           "code": "mg/dL"
@@ -1788,7 +1788,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Cholesterol in HDL [Mass/volume] in Serum or Plasma: 45 mg/dL (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Cholesterol in HDL [Mass/volume] in Serum or Plasma: 48 mg/dL (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -1826,7 +1826,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 45,
+          "value": 48,
           "unit": "mg/dL",
           "system": "http://unitsofmeasure.org",
           "code": "mg/dL"
@@ -1855,7 +1855,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Cholesterol in LDL [Mass/volume] in Serum or Plasma by calculation: 139 mg/dL (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Cholesterol in LDL [Mass/volume] in Serum or Plasma by calculation: 151 mg/dL (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -1893,7 +1893,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 139,
+          "value": 151,
           "unit": "mg/dL",
           "system": "http://unitsofmeasure.org",
           "code": "mg/dL"
@@ -1922,7 +1922,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Triglyceride [Mass/volume] in Serum or Plasma: 78 mg/dL (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Triglyceride [Mass/volume] in Serum or Plasma: 55 mg/dL (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -1960,7 +1960,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 78,
+          "value": 55,
           "unit": "mg/dL",
           "system": "http://unitsofmeasure.org",
           "code": "mg/dL"
@@ -1989,7 +1989,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Hemoglobin A1c/Hemoglobin.total in Blood: 5.3 % (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Hemoglobin A1c/Hemoglobin.total in Blood: 5.5 % (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -2027,7 +2027,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 5.3,
+          "value": 5.5,
           "unit": "%",
           "system": "http://unitsofmeasure.org",
           "code": "%"
@@ -2190,7 +2190,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Body height: 160 cm (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Body height: 158 cm (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -2228,7 +2228,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 160,
+          "value": 158,
           "unit": "cm",
           "system": "http://unitsofmeasure.org",
           "code": "cm"
@@ -2257,7 +2257,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Body weight: 59.5 kg (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Body weight: 63.3 kg (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -2295,7 +2295,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 59.5,
+          "value": 63.3,
           "unit": "kg",
           "system": "http://unitsofmeasure.org",
           "code": "kg"
@@ -2324,7 +2324,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Body mass index (BMI) [Ratio]: 23.1 kg/m2 (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Body mass index (BMI) [Ratio]: 25.5 kg/m2 (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -2362,7 +2362,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 23.1,
+          "value": 25.5,
           "unit": "kg/m2",
           "system": "http://unitsofmeasure.org",
           "code": "kg/m2"

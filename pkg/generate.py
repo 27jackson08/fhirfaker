@@ -8,6 +8,7 @@ decided independently. That is the whole point of the correlation engine
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import date, timedelta
 
 import numpy as np
@@ -107,6 +108,15 @@ LAB_PANELS = (
     ),
 )
 
+# Panel keys, in emission order.
+ALL_PANELS = ("cmp", "cbc", "lipid", "hba1c", "albuminuria")
+
+# The panels a lean fixture wants: whatever the presenting problem needs, nothing
+# else. A 50-entry bundle is realistic for a real visit but heavy for someone who
+# just wants five diabetic patients in a pytest fixture, and "lightweight" is the
+# whole positioning.
+LEAN_PANELS = ("hba1c", "lipid")
+
 # Analyte -> (LOINC code, US Core vitals profile, unit).
 VITAL_ANALYTES = (
     ("height_cm", codes.BODY_HEIGHT, uscore.BODY_HEIGHT, codes.UNIT_CM),
@@ -197,6 +207,8 @@ def generate_cohort(
     sex: str = "mixed",
     age_range: tuple[int, int] = (45, 65),
     reference_date: date = DEFAULT_REFERENCE_DATE,
+    panels: Sequence[str] | None = None,
+    include_vitals: bool = True,
 ) -> list[Bundle]:
     """Generate a mixed cohort, drawing each patient's profile by prevalence.
 
@@ -228,6 +240,8 @@ def generate_cohort(
             age_range=age_range,
             reference_date=reference_date,
             index=index,
+            panels=panels,
+            include_vitals=include_vitals,
         )
         for index, pick in enumerate(chosen)
     ]
@@ -241,9 +255,22 @@ def generate_bundle(
     age_range: tuple[int, int] = (45, 65),
     reference_date: date = DEFAULT_REFERENCE_DATE,
     index: int = 0,
+    panels: Sequence[str] | None = None,
+    include_vitals: bool = True,
 ) -> Bundle:
-    """Generate a transaction Bundle for one patient drawn from `profile`."""
+    """Generate a transaction Bundle for one patient drawn from `profile`.
+
+    `panels` selects which laboratory panels to emit (default: all of ALL_PANELS).
+    Pass `LEAN_PANELS`, a subset, or `()` for none — the clinical draw is identical
+    either way, so narrowing the output never changes the values that are emitted.
+    """
     _require_sex(sex)
+    selected = ALL_PANELS if panels is None else tuple(panels)
+    unknown = set(selected) - set(ALL_PANELS)
+    if unknown:
+        raise ValueError(
+            f"unknown panel(s): {sorted(unknown)}; available: {list(ALL_PANELS)}"
+        )
 
     rng = np.random.default_rng([seed, index])
     born, age_years = _birth_date(rng, age_range, reference_date)
@@ -305,6 +332,8 @@ def generate_bundle(
 
     panel_members: list[tuple[str, object, list[str]]] = []
     for panel_key, panel_code, members in LAB_PANELS:
+        if panel_key not in selected:
+            continue
         member_urns = []
         for analyte, code, unit in members:
             if analyte not in drawn.analytes:
@@ -330,7 +359,7 @@ def generate_bundle(
             panel_members.append((panel_key, panel_code, member_urns))
 
     for analyte, code, vital_profile, unit in VITAL_ANALYTES:
-        if analyte not in drawn.analytes:
+        if not include_vitals or analyte not in drawn.analytes:
             continue
         role = f"obs-{analyte}"
         entries.append(
@@ -351,7 +380,8 @@ def generate_bundle(
             )
         )
 
-    entries.append(
+    if include_vitals:
+        entries.append(
         Entry(
             urn("obs-bp"),
             build_blood_pressure(
@@ -364,7 +394,7 @@ def generate_bundle(
                 diastolic=drawn.analytes["diastolic"],
             ),
         )
-    )
+        )
 
     for position, code in enumerate(drawn.allergies):
         role = f"allergy-{position}"

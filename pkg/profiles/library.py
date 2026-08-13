@@ -1,13 +1,24 @@
 """The four v1 clinical profiles.
 
-Marginals are clinically-informed estimates for a 45-65 adult population, chosen to
-sit inside published reference and treatment-target ranges. They are NOT fitted to a
-named cohort — calibrating against NHANES marginals is Phase 4 work, and the README
-should say so rather than implying more provenance than exists.
+Marginals marked NHANES are derived from the NHANES 2017-March 2020 pre-pandemic
+public files, restricted to ages 45-65 and stratified by sex and glycaemic status.
+Centre and spread come from the median and IQR/1.349 rather than the mean and SD:
+creatinine, triglycerides and HbA1c are all right-skewed (raw SD up to 3.8x the
+robust one), so a symmetric truncated normal fitted to the raw moments would match
+neither the centre nor the spread. Regenerate with `pkg/calibration/nhanes.py`.
 
-What IS taken from the literature is the *dependence* structure: the HbA1c/glucose
-correlation is derived from the ADAG R^2 rather than hand-tuned, and eGFR is computed
-from creatinine by CKD-EPI 2021 rather than sampled.
+Two things are NOT NHANES-derived, deliberately:
+  * Blood pressure marginals are clinical definitions. "Normotensive" and
+    "hypertensive" are the populations the profiles mean, and NHANES is not
+    stratified that way here.
+  * The diabetic glucose marginal is ADAG-anchored, because reproducing that
+    published relationship is the point. ADAG describes *average* glucose, which
+    sits above a fasting measurement, so it is intentionally not matched to the
+    NHANES serum glucose figure.
+
+What comes from the literature is the *dependence* structure: the HbA1c/glucose
+correlation is derived from the ADAG R^2 rather than hand-tuned, and eGFR, LDL and
+BMI are computed from their inputs rather than sampled.
 """
 
 from __future__ import annotations
@@ -17,6 +28,7 @@ from pkg.correlation.distributions import (
     Marginal,
     calibrate_latent_correlation,
     correlation_from_r_squared,
+    lognormal_from_quartiles,
     sd_from_regression_slope,
 )
 from pkg.correlation.engine import JointModel
@@ -33,9 +45,10 @@ from pkg.terminology import codes
 # --- shared marginals ------------------------------------------------------------
 # Creatinine reference intervals are sex-specific; using one distribution for both
 # would put half the population outside their own reference range.
+# NHANES, nondiabetic 45-65.
 CREATININE_BY_SEX = {
-    "F": Marginal("creatinine", mean=0.75, sd=0.13, low=0.40, high=1.30),
-    "M": Marginal("creatinine", mean=0.95, sd=0.15, low=0.50, high=1.50),
+    "F": Marginal("creatinine", mean=0.73, sd=0.1483, low=0.51, high=1.134),
+    "M": Marginal("creatinine", mean=0.97, sd=0.1853, low=0.65, high=1.528),
 }
 NORMOTENSIVE = (
     Marginal("systolic", mean=120.0, sd=11.0, low=85.0, high=160.0),
@@ -45,10 +58,17 @@ HYPERTENSIVE = (
     Marginal("systolic", mean=146.0, sd=12.0, low=125.0, high=200.0),
     Marginal("diastolic", mean=90.0, sd=8.0, low=70.0, high=120.0),
 )
-NORMOGLYCAEMIC = (
-    Marginal("hba1c", mean=5.4, sd=0.30, low=4.0, high=6.4),
-    Marginal("glucose", mean=92.0, sd=9.0, low=60.0, high=140.0),
-)
+# NHANES, nondiabetic 45-65, by sex.
+NORMOGLYCAEMIC_BY_SEX = {
+    "F": (
+        Marginal("hba1c", mean=5.6, sd=0.2965, low=4.9, high=6.3),
+        Marginal("glucose", mean=92.0, sd=8.895, low=76.0, high=123.0),
+    ),
+    "M": (
+        Marginal("hba1c", mean=5.6, sd=0.3706, low=4.8, high=6.4),
+        Marginal("glucose", mean=94.0, sd=9.637, low=75.0, high=126.8),
+    ),
+}
 
 # Systolic and diastolic move together; drawing them independently produces
 # physiologically absurd pairs like 170/55.
@@ -64,53 +84,71 @@ HEIGHT_WEIGHT_CORRELATION = 0.45
 # calculated LDL is always one a laboratory would actually report.
 _TG_MAX = 380.0
 
-NORMOLIPIDAEMIC = (
-    Marginal("cholesterol_total", mean=190.0, sd=32.0, low=110.0, high=310.0),
-    Marginal("triglycerides", mean=115.0, sd=45.0, low=40.0, high=_TG_MAX),
-)
-# Diabetic dyslipidaemia: higher triglycerides, lower HDL, at similar total
-# cholesterol. This is the characteristic pattern, not a generic "worse lipids".
-DYSLIPIDAEMIC = (
-    Marginal("cholesterol_total", mean=200.0, sd=35.0, low=110.0, high=330.0),
-    Marginal("triglycerides", mean=185.0, sd=70.0, low=50.0, high=_TG_MAX),
-)
+# NHANES, nondiabetic 45-65. Triglyceride upper bounds are clamped below
+# Friedewald's validity threshold so the calculated LDL is always reportable.
+NORMOLIPIDAEMIC_BY_SEX = {
+    "F": (
+        Marginal("cholesterol_total", mean=198.0, sd=36.32, low=129.0, high=287.0),
+        lognormal_from_quartiles("triglycerides", median=88.0, q1=64.0, q3=127.0,
+                                 low=33.05, high=271.9),
+    ),
+    "M": (
+        Marginal("cholesterol_total", mean=188.5, sd=38.55, low=117.0, high=273.0),
+        lognormal_from_quartiles("triglycerides", median=94.0, q1=67.2, q3=138.8,
+                                 low=34.0, high=332.3),
+    ),
+}
+# NHANES, diabetic 45-65. The characteristic pattern shows up in the data itself:
+# higher triglycerides and lower HDL at slightly *lower* total cholesterol.
+DYSLIPIDAEMIC_BY_SEX = {
+    "F": (
+        Marginal("cholesterol_total", mean=190.0, sd=43.74, low=121.0, high=292.0),
+        lognormal_from_quartiles("triglycerides", median=122.0, q1=86.5, q3=165.5,
+                                 low=42.7, high=_TG_MAX),
+    ),
+    "M": (
+        Marginal("cholesterol_total", mean=183.0, sd=44.48, low=112.0, high=296.0),
+        lognormal_from_quartiles("triglycerides", median=132.0, q1=99.5, q3=195.5,
+                                 low=45.0, high=_TG_MAX),
+    ),
+}
 HDL_BY_SEX = {
-    "F": Marginal("hdl", mean=55.0, sd=13.0, low=22.0, high=110.0),
-    "M": Marginal("hdl", mean=46.0, sd=12.0, low=20.0, high=100.0),
+    "F": Marginal("hdl", mean=57.0, sd=16.31, low=35.0, high=97.0),
+    "M": Marginal("hdl", mean=47.0, sd=12.6, low=30.0, high=84.62),
 }
 HDL_LOW_BY_SEX = {
-    "F": Marginal("hdl", mean=46.0, sd=11.0, low=20.0, high=95.0),
-    "M": Marginal("hdl", mean=39.0, sd=10.0, low=18.0, high=85.0),
+    "F": Marginal("hdl", mean=49.0, sd=11.12, low=32.0, high=83.0),
+    "M": Marginal("hdl", mean=42.0, sd=10.38, low=28.0, high=76.0),
 }
 # Height is the same population either way; only weight shifts. Giving every profile
 # one weight distribution left diabetic patients with the same BMI as everyone else,
 # which contradicts the single strongest association in type 2 diabetes.
 _HEIGHT_BY_SEX = {
-    "F": Marginal("height_cm", mean=163.0, sd=6.8, low=140.0, high=188.0),
-    "M": Marginal("height_cm", mean=176.0, sd=7.2, low=150.0, high=200.0),
+    "F": Marginal("height_cm", mean=160.1, sd=7.042, low=146.5, high=173.9),
+    "M": Marginal("height_cm", mean=173.6, sd=7.784, low=158.9, high=190.0),
 }
+# NHANES, nondiabetic 45-65. Materially heavier than the estimates these replaced:
+# a US adult in this band really does sit near BMI 29, not 26.
 ANTHROPOMETRICS_TYPICAL = {
     sex: (
         _HEIGHT_BY_SEX[sex],
         Marginal("weight_kg", mean=weight, sd=sd, low=low, high=high),
     )
     for sex, weight, sd, low, high in (
-        ("F", 70.0, 14.0, 40.0, 135.0),
-        ("M", 83.0, 15.0, 48.0, 150.0),
+        ("F", 74.9, 19.64, 47.54, 133.7),
+        ("M", 85.0, 18.9, 57.78, 142.3),
     )
 }
-# Type 2 diabetes carries a markedly higher BMI distribution than the typical adult.
-# Weights are set so the generated obesity rate lands near 60%, the middle of the
-# 55-65% range reported for US type 2 diabetes populations — chosen from the target
-# rate rather than tuned until the number looked acceptable.
+# NHANES, diabetic 45-65 — no longer a tuned target. The data puts this group
+# roughly 8 kg heavier than their non-diabetic peers.
 ANTHROPOMETRICS_RAISED_BMI = {
     sex: (
         _HEIGHT_BY_SEX[sex],
         Marginal("weight_kg", mean=weight, sd=sd, low=low, high=high),
     )
     for sex, weight, sd, low, high in (
-        ("F", 84.0, 18.0, 45.0, 170.0),
-        ("M", 97.0, 19.0, 52.0, 185.0),
+        ("F", 83.15, 22.48, 51.17, 138.8),
+        ("M", 95.6, 21.5, 58.0, 152.0),
     )
 }
 
@@ -301,8 +339,8 @@ def _metabolic_conditions(raw: dict[str, float]) -> tuple:
 
 
 def healthy(sex: str) -> ClinicalProfile:
-    hba1c, glucose = NORMOGLYCAEMIC
-    cholesterol, triglycerides = NORMOLIPIDAEMIC
+    hba1c, glucose = NORMOGLYCAEMIC_BY_SEX[sex]
+    cholesterol, triglycerides = NORMOLIPIDAEMIC_BY_SEX[sex]
     height, weight = ANTHROPOMETRICS_TYPICAL[sex]
     return ClinicalProfile(
         key="healthy",
@@ -371,9 +409,16 @@ def _diabetes_conditions(raw: dict[str, float]) -> tuple:
 
 def type2_diabetes(sex: str) -> ClinicalProfile:
     """Diagnosed, moderately controlled type 2 diabetes."""
-    hba1c = Marginal("hba1c", mean=7.8, sd=0.90, low=6.5, high=12.0)
+    # NHANES, diabetic 45-65. Log-normal, not normal: the mode sits at the lower
+    # bound with a long upper tail, and `fit_truncated_normal` refuses these targets
+    # outright rather than returning a bad fit. The estimate this replaced had
+    # sd=0.90 — barely half the real spread — so every generated diabetic looked
+    # alike.
+    hba1c = lognormal_from_quartiles(
+        "hba1c", median=7.4, q1=6.8, q3=8.8, low=6.5, high=12.64
+    )
     glucose, rho = _adag_calibrated_glucose(hba1c)
-    cholesterol, triglycerides = DYSLIPIDAEMIC
+    cholesterol, triglycerides = DYSLIPIDAEMIC_BY_SEX[sex]
     height, weight = ANTHROPOMETRICS_RAISED_BMI[sex]
 
     return ClinicalProfile(
@@ -431,8 +476,8 @@ def type2_diabetes(sex: str) -> ClinicalProfile:
 
 
 def hypertension(sex: str) -> ClinicalProfile:
-    hba1c, glucose = NORMOGLYCAEMIC
-    cholesterol, triglycerides = NORMOLIPIDAEMIC
+    hba1c, glucose = NORMOGLYCAEMIC_BY_SEX[sex]
+    cholesterol, triglycerides = NORMOLIPIDAEMIC_BY_SEX[sex]
     height, weight = ANTHROPOMETRICS_TYPICAL[sex]
     return ClinicalProfile(
         key="hypertension",
@@ -477,8 +522,8 @@ def ckd_stage3(sex: str) -> ClinicalProfile:
     eGFR is sampled inside the stage-3 band and creatinine is *inverted* from it, so
     the constraint holds by construction instead of by rejection sampling.
     """
-    hba1c, glucose = NORMOGLYCAEMIC
-    cholesterol, triglycerides = NORMOLIPIDAEMIC
+    hba1c, glucose = NORMOGLYCAEMIC_BY_SEX[sex]
+    cholesterol, triglycerides = NORMOLIPIDAEMIC_BY_SEX[sex]
     height, weight = ANTHROPOMETRICS_TYPICAL[sex]
     return ClinicalProfile(
         key="ckd_stage3",

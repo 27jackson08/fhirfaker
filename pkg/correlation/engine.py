@@ -16,7 +16,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from pkg.correlation.distributions import Marginal, standard_normal_cdf
+from pkg.correlation.distributions import AnyMarginal, standard_normal_cdf
 
 # Below this, a correlation matrix is treated as non-positive-definite. Cholesky on a
 # matrix that is merely near-singular yields silently wrong dependence.
@@ -27,7 +27,7 @@ _MIN_EIGENVALUE = 1e-10
 class JointModel:
     """Marginals plus the correlation structure linking them."""
 
-    marginals: tuple[Marginal, ...]
+    marginals: tuple[AnyMarginal, ...]
     correlations: tuple[tuple[str, str, float], ...] = ()
 
     @property

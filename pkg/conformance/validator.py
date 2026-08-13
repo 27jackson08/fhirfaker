@@ -55,12 +55,36 @@ class ValidationResult:
         return not self.errors
 
 
+# The validator contacts an external terminology server to resolve value sets, and
+# that connection drops often enough to make the gate flaky. These are signatures of
+# "the validator could not run", never of "the resource is wrong" — so retrying them
+# is safe, while retrying a genuine validation failure would not be.
+_TRANSIENT_SIGNATURES = (
+    "SocketException",
+    "SocketTimeoutException",
+    "UnknownHostException",
+    "Connection reset",
+    "Socket closed",
+    "Read timed out",
+    "getCapabilitiesStatement",
+)
+
+# Repo-local so CI can cache it between runs and cut the terminology round-trips
+# that cause the flakiness in the first place.
+TX_CACHE = REPO_ROOT / ".tools" / "tx-cache"
+
+
+def _looks_transient(output: str) -> bool:
+    return any(signature in output for signature in _TRANSIENT_SIGNATURES)
+
+
 def validate(
     path: Path,
     *,
     profile: str | None = None,
     ig: str = US_CORE_IG,
     timeout: int = 900,
+    attempts: int = 3,
 ) -> ValidationResult:
     """Run the HL7 validator against one file.
 
@@ -75,19 +99,28 @@ def validate(
             "download/validator_cli.jar"
         )
 
+    TX_CACHE.mkdir(parents=True, exist_ok=True)
     cmd = [
         "java", "-jar", str(VALIDATOR_JAR),
         str(path),
         "-version", FHIR_VERSION,
         "-ig", ig,
+        f"-txCache={TX_CACHE}",
     ]
     if profile:
         cmd += ["-profile", profile]
 
-    completed = subprocess.run(
-        cmd, capture_output=True, text=True, timeout=timeout, check=False
-    )
-    output = ANSI_RE.sub("", completed.stdout + completed.stderr)
+    output = ""
+    for attempt in range(1, attempts + 1):
+        completed = subprocess.run(
+            cmd, capture_output=True, text=True, timeout=timeout, check=False
+        )
+        output = ANSI_RE.sub("", completed.stdout + completed.stderr)
+        if SUMMARY_RE.search(output):
+            break
+        if attempt < attempts and _looks_transient(output):
+            continue
+        break
 
     issues = tuple(
         Issue(severity=m.group(1), location=m.group(2).strip(), message=m.group(3).strip())
@@ -100,9 +133,14 @@ def validate(
     # way this harness could break.
     summary = SUMMARY_RE.search(output)
     if summary is None:
+        reason = (
+            "the terminology server was unreachable across every attempt"
+            if _looks_transient(output)
+            else "the validator likely failed to run"
+        )
         raise RuntimeError(
-            f"could not find a validator summary line in output for {path}; "
-            f"the validator likely failed to run.\n{output[-2000:]}"
+            f"could not find a validator summary line in output for {path} after "
+            f"{attempts} attempt(s); {reason}.\n{output[-2000:]}"
         )
     reported_errors, reported_warnings = int(summary.group(1)), int(summary.group(2))
     parsed_errors = sum(1 for i in issues if i.severity == "Error")

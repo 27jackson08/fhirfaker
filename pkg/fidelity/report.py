@@ -8,6 +8,7 @@ Run:  python -m pkg.fidelity.report
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -197,14 +198,83 @@ def anthropometric_checks(size: int, seed: int) -> list[Check]:
     return [
         Check("BMI consistent with height and weight", worst_error, 0.0, 1e-9,
               "kg/m2", "WHO"),
-        # Type 2 diabetes carries a markedly higher BMI than the typical adult; equal
-        # distributions would contradict the strongest association in the disease.
-        # 55-65% obesity is the range reported for US type 2 diabetes populations.
-        Check("diabetic obesity rate", obese / drawn_count, 0.60, 0.05, "fraction",
-              "profile config"),
-        Check("typical-adult median BMI", float(healthy_bmi), 26.5, 1.5, "kg/m2",
-              "profile config"),
+        # Both figures are measured from NHANES 45-65, not chosen. They previously
+        # sat at 0.60 and 26.5 — my own estimates — and calibrating the marginals
+        # made the suite flag the disagreement. The data is the authority here, so
+        # the expectations moved to it rather than the marginals being bent back.
+        Check("diabetic obesity rate", obese / drawn_count, 0.612, 0.05, "fraction",
+              "NHANES 2017-2020"),
+        Check("typical-adult median BMI", float(healthy_bmi), 28.8, 1.5, "kg/m2",
+              "NHANES 2017-2020"),
     ]
+
+
+NHANES_TARGETS = (
+    Path(__file__).resolve().parents[1] / "calibration" / "data" / "nhanes_targets.json"
+)
+
+# Analytes calibrated per stratum, and how far the generated median may drift from
+# the NHANES one. Tolerances are relative, sized to be loose enough that the copula's
+# dependence structure does not trip them and tight enough to catch a real change.
+NHANES_CHECKS = (
+    ("healthy", "nondiabetic", "hba1c", 0.03),
+    ("healthy", "nondiabetic", "triglycerides", 0.12),
+    ("healthy", "nondiabetic", "cholesterol_total", 0.06),
+    ("healthy", "nondiabetic", "hdl", 0.08),
+    ("healthy", "nondiabetic", "creatinine", 0.08),
+    ("healthy", "nondiabetic", "weight_kg", 0.06),
+    ("healthy", "nondiabetic", "height_cm", 0.02),
+    ("type2_diabetes", "diabetic", "hba1c", 0.05),
+    ("type2_diabetes", "diabetic", "triglycerides", 0.12),
+    ("type2_diabetes", "diabetic", "hdl", 0.08),
+    ("type2_diabetes", "diabetic", "weight_kg", 0.08),
+)
+
+
+def nhanes_checks(size: int, seed: int) -> list[Check]:
+    """Generated marginals against the NHANES medians they were calibrated to.
+
+    Reads a committed targets file rather than the network, so the check runs
+    offline. Regenerate it with `pkg/calibration/nhanes.py` when the source release
+    changes — and expect this to fail if it does, which is the point.
+    """
+    if not NHANES_TARGETS.exists():
+        return []
+    targets = json.loads(NHANES_TARGETS.read_text())["strata"]
+
+    checks = []
+    for profile_key, stratum, analyte, tolerance in NHANES_CHECKS:
+        for sex in ("F", "M"):
+            key = f"{sex}/{stratum}/{analyte}"
+            if key not in targets:
+                continue
+            expected = targets[key]["median"]
+            rng = np.random.default_rng([seed, 7, hash_free_index(analyte, sex)])
+            drawn = [
+                draw(get_profile(profile_key, sex), rng=rng, age_years=55.0, sex=sex)
+                for _ in range(size)
+            ]
+            values = [d.raw[analyte] for d in drawn if analyte in d.raw]
+            if not values:
+                continue
+            checks.append(
+                Check(
+                    f"{analyte} median ({profile_key}/{sex})",
+                    float(np.median(values)),
+                    expected,
+                    abs(expected) * tolerance,
+                    "",
+                    "NHANES 2017-2020",
+                )
+            )
+    return checks
+
+
+def hash_free_index(analyte: str, sex: str) -> int:
+    """A stable per-check stream id. Python's hash() is salted per process."""
+    from pkg.core.ids import stable_digest
+
+    return stable_digest(f"{analyte}:{sex}", bits=16)
 
 
 def run_all(size: int = DEFAULT_SAMPLE_SIZE, seed: int = DEFAULT_SEED) -> list[Check]:
@@ -215,6 +285,7 @@ def run_all(size: int = DEFAULT_SAMPLE_SIZE, seed: int = DEFAULT_SEED) -> list[C
         *vitals_checks(size, seed),
         *lipid_checks(min(size, 2_000), seed),
         *anthropometric_checks(min(size, 2_000), seed),
+        *nhanes_checks(min(size, 1_500), seed),
     ]
 
 

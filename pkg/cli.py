@@ -16,8 +16,10 @@ from pathlib import Path
 
 from pkg.core.bundle import to_json
 from pkg.generate import (
+    ALL_PANELS,
     DEFAULT_COHORT_PREVALENCE,
     DEFAULT_REFERENCE_DATE,
+    LEAN_PANELS,
     generate_bundle,
     generate_cohort,
 )
@@ -87,6 +89,16 @@ def build_parser() -> argparse.ArgumentParser:
              "stays reproducible (default: %(default)s)",
     )
     generate.add_argument(
+        "--panels", default="all", metavar="LIST",
+        help="comma-separated lab panels to emit: "
+             f"{','.join(ALL_PANELS)}; or 'all', 'lean' ({','.join(LEAN_PANELS)}), "
+             "or 'none' (default: %(default)s)",
+    )
+    generate.add_argument(
+        "--no-vitals", action="store_true",
+        help="omit vital-sign observations",
+    )
+    generate.add_argument(
         "--out", type=Path,
         help="directory to write bundles into; omit to write JSON to stdout",
     )
@@ -105,12 +117,30 @@ def _parse_age_range(value: str) -> tuple[int, int]:
     return low, high
 
 
+def _parse_panels(value: str) -> tuple[str, ...]:
+    if value == "all":
+        return ALL_PANELS
+    if value == "lean":
+        return LEAN_PANELS
+    if value == "none":
+        return ()
+    requested = tuple(part.strip() for part in value.split(",") if part.strip())
+    unknown = set(requested) - set(ALL_PANELS)
+    if unknown:
+        raise SystemExit(
+            f"error: unknown panel(s) {sorted(unknown)}; available: {list(ALL_PANELS)}"
+        )
+    return requested
+
+
 def _sex_for(requested: str, index: int) -> str:
     return ("F", "M")[index % 2] if requested == "mixed" else requested
 
 
 def command_generate(args: argparse.Namespace) -> int:
     age_range = _parse_age_range(args.age_range)
+    panels = _parse_panels(args.panels)
+    include_vitals = not args.no_vitals
 
     if args.out is not None:
         args.out.mkdir(parents=True, exist_ok=True)
@@ -122,6 +152,8 @@ def command_generate(args: argparse.Namespace) -> int:
             sex=args.sex,
             age_range=age_range,
             reference_date=args.reference_date,
+            panels=panels,
+            include_vitals=include_vitals,
         )
     else:
         bundles = [
@@ -132,6 +164,8 @@ def command_generate(args: argparse.Namespace) -> int:
                 age_range=age_range,
                 reference_date=args.reference_date,
                 index=index,
+                panels=panels,
+                include_vitals=include_vitals,
             )
             for index in range(args.count)
         ]

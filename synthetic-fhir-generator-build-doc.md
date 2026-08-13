@@ -330,7 +330,7 @@ Two tiers, both in v1:
 | **1. Core resources** | Encounter, Condition, Observation, MedicationRequest, DiagnosticReport, AllergyIntolerance; bundle assembly + reference wiring | Each resource type validator-green as it lands | **done** |
 | **2. Terminology** | Curated LOINC/RxNorm/ICD-10-CM subsets with provenance metadata | Every emitted code traces to a licensed, recorded source | **done** — 85 codes (40 LOINC, 23 RxNorm, 22 ICD-10-CM), all verified against their source vocabularies |
 | **3. Correlation engine** | Copula sampling + `relations.py`; 4 profiles | **The differentiator — allocate the most time here** | **done** — 10/10 fidelity checks |
-| **4. Fidelity + determinism** | Fidelity report generation, golden snapshots | Report published; drift fails CI | **done** — NHANES marginal calibration deferred and disclosed |
+| **4. Fidelity + determinism** | Fidelity report generation, golden snapshots | Report published; drift fails CI | **done** — including NHANES calibration, no longer deferred |
 | **5. Ship** | CLI, packaging, docs, README positioning, name decision + rename pass | PyPI 0.1.0 | **partial** — CLI, README and packaging done; name and licence still open |
 
 **Since built:** AllergyIntolerance is emitted (RxNorm ingredient-coded drug allergies at
@@ -455,6 +455,23 @@ documentation, and each would otherwise be rediscovered the hard way.
   exactly rather than statistically. Friedewald also has a documented validity limit
   (TG < 400 mg/dL) which the triglyceride marginal's truncation bound enforces by
   construction, so the code can raise rather than emit a number a lab would suppress.
+- **My marginal estimates were systematically under-dispersed.** Calibrating against
+  NHANES showed diabetic HbA1c with SD 1.50 against my estimated 0.90, and adult BMI near
+  29 against my 26.5. Every individual value looked plausible; the population was too
+  tightly clustered around its centre, which is the characteristic tell of hand-estimated
+  synthetic data.
+- **A truncated normal cannot model a distribution whose mode is at its lower bound.**
+  Diabetic HbA1c and triglycerides both fail to fit, and the fitter now says so rather than
+  returning something plausible. They use log-normal marginals instead — which is exactly
+  the flexibility a copula buys, and the reason it was chosen over conditional rules.
+- **A bound that defines the population needs a truncation-aware fit.** Diabetic HbA1c is
+  bounded at 6.5 *because that is the diagnosis*, and that cut a quarter of the fitted
+  distribution, pulling the realized median from 7.4 to 7.8. Solving for the location
+  post-truncation fixes it; using the empirical median directly does not.
+- **The conformance gate depends on an external terminology server.** Intermittent socket
+  failures against tx.fhir.org made it flaky. The harness now retries only on signatures
+  that mean "the validator could not run", never on a genuine validation failure, and
+  caches terminology locally.
 - **Approximate terminology search silently substitutes a different molecule.** RxNav's
   `search=1` returned `10178` *sulfamethazine* — a veterinary sulfonamide — for a query of
   "sulfamethoxazole", and a multi-ingredient compound for "codeine". Exact-name lookup returns

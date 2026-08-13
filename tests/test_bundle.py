@@ -167,12 +167,17 @@ def test_decimal_precision_matches_laboratory_reporting(bundle):
         "2160-0": 2,   # creatinine, reported to 0.01 mg/dL
         "98979-8": 0,  # eGFR, reported as a whole number
     }
+    # The exponent check is the real assertion, and it is two-sided: a value rendered
+    # as 95.0 has exponent -1 and fails a 0-place analyte, while 95 fails a 1-place
+    # one. Both directions matter.
+    #
+    # A blanket `"value": \d+\.0` search looks like it says the same thing and does
+    # not — an HbA1c of exactly 8.0 is *correctly* rendered "8.0", because 0.1 is the
+    # precision a laboratory reports it to. Dropping the trailing zero there would
+    # discard a significant figure.
     for code, places in expected_decimal_places.items():
         value = by_code[code]
         assert -value.as_tuple().exponent == places, f"{code} -> {value}"
-
-    # Whole numbers must not acquire a trailing .0 on the way out.
-    assert not re.search(r'"value": \d+\.0\b', text)
 
 
 def test_sentinel_never_leaks_into_output(bundle):

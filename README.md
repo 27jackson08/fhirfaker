@@ -83,11 +83,19 @@ The claim is checked statistically on every run and published as a
 | LDL consistent with panel | exact | exact | Friedewald 1972 |
 | BMI consistent with height/weight | exact | exact | WHO |
 | CKD stage-3 eGFR within band | 100% | 100% | KDIGO 2012 |
-| triglyceride/HDL correlation | −0.383 | −0.400 | profile config |
-| diabetic obesity rate | 0.612 | 0.600 | profile config |
+| HbA1c median (diabetic) | 7.38 | 7.40 | NHANES 2017-2020 |
+| triglycerides median (healthy) | 89.3 | 88.0 mg/dL | NHANES 2017-2020 |
+| diabetic obesity rate | 0.657 | 0.612 | NHANES 2017-2020 |
 
-All 15 checks pass. Three of them are *identities* rather than correlations — eGFR,
+All 37 checks pass. Three of them are *identities* rather than correlations — eGFR,
 LDL and BMI are computed from their inputs, so a bundle cannot contradict itself.
+
+Marginals are calibrated against the **NHANES 2017-March 2020** public files,
+restricted to ages 45-65 and stratified by sex and glycaemic status, and the fidelity
+report checks the generated medians against those targets. Right-skewed analytes
+(triglycerides, diabetic HbA1c) use log-normal marginals — a truncated normal cannot
+represent a distribution whose mode sits at its lower bound, and the fit refuses
+rather than returning something plausible-looking.
 
 **The R² is the load-bearing number.** The ADAG relationship is
 `eAG = 28.7 × HbA1c − 46.7` with R² = 0.84. A generator that derives glucose
@@ -225,9 +233,9 @@ Stated here rather than left for you to discover.
 - **No SNOMED CT.** Deliberate — see [CONFORMANCE.md](CONFORMANCE.md). Conditions use
   ICD-10-CM, which US Core's Condition binding accepts with zero errors *and* zero
   warnings.
-- **Marginals are clinically-informed estimates**, not fits to a named cohort. What
-  comes from the literature is the *dependence* structure. Calibrating marginals
-  against NHANES is future work, and the fidelity report says so.
+- **Blood pressure marginals are clinical definitions**, not population fits —
+  "normotensive" and "hypertensive" are the populations the profiles mean. Everything
+  else is calibrated against NHANES (see below).
 - **One encounter per bundle.** No longitudinal history — that is Synthea's territory.
 - **Terminology is a curated subset** — 104 codes (42 LOINC, 29 RxNorm, 22 ICD-10-CM),
   not full coverage. Every code *and display* is verified against its source vocabulary
@@ -246,6 +254,7 @@ pytest -m conformance             # needs a JVM; downloads ~460MB of IGs on firs
 python -m pkg.fidelity.report     # regenerate the fidelity report
 python -m pkg.spec.codegen        # regenerate models from the R4 StructureDefinitions
 python -m pkg.terminology.verify  # re-check every code against LOINC/RxNorm/ICD-10-CM
+python -m pkg.calibration.nhanes --data-dir <dir>   # re-derive marginals from NHANES
 ```
 
 `pkg/models/r4.py` is generated from the official FHIR R4 4.0.1 StructureDefinitions

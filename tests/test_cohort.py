@@ -129,3 +129,62 @@ def test_sulfamethoxazole_is_not_the_veterinary_sulfonamide():
 
     assert codes.ALLERGEN_SULFAMETHOXAZOLE.code == "10180"
     assert codes.ALLERGEN_SULFAMETHOXAZOLE.display == "sulfamethoxazole"
+
+
+# --- panel selection --------------------------------------------------------------
+
+def test_panel_selection_shrinks_the_bundle():
+    from pkg.generate import ALL_PANELS, LEAN_PANELS, generate_bundle
+
+    sizes = {
+        label: len(json.loads(to_json(generate_bundle(seed=42, **kwargs)))["entry"])
+        for label, kwargs in (
+            ("full", {"panels": ALL_PANELS}),
+            ("lean", {"panels": LEAN_PANELS}),
+            ("none", {"panels": (), "include_vitals": False}),
+        )
+    }
+    assert sizes["full"] > sizes["lean"] > sizes["none"]
+
+
+def test_narrowing_panels_does_not_change_the_clinical_draw():
+    """Emitting less must never change what was generated, only what is reported."""
+    from pkg.generate import generate_bundle
+
+    def observation_values(**kwargs):
+        payload = json.loads(to_json(generate_bundle(seed=42, **kwargs)))
+        return {
+            entry["resource"]["code"]["coding"][0]["code"]:
+                entry["resource"]["valueQuantity"]["value"]
+            for entry in payload["entry"]
+            if entry["resource"]["resourceType"] == "Observation"
+            and "valueQuantity" in entry["resource"]
+        }
+
+    full = observation_values()
+    lean = observation_values(panels=("lipid",), include_vitals=False)
+    assert lean, "lean selection should still emit the lipid panel"
+    for code, value in lean.items():
+        assert full[code] == value, f"{code} changed when panels were narrowed"
+
+
+def test_unknown_panel_is_rejected():
+    from pkg.generate import generate_bundle
+
+    with pytest.raises(ValueError, match="unknown panel"):
+        generate_bundle(seed=1, panels=("not_a_panel",))
+
+
+def test_cli_accepts_panel_shortcuts(tmp_path, capsys):
+    from pkg.cli import main
+
+    for value in ("all", "lean", "none", "cmp,lipid"):
+        assert main(["generate", "--panels", value, "--out", str(tmp_path)]) == 0
+    capsys.readouterr()
+
+
+def test_cli_rejects_unknown_panel():
+    from pkg.cli import main
+
+    with pytest.raises(SystemExit, match="unknown panel"):
+        main(["generate", "--panels", "bogus"])
