@@ -13,13 +13,13 @@ Regenerated per release from n=10,000 draws, seed 20260101.
 | CKD stage-3 eGFR within band | 1 | 1 | +0 | ±0 | KDIGO 2012 | PASS |
 | eGFR consistent with creatinine | 0 | 0 | +0 | ±1e-09 | CKD-EPI 2021 | PASS |
 | ICD-10 stage code matches eGFR | 1 | 1 | +0 | ±0 | ICD-10-CM | PASS |
-| T2DM hypertension comorbidity | 0.7038 | 0.7 | +0.0038 | ±0.0259 | profile config | PASS |
+| T2DM hypertension comorbidity | 0.7026 | 0.7 | +0.0026 | ±0.0259 | profile config | PASS |
 | systolic/diastolic correlation | 0.5942 | 0.6 | -0.00578 | ±0.05 | profile config | PASS |
 | LDL consistent with panel (Friedewald) | 0 | 0 | +0 | ±1e-09 | Friedewald 1972 | PASS |
 | triglyceride/HDL correlation | -0.383 | -0.4 | +0.017 | ±0.05 | profile config | PASS |
 | BMI consistent with height and weight | 0 | 0 | +0 | ±1e-09 | WHO | PASS |
-| diabetic obesity rate | 0.612 | 0.6 | +0.012 | ±0.05 | profile config | PASS |
-| typical-adult median BMI | 26.49 | 26.5 | -0.014 | ±1.5 | profile config | PASS |
+| diabetic obesity rate | 0.6145 | 0.6 | +0.0145 | ±0.05 | profile config | PASS |
+| typical-adult median BMI | 26.39 | 26.5 | -0.115 | ±1.5 | profile config | PASS |
 
 **15/15 passed.**
 

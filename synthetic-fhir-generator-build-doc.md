@@ -333,8 +333,9 @@ Two tiers, both in v1:
 | **4. Fidelity + determinism** | Fidelity report generation, golden snapshots | Report published; drift fails CI | **done** — NHANES marginal calibration deferred and disclosed |
 | **5. Ship** | CLI, packaging, docs, README positioning, name decision + rename pass | PyPI 0.1.0 | **partial** — CLI, README and packaging done; name and licence still open |
 
-**Not yet built:** AllergyIntolerance has a builder but no profile emits it. Longitudinal
-history remains out of scope by design.
+**Since built:** AllergyIntolerance is emitted (RxNorm ingredient-coded drug allergies at
+reported prevalence), and `generate_cohort` draws mixed populations by prevalence.
+Longitudinal history remains out of scope by design.
 
 This is a multi-week project at a realistic pace alongside everything else currently open. It is not a weekend project if Phase 3 is done properly rather than skipped.
 
@@ -454,6 +455,11 @@ documentation, and each would otherwise be rediscovered the hard way.
   exactly rather than statistically. Friedewald also has a documented validity limit
   (TG < 400 mg/dL) which the triglyceride marginal's truncation bound enforces by
   construction, so the code can raise rather than emit a number a lab would suppress.
+- **Approximate terminology search silently substitutes a different molecule.** RxNav's
+  `search=1` returned `10178` *sulfamethazine* — a veterinary sulfonamide — for a query of
+  "sulfamethoxazole", and a multi-ingredient compound for "codeine". Exact-name lookup returns
+  `10180` and `2670`. Never resolve a clinical code by fuzzy match; the wrong answer is
+  plausible enough to survive review.
 - **Watch for distributions that should differ but don't.** Giving every profile one weight
   marginal left diabetic patients with the same BMI as the general population — contradicting
   the strongest association in type 2 diabetes. Individually every value looked fine; only a

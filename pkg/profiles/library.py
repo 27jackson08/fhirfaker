@@ -23,6 +23,7 @@ from pkg.correlation.engine import JointModel
 from pkg.profiles.base import (
     EGFR_FROM_CREATININE,
     EGFR_FROM_TARGET,
+    AllergyRule,
     ClinicalProfile,
     ComorbidityRule,
     MedicationRule,
@@ -114,6 +115,17 @@ ANTHROPOMETRICS_RAISED_BMI = {
 }
 
 
+# Reported drug-allergy prevalence in US adults. Penicillin is the dominant reported
+# allergy at roughly 10%, most of which is not true IgE-mediated allergy on testing —
+# but a record generator models what is *recorded*, not what is confirmed.
+COMMON_DRUG_ALLERGIES = (
+    AllergyRule(codes.ALLERGEN_PENICILLIN_G, 0.10),
+    AllergyRule(codes.ALLERGEN_SULFAMETHOXAZOLE, 0.03),
+    AllergyRule(codes.ALLERGEN_CODEINE, 0.02),
+    AllergyRule(codes.ALLERGEN_IBUPROFEN, 0.01),
+)
+
+
 def _lipid_and_body_correlations() -> list[tuple[str, str, float]]:
     return [
         ("triglycerides", "hdl", TG_HDL_CORRELATION),
@@ -190,6 +202,7 @@ def healthy(sex: str) -> ClinicalProfile:
             ],
         ),
         derived_conditions=_metabolic_conditions,
+        allergies=COMMON_DRUG_ALLERGIES,
         egfr_mode=EGFR_FROM_CREATININE,
     )
 
@@ -272,6 +285,7 @@ def type2_diabetes(sex: str) -> ClinicalProfile:
                 requires=lambda a: a.get("ldl", 0.0) >= 130.0,
             ),
         ),
+        allergies=COMMON_DRUG_ALLERGIES,
         egfr_mode=EGFR_FROM_CREATININE,
     )
 
@@ -302,6 +316,7 @@ def hypertension(sex: str) -> ClinicalProfile:
                 requires=lambda a: a.get("ldl", 0.0) >= 160.0,
             ),
         ),
+        allergies=COMMON_DRUG_ALLERGIES,
         egfr_mode=EGFR_FROM_CREATININE,
     )
 
@@ -335,6 +350,7 @@ def ckd_stage3(sex: str) -> ClinicalProfile:
         derived_conditions=_ckd_conditions,
         comorbidities=(ComorbidityRule(codes.ESSENTIAL_HYPERTENSION, 0.80),),
         medications=(MedicationRule(codes.LISINOPRIL_10),),
+        allergies=COMMON_DRUG_ALLERGIES,
         egfr_mode=EGFR_FROM_TARGET,
     )
 

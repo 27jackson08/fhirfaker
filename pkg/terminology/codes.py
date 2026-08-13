@@ -218,6 +218,22 @@ OMEPRAZOLE_20 = Code(
 SERTRALINE_50 = Code(systems.RXNORM, "312941", "sertraline 50 MG Oral Tablet")
 GABAPENTIN_300 = Code(systems.RXNORM, "310431", "gabapentin 300 MG Oral Capsule")
 
+# --- RxNorm ingredients, used as allergy substances -------------------------------
+# US Core's allergy substance value set draws on RxNorm ingredients and SNOMED CT.
+# SNOMED is excluded by design, so drug allergies use RxNorm ingredient (TTY=IN)
+# codes, all of which are NLM-authored and present in Current Prescribable Content.
+#
+# These MUST be looked up by exact name. RxNav's approximate search (`search=1`)
+# returned 10178 "sulfamethazine" — a veterinary sulfonamide — for a query of
+# "sulfamethoxazole", and a multi-ingredient compound for "codeine". Fuzzy matching
+# silently substitutes a different molecule.
+ALLERGEN_PENICILLIN_G = Code(systems.RXNORM, "7980", "penicillin G")
+ALLERGEN_AMOXICILLIN = Code(systems.RXNORM, "723", "amoxicillin")
+ALLERGEN_SULFAMETHOXAZOLE = Code(systems.RXNORM, "10180", "sulfamethoxazole")
+ALLERGEN_CODEINE = Code(systems.RXNORM, "2670", "codeine")
+ALLERGEN_IBUPROFEN = Code(systems.RXNORM, "5640", "ibuprofen")
+ALLERGEN_ASPIRIN = Code(systems.RXNORM, "1191", "aspirin")
+
 # =================================================================================
 # ICD-10-CM
 # =================================================================================

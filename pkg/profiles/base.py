@@ -55,6 +55,18 @@ class MedicationRule:
 
 
 @dataclass(frozen=True)
+class AllergyRule:
+    """A recorded drug allergy and how often it appears."""
+
+    code: Code
+    probability: float
+
+    def __post_init__(self) -> None:
+        if not 0.0 <= self.probability <= 1.0:
+            raise ValueError(f"{self.code.display}: probability out of range")
+
+
+@dataclass(frozen=True)
 class ProfileDraw:
     """One patient's worth of jointly-drawn clinical facts."""
 
@@ -62,6 +74,7 @@ class ProfileDraw:
     raw: dict[str, float]
     conditions: tuple[Code, ...]
     medications: tuple[Code, ...]
+    allergies: tuple[Code, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -72,6 +85,7 @@ class ClinicalProfile:
     primary_conditions: tuple[Code, ...] = ()
     comorbidities: tuple[ComorbidityRule, ...] = ()
     medications: tuple[MedicationRule, ...] = ()
+    allergies: tuple[AllergyRule, ...] = ()
     egfr_mode: str = EGFR_FROM_CREATININE
     reported_precision: dict[str, str] = field(default_factory=dict)
     # Conditions whose *code* depends on the values drawn — e.g. CKD stage 3a vs 3b
@@ -136,6 +150,7 @@ def draw(
             conditions.append(rule.code)
 
     medications = [rule.code for rule in profile.medications if rule.applies(raw, rng)]
+    allergies = [rule.code for rule in profile.allergies if rng.random() < rule.probability]
 
     analytes = {
         name: relations.to_reported(value, _precision_key(profile, name))
@@ -148,6 +163,7 @@ def draw(
         raw=raw,
         conditions=tuple(conditions),
         medications=tuple(medications),
+        allergies=tuple(allergies),
     )
 
 

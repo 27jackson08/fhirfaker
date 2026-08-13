@@ -55,7 +55,7 @@ every release. The full matrix is published in [CONFORMANCE.md](CONFORMANCE.md).
 
 | Profile | Entries | Errors | Warnings |
 |---|---:|---:|---:|
-| healthy | 16 | **0** | 3 |
+| healthy | 16-17 | **0** | 3 |
 | hypertension | 19 | **0** | 5 |
 | type2_diabetes | 20 | **0** | 5 |
 | ckd_stage3 | 20 | **0** | 5 |
@@ -161,6 +161,23 @@ open("fixture.json", "w").write(to_json(bundle))
 | `type2_diabetes` | Diagnosed, moderately controlled; ~70% hypertension comorbidity, diabetic dyslipidaemia, ~60% obesity |
 | `ckd_stage3` | CKD stage 3, eGFR sampled in band and creatinine inverted from it |
 
+### Mixed cohorts
+
+`profile="mixed"` draws each patient's profile by prevalence, for population-shaped
+fixtures rather than a run of identical cases:
+
+```python
+from pkg import generate_cohort
+
+cohort = generate_cohort(count=100, seed=42)                       # default mix
+cohort = generate_cohort(count=100, seed=42,
+                         prevalence={"healthy": 3, "ckd_stage3": 1})  # or your own
+```
+
+Weights are normalised, so counts and ratios both work. The default mix is
+illustrative rather than an epidemiological claim — real prevalences overlap heavily
+and these profiles are mutually exclusive.
+
 Each bundle carries a full lipid panel, renal panel, glycaemic markers and vitals.
 Diagnosis codes follow the values drawn: a diabetic whose eGFR falls below 60 is coded
 `E11.22` (diabetes *with* CKD) plus the matching KDIGO stage, not `E11.9`.
@@ -170,6 +187,7 @@ Diagnosis codes follow the values drawn: a diabetic whose eGFR falls below 60 is
 ```bash
 pkg profiles
 pkg generate --profile ckd_stage3 --count 20 --seed 42 --sex mixed --out ./fixtures/
+pkg generate --profile mixed --count 100 --seed 42 --out ./cohort/   # mixed cohort
 pkg generate --profile healthy --seed 1            # JSON to stdout
 ```
 
@@ -208,7 +226,7 @@ Stated here rather than left for you to discover.
   comes from the literature is the *dependence* structure. Calibrating marginals
   against NHANES is future work, and the fidelity report says so.
 - **One encounter per bundle.** No longitudinal history — that is Synthea's territory.
-- **Terminology is a curated subset** — 85 codes (40 LOINC, 23 RxNorm, 22 ICD-10-CM),
+- **Terminology is a curated subset** — 91 codes (40 LOINC, 29 RxNorm, 22 ICD-10-CM),
   not full coverage. Every code *and display* is verified against its source vocabulary
   by `python -m pkg.terminology.verify`, which runs nightly in CI.
 

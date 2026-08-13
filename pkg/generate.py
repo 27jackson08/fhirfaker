@@ -13,6 +13,7 @@ from datetime import date, timedelta
 import numpy as np
 
 from pkg.builders.clinical import (
+    build_allergy_intolerance,
     build_blood_pressure,
     build_condition,
     build_lab_observation,
@@ -29,7 +30,7 @@ from pkg.core.bundle import Entry, build_transaction_bundle, to_json  # noqa: F4
 from pkg.core.ids import deterministic_uuid, stable_digest, urn_uuid
 from pkg.models.r4 import Bundle, CodeableConcept
 from pkg.profiles.base import ProfileDraw, draw
-from pkg.profiles.library import get_profile
+from pkg.profiles.library import PROFILES, get_profile
 from pkg.terminology import codes
 
 # Injected rather than read from the clock: any datetime.now() call would destroy the
@@ -112,6 +113,61 @@ def generate_draw(
     # salted per process and would break byte-identical output across runs.
     rng = np.random.default_rng([seed, index, stable_digest(profile)])
     return draw(get_profile(profile, sex), rng=rng, age_years=age_years, sex=sex)
+
+
+# Illustrative prevalence for a 45-65 adult cohort. Real US prevalences overlap
+# heavily (a patient can have all three), and these profiles are mutually exclusive,
+# so this is a plausible mix rather than an epidemiological claim. Override it.
+DEFAULT_COHORT_PREVALENCE = {
+    "healthy": 0.50,
+    "hypertension": 0.30,
+    "type2_diabetes": 0.15,
+    "ckd_stage3": 0.05,
+}
+
+
+def generate_cohort(
+    *,
+    count: int,
+    seed: int,
+    prevalence: dict[str, float] | None = None,
+    sex: str = "mixed",
+    age_range: tuple[int, int] = (45, 65),
+    reference_date: date = DEFAULT_REFERENCE_DATE,
+) -> list[Bundle]:
+    """Generate a mixed cohort, drawing each patient's profile by prevalence.
+
+    Deterministic in the same way single bundles are: the same seed yields the same
+    cohort, including which profile each patient was drawn from.
+    """
+    if count < 1:
+        raise ValueError(f"count must be at least 1, got {count}")
+    weights = dict(prevalence or DEFAULT_COHORT_PREVALENCE)
+    unknown = set(weights) - set(PROFILES)
+    if unknown:
+        raise ValueError(f"unknown profile(s) in prevalence: {sorted(unknown)}")
+    total = sum(weights.values())
+    if total <= 0:
+        raise ValueError("prevalence weights must sum to a positive number")
+
+    keys = sorted(weights)
+    probabilities = [weights[k] / total for k in keys]
+    # A separate stream from the per-patient draws, so changing the cohort mix does
+    # not shift the clinical values of patients whose profile did not change.
+    chooser = np.random.default_rng([seed, stable_digest("cohort")])
+    chosen = chooser.choice(len(keys), size=count, p=probabilities)
+
+    return [
+        generate_bundle(
+            profile=keys[int(pick)],
+            seed=seed,
+            sex=("F", "M")[index % 2] if sex == "mixed" else sex,
+            age_range=age_range,
+            reference_date=reference_date,
+            index=index,
+        )
+        for index, pick in enumerate(chosen)
+    ]
 
 
 def generate_bundle(
@@ -241,6 +297,20 @@ def generate_bundle(
             ),
         )
     )
+
+    for position, code in enumerate(drawn.allergies):
+        role = f"allergy-{position}"
+        entries.append(
+            Entry(
+                urn(role),
+                build_allergy_intolerance(
+                    resource_id=rid(role),
+                    code=code.concept(),
+                    patient_urn=urn("patient"),
+                    recorded_date=visit,
+                ),
+            )
+        )
 
     for position, code in enumerate(drawn.medications):
         role = f"medreq-{position}"

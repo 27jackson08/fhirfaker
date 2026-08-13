@@ -15,8 +15,15 @@ from datetime import date
 from pathlib import Path
 
 from pkg.core.bundle import to_json
-from pkg.generate import DEFAULT_REFERENCE_DATE, generate_bundle
+from pkg.generate import (
+    DEFAULT_COHORT_PREVALENCE,
+    DEFAULT_REFERENCE_DATE,
+    generate_bundle,
+    generate_cohort,
+)
 from pkg.profiles.library import PROFILES
+
+MIXED = "mixed"
 
 EXIT_OK = 0
 EXIT_USAGE = 2
@@ -52,8 +59,9 @@ def build_parser() -> argparse.ArgumentParser:
         "generate", help="generate transaction bundles"
     )
     generate.add_argument(
-        "--profile", default="type2_diabetes", choices=sorted(PROFILES),
-        help="clinical profile to draw from (default: %(default)s)",
+        "--profile", default="type2_diabetes", choices=[*sorted(PROFILES), MIXED],
+        help="clinical profile to draw from, or 'mixed' for a cohort drawn by "
+             "prevalence (default: %(default)s)",
     )
     generate.add_argument(
         "--count", type=_positive_int, default=1,
@@ -107,15 +115,28 @@ def command_generate(args: argparse.Namespace) -> int:
     if args.out is not None:
         args.out.mkdir(parents=True, exist_ok=True)
 
-    for index in range(args.count):
-        bundle = generate_bundle(
-            profile=args.profile,
+    if args.profile == MIXED:
+        bundles = generate_cohort(
+            count=args.count,
             seed=args.seed,
-            sex=_sex_for(args.sex, index),
+            sex=args.sex,
             age_range=age_range,
             reference_date=args.reference_date,
-            index=index,
         )
+    else:
+        bundles = [
+            generate_bundle(
+                profile=args.profile,
+                seed=args.seed,
+                sex=_sex_for(args.sex, index),
+                age_range=age_range,
+                reference_date=args.reference_date,
+                index=index,
+            )
+            for index in range(args.count)
+        ]
+
+    for index, bundle in enumerate(bundles):
         rendered = to_json(bundle)
         if args.out is None:
             print(rendered)
@@ -133,6 +154,10 @@ def command_generate(args: argparse.Namespace) -> int:
 def command_profiles(_: argparse.Namespace) -> int:
     for key in sorted(PROFILES):
         print(key)
+    weights = ", ".join(
+        f"{k} {v:.0%}" for k, v in sorted(DEFAULT_COHORT_PREVALENCE.items())
+    )
+    print(f"{MIXED}  (cohort drawn by prevalence: {weights})")
     return EXIT_OK
 
 

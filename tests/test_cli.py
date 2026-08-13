@@ -16,8 +16,19 @@ from pkg.profiles.library import PROFILES
 
 def test_profiles_lists_every_available_profile(capsys):
     assert main(["profiles"]) == 0
-    listed = capsys.readouterr().out.split()
-    assert sorted(listed) == sorted(PROFILES)
+    output = capsys.readouterr().out
+    for key in PROFILES:
+        assert key in output
+    assert "mixed" in output, "cohort mode should be discoverable from the CLI"
+
+
+def test_mixed_cohort_from_the_cli(tmp_path, capsys):
+    assert main(["generate", "--profile", "mixed", "--count", "6",
+                 "--seed", "11", "--out", str(tmp_path)]) == 0
+    capsys.readouterr()
+    written = sorted(p.name for p in tmp_path.glob("*.json"))
+    assert len(written) == 6
+    assert all(name.startswith("mixed-11-") for name in written)
 
 
 def test_generate_writes_valid_json_to_stdout(capsys):
