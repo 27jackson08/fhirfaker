@@ -184,3 +184,85 @@ def test_reserved_codes_each_carry_a_reason():
 
     for name, reason in table.RESERVED_CODES.items():
         assert reason.strip(), f"{name} is reserved without a reason"
+
+
+# --- verification harness ---------------------------------------------------------
+# These stub the network. The fetchers themselves are exercised by the nightly job;
+# what matters here is that a lookup result is turned into the right verdict.
+
+def test_matching_display_verifies_ok(monkeypatch):
+    from pkg.terminology import systems, verify
+
+    code = Code(systems.LOINC, "1234-5", "Some analyte")
+    monkeypatch.setitem(verify.FETCHERS, systems.LOINC, lambda _: "Some analyte")
+    assert verify.verify(code).status == verify.OK
+
+
+def test_differing_display_is_reported_with_the_authoritative_text(monkeypatch):
+    """The failure mode that shipped a wrong eGFR display past review."""
+    from pkg.terminology import systems, verify
+
+    code = Code(systems.LOINC, "98979-8", "a display from a third-party aggregator")
+    monkeypatch.setitem(verify.FETCHERS, systems.LOINC, lambda _: "the real display")
+
+    finding = verify.verify(code)
+    assert finding.status == verify.DISPLAY_MISMATCH
+    assert finding.authoritative_display == "the real display"
+    assert finding.is_problem
+
+
+def test_unknown_code_is_reported_as_missing(monkeypatch):
+    from pkg.terminology import systems, verify
+
+    monkeypatch.setitem(verify.FETCHERS, systems.RXNORM, lambda _: None)
+    finding = verify.verify(Code(systems.RXNORM, "999999999", "not a drug"))
+    assert finding.status == verify.NOT_FOUND
+    assert finding.is_problem
+
+
+def test_systems_without_a_public_authority_are_unchecked_not_failed():
+    from pkg.terminology import systems, verify
+
+    finding = verify.verify(Code(systems.ACT_CODE, "AMB", "ambulatory"))
+    assert finding.status == verify.UNCHECKED
+    assert not finding.is_problem
+    assert finding.note
+
+
+def test_a_network_outage_is_not_reported_as_a_bad_code(monkeypatch):
+    """A 404 means "not in the prescribable subset"; a 500 means the API is down.
+
+    Collapsing the two would turn an outage into a spurious terminology failure and
+    send someone chasing a code that is perfectly valid.
+    """
+    import urllib.error
+
+    from pkg.terminology import verify
+
+    def explode(url):
+        raise urllib.error.HTTPError(url, 503, "Service Unavailable", {}, None)
+
+    monkeypatch.setattr(verify, "_get_json", explode)
+    with pytest.raises(urllib.error.HTTPError):
+        verify.fetch_rxnorm_name("861007")
+
+
+def test_a_missing_prescribable_code_returns_none(monkeypatch):
+    import urllib.error
+
+    from pkg.terminology import verify
+
+    def not_found(url):
+        raise urllib.error.HTTPError(url, 404, "Not Found", {}, None)
+
+    monkeypatch.setattr(verify, "_get_json", not_found)
+    assert verify.fetch_rxnorm_name("999999999") is None
+
+
+def test_verify_all_covers_every_registered_code(monkeypatch):
+    from pkg.terminology import verify
+
+    for system in list(verify.FETCHERS):
+        monkeypatch.setitem(verify.FETCHERS, system, lambda _: None)
+    findings = verify.verify_all()
+    assert len(findings) == len(registered_codes())

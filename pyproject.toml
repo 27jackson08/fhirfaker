@@ -36,6 +36,23 @@ markers = [
     "fidelity: statistical assertions over large seeded samples (slow)",
 ]
 
+[tool.coverage.run]
+source = ["pkg"]
+omit = [
+    # Generated from the R4 spec and checked by the conformance gate, not by unit
+    # tests; 886 statements of generated models would flatter the number.
+    "pkg/models/r4.py",
+    # Offline build tooling, equivalent to build scripts. codegen is verified by the
+    # stale-model check in CI, and the NHANES reader's parsing is unit-tested
+    # through pkg/calibration/xpt.py.
+    "pkg/spec/codegen.py",
+    "pkg/calibration/nhanes.py",
+]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+
 [tool.ruff]
 line-length = 90
 # Generated code is not hand-maintained and does not follow the house style.

@@ -249,8 +249,10 @@ Stated here rather than left for you to discover.
 uv venv && . .venv/bin/activate
 uv pip install -e ".[dev]"
 
-pytest -m "not conformance"       # fast: unit, property, golden, fidelity
-pytest -m conformance             # needs a JVM; downloads ~460MB of IGs on first run
+# Three tiers. Only the first runs on every PR.
+pytest -m "not conformance and not fidelity"   # ~5s, no JVM, no network
+pytest -m fidelity                             # ~45s, 10k draws per profile
+pytest -m conformance                          # ~4min, needs a JVM and network
 python -m pkg.fidelity.report     # regenerate the fidelity report
 python -m pkg.spec.codegen        # regenerate models from the R4 StructureDefinitions
 python -m pkg.terminology.verify  # re-check every code against LOINC/RxNorm/ICD-10-CM
@@ -259,6 +261,10 @@ python -m pkg.calibration.nhanes --data-dir <dir>   # re-derive marginals from N
 
 `pkg/models/r4.py` is generated from the official FHIR R4 4.0.1 StructureDefinitions
 and checked in; CI fails if it drifts from the spec.
+
+Coverage is enforced at 80% (currently 83% on the PR gate, 88% including the fidelity
+suite). Generated models and offline build tooling are excluded — counting 886
+statements of generated code would flatter the number rather than measure anything.
 
 To intentionally change generated output:
 
