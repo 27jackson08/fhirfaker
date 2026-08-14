@@ -188,3 +188,16 @@ def test_cli_rejects_unknown_panel():
 
     with pytest.raises(SystemExit, match="unknown panel"):
         main(["generate", "--panels", "bogus"])
+
+
+@pytest.mark.parametrize(
+    "age_range,match",
+    [((70, 40), "exceeds high"), ((-5, 40), "cannot be negative")],
+)
+def test_library_validates_age_range_with_its_own_message(age_range, match):
+    """Previously this surfaced as numpy's "low >= high" from inside the sampler,
+    which says nothing about which argument was wrong."""
+    from pkg.generate import generate_bundle
+
+    with pytest.raises(ValueError, match=match):
+        generate_bundle(seed=1, age_range=age_range)

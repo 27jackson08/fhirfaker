@@ -56,3 +56,87 @@ def test_message_containing_colons_is_not_truncated_at_the_wrong_one():
     match = ISSUE_RE.match(line)
     assert match.group(2) == "Patient.x (line 1, col2)"
     assert match.group(3) == "url http://a.b/c is bad"
+
+
+# --- retry policy -----------------------------------------------------------------
+# Retrying is only safe because it is scoped to failures that mean "the validator
+# could not run". Retrying a genuine validation failure would hide real defects, so
+# the discrimination is tested directly rather than trusted.
+
+def test_transient_network_failures_are_recognised():
+    from pkg.conformance.validator import _looks_transient
+
+    for signature in (
+        "java.net.SocketException: Socket closed",
+        "java.net.UnknownHostException: tx.fhir.org",
+        "SocketTimeoutException: Read timed out",
+        "at ...FHIRToolingClient.getCapabilitiesStatement(FHIRToolingClient.java:142)",
+    ):
+        assert _looks_transient(signature), signature
+
+
+def test_a_genuine_validation_failure_is_not_treated_as_transient():
+    from pkg.conformance.validator import _looks_transient
+
+    output = (
+        "*FAILURE*: 2 errors, 0 warnings, 0 notes\n"
+        "  Error @ Patient.identifier: minimum required = 1, but only found 0\n"
+    )
+    assert not _looks_transient(output)
+
+
+def test_validate_retries_only_while_the_run_fails_transiently(monkeypatch, tmp_path):
+    from pkg.conformance import validator
+
+    target = tmp_path / "patient.json"
+    target.write_text("{}")
+    monkeypatch.setattr(validator, "VALIDATOR_JAR", tmp_path / "validator.jar")
+    (tmp_path / "validator.jar").write_text("")
+    monkeypatch.setattr(validator.time, "sleep", lambda _: None)
+
+    attempts = []
+
+    class _Result:
+        def __init__(self, out):
+            self.stdout, self.stderr = out, ""
+
+    def fake_run(cmd, **kwargs):
+        attempts.append(cmd)
+        if len(attempts) < 3:
+            return _Result("java.net.SocketException: Socket closed")
+        return _Result("Success: 0 errors, 0 warnings, 0 notes")
+
+    monkeypatch.setattr(validator.subprocess, "run", fake_run)
+    result = validator.validate(target)
+
+    assert len(attempts) == 3, "should retry through transient failures"
+    assert result.ok
+
+
+def test_validate_does_not_retry_a_run_that_produced_a_verdict(monkeypatch, tmp_path):
+    from pkg.conformance import validator
+
+    target = tmp_path / "patient.json"
+    target.write_text("{}")
+    monkeypatch.setattr(validator, "VALIDATOR_JAR", tmp_path / "validator.jar")
+    (tmp_path / "validator.jar").write_text("")
+
+    attempts = []
+
+    class _Result:
+        def __init__(self, out):
+            self.stdout, self.stderr = out, ""
+
+    def fake_run(cmd, **kwargs):
+        attempts.append(cmd)
+        return _Result(
+            "  Error @ Patient.gender: bad code\n"
+            "*FAILURE*: 1 errors, 0 warnings, 0 notes\n"
+        )
+
+    monkeypatch.setattr(validator.subprocess, "run", fake_run)
+    result = validator.validate(target)
+
+    assert len(attempts) == 1, "a real verdict must not be retried away"
+    assert not result.ok
+    assert len(result.errors) == 1

@@ -237,7 +237,7 @@ Stated here rather than left for you to discover.
   "normotensive" and "hypertensive" are the populations the profiles mean. Everything
   else is calibrated against NHANES (see below).
 - **One encounter per bundle.** No longitudinal history — that is Synthea's territory.
-- **Terminology is a curated subset** — 104 codes (42 LOINC, 29 RxNorm, 22 ICD-10-CM),
+- **Terminology is a curated subset** — 102 codes (42 LOINC, 29 RxNorm, 21 ICD-10-CM),
   not full coverage. Every code *and display* is verified against its source vocabulary
   by `python -m pkg.terminology.verify`, which runs nightly in CI.
 

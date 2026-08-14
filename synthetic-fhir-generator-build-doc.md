@@ -2,8 +2,10 @@
 
 **Working name:** TBD — see Section 15 (two prior candidates are legally unusable)
 **Author:** Jackson
-**Status:** Draft v2
-**Last updated:** August 11, 2026
+**Status:** Draft v2 — **built**. Every phase in Section 12 is complete; this document is
+now the design record rather than a forward plan. Section 18 collects what the build
+actually taught, which is the part worth reading twice.
+**Last updated:** August 11, 2026 (plan) · August 2026 (build notes)
 
 > **What changed from v1.** Every factual claim in v1 was checked against primary sources. Three
 > things broke: (1) the `fhir.resources` dependency cannot deliver FHIR R4 4.0.1 anymore, (2) the
@@ -469,9 +471,16 @@ documentation, and each would otherwise be rediscovered the hard way.
   distribution, pulling the realized median from 7.4 to 7.8. Solving for the location
   post-truncation fixes it; using the empirical median directly does not.
 - **The conformance gate depends on an external terminology server.** Intermittent socket
-  failures against tx.fhir.org made it flaky. The harness now retries only on signatures
-  that mean "the validator could not run", never on a genuine validation failure, and
-  caches terminology locally.
+  failures against tx.fhir.org made it flaky. The harness retries only on signatures that
+  mean "the validator could not run", never on a genuine validation failure, and caches
+  terminology locally (which also cut a run from ~60s to ~16s). Retrying *immediately* was
+  not enough — the server fails for several seconds at a time and all three attempts landed
+  in the same window, so the retries are now backed off.
+- **Numbers written into prose drift.** The README claimed "104 codes (42 LOINC, 29 RxNorm,
+  22 ICD-10-CM)" against an actual 102 (…21), because that figure was typed rather than
+  measured. Documentation claims that can be checked should be checked: the counts and the
+  per-profile bundle sizes are now asserted against the real values, and the two documents
+  are asserted to agree with each other.
 - **Approximate terminology search silently substitutes a different molecule.** RxNav's
   `search=1` returned `10178` *sulfamethazine* — a veterinary sulfonamide — for a query of
   "sulfamethoxazole", and a multi-ingredient compound for "codeine". Exact-name lookup returns

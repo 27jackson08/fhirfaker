@@ -150,6 +150,20 @@ def _require_sex(sex: str) -> None:
         raise ValueError(f"sex must be one of {sorted(SEX_TO_FHIR_GENDER)}, got {sex!r}")
 
 
+def _require_age_range(age_range: tuple[int, int]) -> None:
+    """Validate at the library boundary, not just in the CLI.
+
+    A reversed range was previously caught only incidentally, by numpy raising
+    "low >= high" from inside the sampler — an error that says nothing about which
+    argument was wrong.
+    """
+    low, high = age_range
+    if low > high:
+        raise ValueError(f"age_range low {low} exceeds high {high}")
+    if low < 0:
+        raise ValueError(f"age_range cannot be negative, got {age_range}")
+
+
 def generate_patient(
     *,
     seed: int,
@@ -160,6 +174,7 @@ def generate_patient(
 ):
     """Generate a single US Core Patient with no clinical history."""
     _require_sex(sex)
+    _require_age_range(age_range)
     rng = np.random.default_rng([seed, index])
     born, _ = _birth_date(rng, age_range, reference_date)
     return build_patient(
@@ -265,6 +280,7 @@ def generate_bundle(
     either way, so narrowing the output never changes the values that are emitted.
     """
     _require_sex(sex)
+    _require_age_range(age_range)
     selected = ALL_PANELS if panels is None else tuple(panels)
     unknown = set(selected) - set(ALL_PANELS)
     if unknown:

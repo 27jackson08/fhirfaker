@@ -128,12 +128,3 @@ def read_xpt(path) -> tuple[list[Variable], list[dict]]:
                 row[variable.name] = field.decode("ascii", "replace").strip()
         rows.append(row)
     return variables, rows
-
-
-def column(rows: list[dict], name: str) -> list[float]:
-    """Non-missing numeric values for one variable."""
-    return [
-        row[name]
-        for row in rows
-        if row.get(name) is not None and isinstance(row.get(name), float)
-    ]

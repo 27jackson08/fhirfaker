@@ -7,6 +7,7 @@ a rename or signature change breaks the build instead of the docs.
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -90,3 +91,71 @@ def test_synthetic_narrative_claim_in_readme_holds():
     bundle = json.loads(pkg.to_json(pkg.generate_bundle(profile="healthy", seed=3)))
     for entry in bundle["entry"]:
         assert "SYNTHETIC TEST DATA" in entry["resource"]["text"]["div"]
+
+
+# --- documentation consistency ----------------------------------------------------
+# Numbers in prose drift silently. The README claimed "104 codes (42 LOINC, 29
+# RxNorm, 22 ICD-10-CM)" against an actual 102 (…21) because the figure was typed
+# rather than measured. These make that a build failure.
+
+CONFORMANCE_DOC = README.parent / "CONFORMANCE.md"
+
+_COUNT_CLAIM = re.compile(
+    r"(\d+) codes \((\d+) LOINC, (\d+) RxNorm, (\d+) ICD-10-CM\)"
+)
+_TABLE_ROW = re.compile(r"^\|\s*(\w+)\s*\|\s*(\d+)\s*\|", re.MULTILINE)
+
+
+def _documented_entry_counts(text: str) -> dict[str, int]:
+    return {
+        name: int(count)
+        for name, count in _TABLE_ROW.findall(text)
+        if name in pkg.PROFILES
+    }
+
+
+def test_readme_code_counts_match_the_terminology_tables():
+    from pkg.terminology import systems
+    from pkg.terminology.verify import registered_codes
+
+    match = _COUNT_CLAIM.search(README.read_text())
+    assert match, "README no longer states a terminology count"
+    total, loinc, rxnorm, icd10 = (int(g) for g in match.groups())
+
+    codes = registered_codes()
+    actual = {
+        "total": len(codes),
+        "loinc": sum(1 for c in codes if c.system == systems.LOINC),
+        "rxnorm": sum(1 for c in codes if c.system == systems.RXNORM),
+        "icd10": sum(1 for c in codes if c.system == systems.ICD10CM),
+    }
+    assert (total, loinc, rxnorm, icd10) == (
+        actual["total"], actual["loinc"], actual["rxnorm"], actual["icd10"]
+    ), f"README claims {match.group(0)}, actual is {actual}"
+
+
+@pytest.mark.parametrize("document", ["README.md", "CONFORMANCE.md"])
+def test_documented_bundle_sizes_match_generated_bundles(document):
+    from pkg.core.bundle import to_json
+
+    text = (README.parent / document).read_text()
+    documented = _documented_entry_counts(text)
+    assert documented, f"{document} no longer tabulates bundle sizes"
+
+    for profile, claimed in documented.items():
+        actual = len(json.loads(to_json(pkg.generate_bundle(profile=profile, seed=42)))["entry"])
+        assert claimed == actual, (
+            f"{document} claims {profile} has {claimed} entries; it has {actual}"
+        )
+
+
+def test_readme_and_conformance_doc_agree_with_each_other():
+    readme = _documented_entry_counts(README.read_text())
+    conformance = _documented_entry_counts(CONFORMANCE_DOC.read_text())
+    shared = readme.keys() & conformance.keys()
+    assert shared, "the two documents no longer share a profile table"
+    for profile in shared:
+        assert readme[profile] == conformance[profile], (
+            f"{profile}: README says {readme[profile]}, "
+            f"CONFORMANCE.md says {conformance[profile]}"
+        )

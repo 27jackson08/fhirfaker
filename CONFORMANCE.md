@@ -7,7 +7,7 @@ validator, not by inspection.
 **Validator:** `org.hl7.fhir.core` validator_cli (latest release)
 **Command:** `pytest tests/ -m conformance`
 
-## Status — Phase 3
+## Status
 
 Every clinical profile is validated as a whole transaction bundle, so each resource is
 checked against its asserted `meta.profile` and every intra-bundle reference is

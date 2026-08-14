@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import re
 import subprocess
+import time
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -85,6 +86,7 @@ def validate(
     ig: str = US_CORE_IG,
     timeout: int = 900,
     attempts: int = 3,
+    backoff_seconds: float = 5.0,
 ) -> ValidationResult:
     """Run the HL7 validator against one file.
 
@@ -119,6 +121,11 @@ def validate(
         if SUMMARY_RE.search(output):
             break
         if attempt < attempts and _looks_transient(output):
+            # Back off rather than retrying immediately. The terminology server
+            # tends to fail for a few seconds at a time, and three back-to-back
+            # attempts land inside the same bad window — which is how a failure
+            # got through the first version of this retry.
+            time.sleep(backoff_seconds * attempt)
             continue
         break
 
