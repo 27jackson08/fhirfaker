@@ -32,19 +32,33 @@ Do not skip this section when pitching or writing the README. Every reviewer who
 | Tool | What it does well | Where it leaves a gap |
 |---|---|---|
 | **Synthea** (MITRE, 3.3k stars) | Full birth-to-death population simulation, 100+ disease modules, C-CDA + FHIR + CSV + bulk ndjson output, a decade of development, peer-reviewed. **Ships US Core-conformant output** (`--exporter.fhir.use_us_core_ig`, US Core 3.1.1–6.1.0) | **Requires Java JDK 17+** (slow cold start, heavyweight for CI), batch-oriented (generates a population to a folder, not a function call returning one bundle), steep config surface for a developer who just wants "give me 5 diabetic patients with lab panels." No determinism contract for test fixtures |
+| **tietai-synthea / PySynthea** (PyPI 1.0.1, arXiv:2606.28346, **found by the pre-launch sweep, Aug 2026**) | Python-native reimplementation of Synthea: pip-installable, **no JVM**, 231 disease modules, full lifecycle, FHIR R4/CSV/JSON export, seedable | Depends on `fhir.resources>=7.0.0`, which ships **R4B 4.3.0/R5/STU3 but not R4 4.0.1** — the version US Core targets. No US Core conformance claim. 12 runtime dependencies. Batch/CLI-shaped, `<3.14` only. **This is the closest competitor and it invalidates the "no JVM" half of the original gap claim** — see the note below |
 | **fhir.resources** (PyPI, 8.3.0) | Correct, spec-generated pydantic v2 models for every FHIR resource type | Not a generator — it's the type layer. No data, no realism, no bundle assembly logic. **Dropped R4 4.0.1 at v7.0.0** — see Section 4 |
 | **fhircraft** (PyPI, new as of April 2026) | Transforms FHIR specs into type-safe pydantic models | Same category as `fhir.resources` — a type layer, not a generator. Adjacent enough to monitor; if it grows a generation layer, the competitive picture changes |
 | **fhir_kindling** | FHIR server CRUD client with genuine synthetic generation support, pandas integration | Generation is real but secondary to the server-interaction purpose; not built around clinical coherence |
 | **FHIR-PYrate** | Querying/flattening FHIR server data into DataFrames | Solves the opposite problem (real data → tabular), not generation |
 
-**The actual gap:** nothing in this space is `pip install X`, import, and get a clinically coherent FHIR Bundle back as a Python object in under 10 lines, with no JVM, no config file, no output folder to manage.
+**The actual gap, as originally stated:** nothing in this space is `pip install X`, import, and get a clinically coherent FHIR Bundle back as a Python object in under 10 lines, with no JVM, no config file, no output folder to manage.
 
-That is a real, narrow, defensible niche. It is not "better than Synthea" — it is "the thing you reach for when Synthea is overkill."
+**Narrowed August 15, 2026 by the pre-launch sweep.** `tietai-synthea` now satisfies "pip install, no JVM", so the claim no longer holds as written. What is left after removing what PySynthea covers: nothing in this space returns an **R4 4.0.1** Bundle that is **machine-checked against US Core 6.1.0 every release**, with a **byte-identical determinism contract** and a **published statistical fidelity report**, on a two-dependency install. That is narrower than the original claim and it is the wording the README now uses.
+
+That remains a real, narrow, defensible niche. It is not "better than Synthea" — it is "the thing you reach for when Synthea is overkill." It is also a reminder that the niche is not static: the sweep must be re-run before each launch, not once.
 
 > **Honesty caveat on the gap claim.** This survived a deliberate search but is a negative claim and
 > cannot be proven. Re-run a prior-art sweep (PyPI, GitHub topics, awesome-lists) immediately before
 > launch, and keep the README's wording in its narrow form. If something closer turns up, say so in
 > the README rather than letting a commenter find it first.
+>
+> **Sweep run August 15, 2026 — and it found something.** `tietai-synthea` (PySynthea) was
+> published to PyPI after this document was drafted and is a pip-installable, JVM-free Python
+> Synthea. **The "no JVM" differentiator is gone**, and the README now says so directly in a
+> "Why not PySynthea?" section rather than waiting for a commenter to raise it. This is exactly
+> the outcome Section 3 predicted: ergonomics and install weight were always copyable, which is
+> why they were ranked as the *weakest* layer. What survives is the part that needed domain
+> knowledge — R4 4.0.1 specifically (PySynthea's `fhir.resources>=7.0.0` dependency cannot
+> provide it), machine-checked US Core 6.1.0 conformance, the fidelity report, and the
+> byte-identical determinism contract. Re-run the sweep again before the actual upload; this
+> one has a shelf life.
 
 ---
 
@@ -521,6 +535,9 @@ documentation, and each would otherwise be rediscovered the hard way.
 ## 17. Sources
 
 - [fhir.resources on PyPI](https://pypi.org/project/fhir.resources/) — 8.3.0; R4 4.0.1 dropped at 7.0.0
+  ("From `fhir.resources` version 7.0.0; there is no FHIR `R4` instead of `R4B` is available as sub-package")
+- [tietai-synthea on PyPI](https://pypi.org/project/tietai-synthea/) — 1.0.1; PySynthea, `fhir.resources>=7.0.0`
+- [PySynthea paper, arXiv:2606.28346](https://arxiv.org/abs/2606.28346) — Cruz & Rey-Blanco, June 2026
 - [Synthea](https://github.com/synthetichealth/synthea) — 3.3k stars, Java 17+
 - [Synthea US Core discussion #1433](https://github.com/synthetichealth/synthea/discussions/1433) — `use_us_core_ig`
 - [US Core Implementation Guide STU 6.1.0](https://hl7.org/fhir/us/core/)

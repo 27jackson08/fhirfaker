@@ -36,8 +36,30 @@ overkill:
 If you want a realistic population to analyse, use Synthea. If you want five diabetic
 patients with coherent lab panels inside a pytest fixture, this is smaller.
 
+### Why not PySynthea?
+
+[`tietai-synthea`](https://github.com/TIET-AI/tietai-synthea) (published as PySynthea,
+[arXiv:2606.28346](https://arxiv.org/abs/2606.28346)) is a Python-native reimplementation
+of Synthea: `pip install`, no JVM, 231 disease modules, full lifecycle simulation, FHIR
+R4 / CSV / JSON export. It removes the JVM barrier, so "no Java" on its own is no longer
+a reason to pick this project. If you want Synthea's depth without the JDK, use it.
+
+Two differences remain, and they are the reasons this exists:
+
+| | tietai-synthea | this |
+|---|---|---|
+| FHIR version | builds on `fhir.resources>=7.0.0`, which ships R4B 4.3.0, R5 and STU3 — **not R4 4.0.1** | **R4 4.0.1**, the version US Core targets and US production APIs speak |
+| US Core | not claimed | **6.1.0, validator-checked every release** |
+| Install weight | 12 runtime dependencies (pandas, scipy, matplotlib, jinja2, …) | 2 — `pydantic`, `numpy` |
+| Python support | `>=3.9,<3.14` | `>=3.10`, tested through 3.14 |
+
+That R4/R4B distinction is not pedantry: US Core 6.1.0 is written against R4 4.0.1, and
+Epic, Cerner and essentially every US production FHIR API are 4.0.1. It is also the
+reason this project generates its own models from the R4 StructureDefinitions instead of
+taking `fhir.resources` as a dependency.
+
 **What this is explicitly not:** a population health simulator, a replacement for
-Synthea's disease-module depth, or a terminology server.
+Synthea's or PySynthea's disease-module depth, or a terminology server.
 
 ---
 
