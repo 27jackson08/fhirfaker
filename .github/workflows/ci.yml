@@ -16,13 +16,24 @@ jobs:
   unit:
     runs-on: ubuntu-latest
     strategy:
+      # Every version in `requires-python`, because the README claims the whole range.
+      # Do not trim this to save minutes without trimming the claim to match.
+      fail-fast: false
       matrix:
-        python-version: ["3.10", "3.12", "3.13"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
       - uses: actions/checkout@v4
+      # Required, and not only for the matrix to mean anything: without it
+      # `uv pip install --system` targets the runner's system interpreter, which is
+      # PEP 668 externally-managed and refuses the install outright.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
       - uses: astral-sh/setup-uv@v5
       - name: Install
         run: uv pip install --system -e ".[dev]"
+      - name: Confirm the matrix version is the one under test
+        run: python -c "import sys; assert '.'.join(map(str, sys.version_info[:2])) == '${{ matrix.python-version }}', sys.version"
       - name: Lint
         run: ruff check carebundle tests
       - name: Unit, property and determinism tests
@@ -86,6 +97,9 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
       - uses: astral-sh/setup-uv@v5
       - name: Install
         run: uv pip install --system -e ".[dev]"
@@ -126,6 +140,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
       - uses: astral-sh/setup-uv@v5
       - name: Install
         run: uv pip install --system -e ".[dev]"
@@ -139,6 +156,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
       - uses: astral-sh/setup-uv@v5
       - name: Install
         run: uv pip install --system -e ".[dev]"

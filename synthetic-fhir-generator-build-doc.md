@@ -520,6 +520,16 @@ documentation, and each would otherwise be rediscovered the hard way.
   marginal left diabetic patients with the same BMI as the general population — contradicting
   the strongest association in type 2 diabetes. Individually every value looked fine; only a
   cross-profile comparison exposed it.
+- **A CI matrix that never installed its own Python was green-by-absence for months.**
+  The `unit` job declared `python-version: [3.10, 3.12, 3.13]` but had no
+  `actions/setup-python` step, so `uv pip install --system` targeted the runner's
+  system interpreter — every cell would have tested the same 3.12, and the matrix
+  proved nothing it claimed to prove. It surfaced only as a hard failure because
+  current Ubuntu runners mark that interpreter PEP 668 externally-managed and refuse
+  the install outright. The same defect was in all four `uv pip install --system`
+  jobs. Two lessons: a workflow that has never actually run is not evidence of
+  anything, and a matrix axis is worth asserting — the job now fails if the
+  interpreter under test is not the one the matrix named.
 - **A `try/except BrokenPipeError` around the command does not fix `| head`.** Python
   sets SIGPIPE to `SIG_IGN`, so a closed pipe surfaces as an exception — but stdout is
   buffered, so the *second* failure happens during the interpreter's shutdown flush,
