@@ -29,14 +29,10 @@ irreversible step is the *last* one and the cheapest to get right.
    branch even if a workflow condition were wrong. If you also want a human gate on an
    irreversible action, add yourself as a required reviewer at
    <https://github.com/27jackson08/fhirfaker/settings/environments>.
-5. **Confirm the copyright holder** in `LICENSE`. It currently reads `Copyright 2026
-   Jackson`; use your full legal name if you want it formal.
-6. **Decide on the repository name.** `fhirfaker` combines the FHIR mark with another
-   word, which is the pattern HL7's trademark policy forbids and the reason
-   `fhirforge` and `synthfhir` were rejected in build doc Section 15. The published
-   package is `carebundle`, so the distribution name is clean either way — but the
-   repository URL is the project's public face, and renaming a GitHub repository is
-   cheap (redirects are kept) while renaming one with traction is not.
+5. ~~Confirm the copyright holder in `LICENSE`.~~ Confirmed as `Copyright 2026 Jackson`.
+6. ~~Decide on the repository name.~~ Decided: the repository stays `fhirfaker`, the
+   distribution publishes as `carebundle`. See build doc Section 15 — closed, and not
+   to be reopened without new information.
 
 ## Every release
 

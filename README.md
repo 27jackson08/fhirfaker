@@ -315,10 +315,9 @@ forbids abbreviating the mark or combining it with other words, and bars its use
 product names without written permission — so `fhirforge` and `synthfhir` were not
 available. Using "FHIR®" descriptively in prose, as this README does, is fine.
 
-> The repository is currently hosted at `fhirfaker`, which does combine the mark with
-> another word and so falls under the same restriction. The distribution name on PyPI
-> is unaffected. Flagged here rather than left for a reader to notice; see
-> [RELEASING.md](RELEASING.md).
+The repository is hosted at `fhirfaker`. That name does combine the mark, and it is a
+deliberate choice made with the policy in view — the published distribution, which is
+what `pip install` resolves and what appears on PyPI, is `carebundle`.
 
 ## Licence
 
