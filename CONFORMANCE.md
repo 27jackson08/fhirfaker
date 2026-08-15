@@ -18,7 +18,7 @@ resolved.
 | healthy | 42 | **0** | 2 |
 | hypertension | 45 | **0** | 4 |
 | type2_diabetes | 51 | **0** | 10 |
-| ckd_stage3 | 51 | **0** | 10 |
+| ckd_stage3 | 52 | **0** | 12 |
 
 Warning counts scale with the number of medications, because each RxNorm-coded
 MedicationRequest raises the same two version/value-set warnings described below.

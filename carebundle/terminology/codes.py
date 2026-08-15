@@ -28,6 +28,7 @@ Two traps this file exists to avoid, both found the hard way:
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
 
 from carebundle.models.r4 import CodeableConcept, Coding
@@ -203,6 +204,35 @@ HYDROCHLOROTHIAZIDE_25 = Code(
 LOSARTAN_50 = Code(systems.RXNORM, "979492", "losartan potassium 50 MG Oral Tablet")
 CARVEDILOL_12_5 = Code(systems.RXNORM, "200032", "carvedilol 12.5 MG Oral Tablet")
 FUROSEMIDE_40 = Code(systems.RXNORM, "313988", "furosemide 40 MG Oral Tablet")
+
+# Pharmacological class per antihypertensive, keyed by RXCUI.
+#
+# Needed because the blood-pressure response is additive *across classes* (Law 2003),
+# so the regimen's effect depends on how many distinct classes a patient is on, not on
+# how many prescriptions they hold. Lisinopril 10 mg and lisinopril 20 mg are one
+# agent at two doses, and counting them as two would double a patient's modelled
+# treatment effect on the strength of a dose change.
+#
+# Furosemide is deliberately absent: it is prescribed here for volume overload rather
+# than as an antihypertensive, and Law's trials do not cover loop diuretics.
+ANTIHYPERTENSIVE_CLASS: dict[str, str] = {
+    LISINOPRIL_10.code: "ace_inhibitor",
+    LISINOPRIL_20.code: "ace_inhibitor",
+    AMLODIPINE_5.code: "calcium_channel_blocker",
+    AMLODIPINE_10.code: "calcium_channel_blocker",
+    HYDROCHLOROTHIAZIDE_25.code: "thiazide",
+    LOSARTAN_50.code: "arb",
+    CARVEDILOL_12_5.code: "beta_blocker",
+}
+
+
+def antihypertensive_class_count(codes: Iterable[Code]) -> int:
+    """How many distinct antihypertensive classes a regimen represents."""
+    return len({
+        ANTIHYPERTENSIVE_CLASS[c.code]
+        for c in codes
+        if c.code in ANTIHYPERTENSIVE_CLASS
+    })
 
 # Lipid lowering. Rosuvastatin exists only under its salt name in RxNorm —
 # "rosuvastatin 10 MG Oral Tablet" resolves to nothing.

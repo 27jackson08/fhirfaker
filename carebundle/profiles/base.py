@@ -16,6 +16,7 @@ import numpy as np
 
 from carebundle.correlation import relations
 from carebundle.correlation.engine import JointModel
+from carebundle.terminology import codes as codes_module
 from carebundle.terminology.codes import Code
 
 # How eGFR is obtained. Both paths end with eGFR consistent with creatinine; they
@@ -165,6 +166,29 @@ def draw(
         rule.code for rule in profile.medications if rule.applies(raw, rng, coded)
     ]
     allergies = [rule.code for rule in profile.allergies if rng.random() < rule.probability]
+
+    # Blood pressure is the one analyte whose *observed* value depends on what was
+    # prescribed, so it is finalised here rather than at sampling time. The copula
+    # draws the pre-treatment pressure; the recorded pressure is that value after the
+    # regimen this patient actually received.
+    #
+    # This ordering is deliberate and clinically correct in both directions: the
+    # medication rules escalate on the pre-treatment pressure (you add an agent
+    # because the patient is uncontrolled), and the recorded pressure then reflects
+    # the agents added. Sampling an "observed" pressure independently of the drug list
+    # would let a bundle prescribe three antihypertensives beside an untreated-looking
+    # 168/102 — exactly the class of contradiction this engine exists to prevent.
+    if {"systolic", "diastolic"} <= raw.keys():
+        raw["pretreatment_systolic"] = raw["systolic"]
+        raw["pretreatment_diastolic"] = raw["diastolic"]
+        raw["antihypertensive_classes"] = float(
+            codes_module.antihypertensive_class_count(medications)
+        )
+        raw["systolic"], raw["diastolic"] = relations.antihypertensive_response(
+            systolic=raw["systolic"],
+            diastolic=raw["diastolic"],
+            agent_count=int(raw["antihypertensive_classes"]),
+        )
 
     analytes = {
         name: relations.to_reported(value, _precision_key(profile, name))

@@ -23,6 +23,8 @@ BMI are computed from their inputs rather than sampled.
 
 from __future__ import annotations
 
+import math
+
 from carebundle.correlation import relations
 from carebundle.correlation.distributions import (
     Marginal,
@@ -41,6 +43,7 @@ from carebundle.profiles.base import (
     MedicationRule,
 )
 from carebundle.terminology import codes
+from carebundle.terminology.codes import Code
 
 # --- shared marginals ------------------------------------------------------------
 # Creatinine reference intervals are sex-specific; using one distribution for both
@@ -253,12 +256,50 @@ BACKGROUND_MEDICATIONS = (
 )
 # Combination therapy is the norm in hypertension, so these are independent draws
 # rather than a single pick — most treated patients are on two or more agents.
+# NHANES, August 2021-August 2023 (NCHS Data Brief): 59.2% of US adults with
+# hypertension are aware of it and 51.2% are taking medication to lower it, so
+# 51.2/59.2 = 86.5% of *diagnosed* hypertensives are on treatment. Diagnosed-and-in-care
+# is exactly the population these profiles represent — every one of them carries a
+# coded hypertension diagnosis and an encounter — so that is the fraction to match.
+NHANES_TREATED_FRACTION_OF_DIAGNOSED = 0.512 / 0.592
+
+# Relative preference between classes: ACE inhibitor most common, beta blocker least,
+# which is the usual first-line ordering. Only the *ratios* here are asserted; the
+# absolute level is solved for below so the modelled treated fraction reproduces
+# NHANES rather than whatever these numbers happened to multiply out to.
+_ANTIHYPERTENSIVE_PREFERENCE: dict[Code, float] = {
+    codes.LISINOPRIL_10: 0.45,
+    codes.AMLODIPINE_5: 0.28,
+    codes.HYDROCHLOROTHIAZIDE_25: 0.24,
+    codes.LOSARTAN_50: 0.18,
+    codes.CARVEDILOL_12_5: 0.11,
+}
+
+
+def _scaled_to_treated_fraction(
+    preferences: dict[Code, float], target_treated: float
+) -> dict[Code, float]:
+    """Scale independent per-drug probabilities so P(at least one) hits a target.
+
+    Raising each survival probability to a common exponent preserves the relative
+    ordering between classes while moving only the overall treated fraction — one
+    free parameter solved against one cited number, rather than five hand-tuned ones.
+
+    Deriving it instead of writing the scaled values down keeps the cited target and
+    the emitted probabilities from drifting apart, which is the failure mode Section 18
+    records for every other number that was typed rather than computed.
+    """
+    untreated = math.prod(1.0 - p for p in preferences.values())
+    exponent = math.log(1.0 - target_treated) / math.log(untreated)
+    return {code: 1.0 - (1.0 - p) ** exponent for code, p in preferences.items()}
+
+
+_SCALED_ANTIHYPERTENSIVES = _scaled_to_treated_fraction(
+    _ANTIHYPERTENSIVE_PREFERENCE, NHANES_TREATED_FRACTION_OF_DIAGNOSED
+)
+
 ANTIHYPERTENSIVES = (
-    MedicationRule(codes.LISINOPRIL_10, 0.45),
-    MedicationRule(codes.AMLODIPINE_5, 0.28),
-    MedicationRule(codes.HYDROCHLOROTHIAZIDE_25, 0.24),
-    MedicationRule(codes.LOSARTAN_50, 0.18),
-    MedicationRule(codes.CARVEDILOL_12_5, 0.11),
+    *(MedicationRule(code, p) for code, p in _SCALED_ANTIHYPERTENSIVES.items()),
     # Higher doses follow poor control, not chance.
     MedicationRule(
         codes.LISINOPRIL_20, 0.30, requires=lambda a: a.get("systolic", 0.0) >= 160.0

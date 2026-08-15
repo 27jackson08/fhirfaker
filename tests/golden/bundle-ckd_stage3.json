@@ -2664,7 +2664,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Blood pressure 163/91 mmHg (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Blood pressure 144/82 mmHg (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -2714,7 +2714,7 @@
               "text": "Systolic blood pressure"
             },
             "valueQuantity": {
-              "value": 163,
+              "value": 144,
               "unit": "mmHg",
               "system": "http://unitsofmeasure.org",
               "code": "mm[Hg]"
@@ -2732,7 +2732,7 @@
               "text": "Diastolic blood pressure"
             },
             "valueQuantity": {
-              "value": 91,
+              "value": 82,
               "unit": "mmHg",
               "system": "http://unitsofmeasure.org",
               "code": "mm[Hg]"
@@ -2871,6 +2871,54 @@
         },
         "text": {
           "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Prescription: carvedilol 12.5 MG Oral Tablet (synthetic).</p></div>"
+        },
+        "status": "active",
+        "intent": "order",
+        "medicationCodeableConcept": {
+          "coding": [
+            {
+              "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
+              "code": "200032",
+              "display": "carvedilol 12.5 MG Oral Tablet"
+            }
+          ],
+          "text": "carvedilol 12.5 MG Oral Tablet"
+        },
+        "subject": {
+          "reference": "urn:uuid:96baad95-bc36-5844-bc19-86cb1d4022a3"
+        },
+        "encounter": {
+          "reference": "urn:uuid:8fa28d90-ba30-55d7-9a22-e529d75cd9ce"
+        },
+        "authoredOn": "2026-01-01",
+        "requester": {
+          "reference": "urn:uuid:20fd4d99-998d-58f3-a37e-9f165f9df6bb"
+        }
+      },
+      "request": {
+        "method": "POST",
+        "url": "MedicationRequest"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:ab01689f-35e3-54b9-9407-92b01d230383",
+      "resource": {
+        "resourceType": "MedicationRequest",
+        "meta": {
+          "profile": [
+            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest"
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
           "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Prescription: atorvastatin 20 MG Oral Tablet (synthetic).</p></div>"
         },
         "status": "active",
@@ -2902,7 +2950,7 @@
       }
     },
     {
-      "fullUrl": "urn:uuid:ab01689f-35e3-54b9-9407-92b01d230383",
+      "fullUrl": "urn:uuid:4b22cf38-37bc-531c-a582-5f5d3e16d364",
       "resource": {
         "resourceType": "MedicationRequest",
         "meta": {
@@ -2950,7 +2998,7 @@
       }
     },
     {
-      "fullUrl": "urn:uuid:4b22cf38-37bc-531c-a582-5f5d3e16d364",
+      "fullUrl": "urn:uuid:e4a4c11b-460b-5598-ab27-d1502d666c09",
       "resource": {
         "resourceType": "MedicationRequest",
         "meta": {

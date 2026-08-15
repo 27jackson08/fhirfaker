@@ -10,7 +10,30 @@ what you are relying on, and this file is where it is recorded.
 
 ## [Unreleased]
 
-Nothing yet.
+### Changed — **breaking, seeded output**
+
+- **Blood pressure now reflects the treatment in the bundle.** The copula draws a
+  pre-treatment pressure; the recorded pressure is computed from the antihypertensive
+  classes the patient was actually prescribed, using the effect sizes in Law MR et al.,
+  *BMJ* 2003;326:1427. Previously the recorded pressure was drawn independently of the
+  drug list, so a bundle could prescribe three antihypertensives beside an
+  untreated-looking 168/102.
+- **Antihypertensive prescribing probabilities are solved, not written.** They are
+  scaled so the treated fraction reproduces NHANES (86.5% of *diagnosed* hypertensives
+  are on medication), preserving the relative ordering between classes.
+
+Seeded output therefore changes: golden files were regenerated and `ckd_stage3` now
+emits 52 entries rather than 51. **Under the stability policy this is a major bump**,
+and it is landing pre-1.0 and pre-publication precisely so that it costs nothing.
+
+### Added
+
+- `carebundle.benchmark` — CMS/HEDIS clinical quality measures computed from emitted
+  FHIR, with `Controlling High Blood Pressure` implemented to the NCQA definition.
+- [BENCHMARK.md](BENCHMARK.md) — measured **64.1%** on that measure against Synthea's
+  published **0%** and a real-world 69.7%, from independently cited inputs. Includes
+  the three measures this does *not* model, reported as such rather than omitted.
+- [ROADMAP.md](ROADMAP.md) — the plan this came from.
 
 ## [0.1.0] — unreleased
 

@@ -105,14 +105,34 @@ or it is not a phase.
 
 | Phase | Content | Exit criterion |
 |---|---|---|
-| **6. The benchmark** | Reproduce the published CQM study against our output | `Controlling High Blood Pressure` within the published real-world band, asserted in CI |
+| ~~**6. The benchmark**~~ **done** | Reproduce the published CQM study against our output | **Met at 64.1%** vs Synthea's published 0%; asserted in CI. See `BENCHMARK.md` |
 | **7. Treatment response** | Bounded longitudinal: analyte trajectories under therapy | Metformin lowers HbA1c by a published effect size, asserted in CI |
 | **8. Evaluation as product** | Adopt the three-dimension framework; publish it | FIDELITY.md restructured; preprint drafted |
 | **9. Realistic imperfection** | Opt-in messiness with labelled defects | `imperfection=` flag; conformance still provable when off |
 | **10. Breadth that pays** | More profiles, more US Core profiles | Each new profile ships with fidelity assertions, not just code |
 | **11. Calibrate to your population** | Fit marginals from user-supplied aggregates | A user's summary stats reproduce their distributions |
 
-### Phase 6 — The benchmark (do this first)
+### Phase 6 — The benchmark — **complete**
+
+> **Result: 64.1%**, against Synthea's published 0% and a US comparator of 69.7%.
+> Full write-up in [BENCHMARK.md](BENCHMARK.md). Three things worth recording:
+>
+> * The starting point was **21.4%**, not 0% — the pre-existing `HYPERTENSIVE`
+>   marginal modelled *untreated* pressure, so some patients already fell under
+>   140/90 by accident of its lower bound.
+> * The fix was not a new marginal but a **computed identity**: the copula draws a
+>   pre-treatment pressure and the recorded pressure is computed from the regimen the
+>   patient actually received (Law 2003 effect sizes, per distinct drug class,
+>   sequentially). Treatment prevalence is solved against NHANES rather than typed.
+> * The remaining **5.6-point shortfall was published rather than closed**. Its most
+>   likely cause is dose titration, which is precisely Phase 7 — so the gap is now a
+>   testable hypothesis instead of a number someone tuned away.
+>
+> This also broke the determinism contract, which was the right time for it: seeded
+> output changed, and doing that before the first PyPI upload costs nothing while
+> doing it after costs a major version.
+
+### Phase 6 — original plan (retained for the record)
 
 **This is the highest-leverage work in the document and the cheapest.** It is mostly measurement
 of what already exists.

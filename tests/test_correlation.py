@@ -228,3 +228,71 @@ def test_a_deterministic_glucose_model_would_fail_the_r_squared_check():
     assert abs(r_squared - relations.ADAG_R_SQUARED) > 0.02, (
         "a deterministic generator must fall outside the fidelity tolerance"
     )
+
+
+# --- antihypertensive response (Law 2003) ----------------------------------------
+
+def test_no_agents_leaves_blood_pressure_untouched():
+    """An untreated diagnosed hypertensive is the agent_count == 0 case."""
+    assert relations.antihypertensive_response(
+        systolic=152.0, diastolic=94.0, agent_count=0
+    ) == (152.0, 94.0)
+
+
+def test_one_agent_reproduces_the_published_effect_at_the_reference_pressure():
+    """At Law's reference 154/97 the baseline term vanishes, leaving 9.1/5.5 exactly."""
+    systolic, diastolic = relations.antihypertensive_response(
+        systolic=relations.LAW_REFERENCE_SYSTOLIC,
+        diastolic=relations.LAW_REFERENCE_DIASTOLIC,
+        agent_count=1,
+    )
+    assert systolic == pytest.approx(154.0 - 9.1)
+    assert diastolic == pytest.approx(97.0 - 5.5)
+
+
+def test_reduction_is_larger_from_a_higher_starting_pressure():
+    """Law: 'for a 10 mm Hg higher blood pressure the reduction was 1.0 mm Hg greater'."""
+    low_drop = 140.0 - relations.antihypertensive_response(
+        systolic=140.0, diastolic=90.0, agent_count=1
+    )[0]
+    high_drop = 150.0 - relations.antihypertensive_response(
+        systolic=150.0, diastolic=90.0, agent_count=1
+    )[0]
+    assert high_drop - low_drop == pytest.approx(1.0)
+
+
+def test_each_added_agent_lowers_pressure_by_less_than_the_one_before():
+    """Diminishing returns is per agent, and it falls out of the baseline dependence.
+
+    Note it is *not* 'less than naive n x 9.1'. From a high pre-treatment pressure the
+    baseline term makes each reduction larger than 9.1, so sequential application
+    lowers pressure further than the naive product, not less far. The property that
+    actually holds is that the second agent achieves less than the first.
+    """
+    start = 170.0
+    one = relations.antihypertensive_response(
+        systolic=start, diastolic=100.0, agent_count=1
+    )[0]
+    two = relations.antihypertensive_response(
+        systolic=start, diastolic=100.0, agent_count=2
+    )[0]
+
+    first_drop, second_drop = start - one, one - two
+    assert second_drop < first_drop, "each agent acts on an already-lowered pressure"
+    assert second_drop > 0, "a second agent must still lower it further"
+
+
+def test_treated_pressure_never_falls_below_the_physiological_floor():
+    # Far more agents than any real regimen; the point is that the clamp exists at all.
+    systolic, diastolic = relations.antihypertensive_response(
+        systolic=145.0, diastolic=92.0, agent_count=20
+    )
+    assert systolic == relations.TREATED_SYSTOLIC_FLOOR
+    assert diastolic == relations.TREATED_DIASTOLIC_FLOOR
+
+
+def test_a_negative_agent_count_raises_rather_than_silently_passing():
+    with pytest.raises(ValueError, match="non-negative"):
+        relations.antihypertensive_response(
+            systolic=150.0, diastolic=90.0, agent_count=-1
+        )

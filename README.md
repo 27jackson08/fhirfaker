@@ -42,9 +42,19 @@ overkill:
 | Shape | batch — generates a population into a folder | library — returns a `Bundle` object in-process |
 | Scope | full patient lifecycle simulation | one visit, clinically coherent |
 | Reproducible fixtures | not a contract | **byte-identical for a given seed** |
+| CMS *Controlling High Blood Pressure* | **0%** (published) | **64.1%** (real-world 69.7%) |
 
 If you want a realistic population to analyse, use Synthea. If you want five diabetic
 patients with coherent lab panels inside a pytest fixture, this is smaller.
+
+That last row is the one worth explaining. Synthea's
+[published validation](https://pmc.ncbi.nlm.nih.gov/articles/PMC6416981/) tested it
+against four CMS quality measures: it tracks reality on the *process* measure and
+scores ~0% on every *outcome* measure, because a simulator of care pathways has no
+representation of what the blood pressure did after treatment started. Modelling
+clinical state directly is what makes an outcome measure reachable at all. The full
+comparison, including the three measures this does **not** model, is in
+[BENCHMARK.md](BENCHMARK.md).
 
 ### Why not PySynthea?
 
@@ -90,7 +100,7 @@ every release. The full matrix is published in [CONFORMANCE.md](CONFORMANCE.md).
 | healthy | 42 | **0** | 2 |
 | hypertension | 45 | **0** | 4 |
 | type2_diabetes | 51 | **0** | 10 |
-| ckd_stage3 | 51 | **0** | 10 |
+| ckd_stage3 | 52 | **0** | 12 |
 
 Every remaining warning is examined and documented with a reason; a *new* warning
 fails the build. Counts scale with medication count — each RxNorm-coded prescription

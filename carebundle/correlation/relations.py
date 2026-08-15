@@ -32,6 +32,73 @@ def estimated_average_glucose(hba1c_percent: float) -> float:
     return ADAG_SLOPE * hba1c_percent + ADAG_INTERCEPT
 
 
+# --- Antihypertensive treatment response -----------------------------------------
+# Law MR, Wald NJ, Morris JK, "Value of low dose combination treatment with blood
+# pressure lowering drugs: analysis of 354 randomised trials", BMJ 2003;326:1427.
+#
+# One standard-dose agent lowers blood pressure by 9.1 systolic / 5.5 diastolic,
+# averaged across thiazides, beta blockers, ACE inhibitors, ARBs and calcium channel
+# blockers. A 2025 Lancet meta-analysis of 484 trials puts standard-dose monotherapy
+# at 8.7 systolic (95% CI 8.2-9.2), which brackets the same figure.
+#
+# Two published properties of the effect are load-bearing here and both are implemented:
+#
+#   * The reduction is larger from a higher pre-treatment pressure — "for a 10 mm Hg
+#     higher blood pressure the reduction was 1.0 mm Hg systolic and 1.1 mm Hg
+#     diastolic greater". Law's trials standardise to a pre-treatment 154/97.
+#   * Effects of drugs from different classes are additive, which is the evidence base
+#     for combination therapy.
+#
+# Applying the per-drug effect *sequentially* rather than multiplying it by the agent
+# count implements both at once: each additional agent acts on the pressure the
+# previous one left behind, so the published baseline-dependence produces diminishing
+# returns by construction instead of by a fudge factor.
+LAW_SYSTOLIC_REDUCTION = 9.1
+LAW_DIASTOLIC_REDUCTION = 5.5
+LAW_REFERENCE_SYSTOLIC = 154.0
+LAW_REFERENCE_DIASTOLIC = 97.0
+LAW_SYSTOLIC_PER_MMHG = 0.10
+LAW_DIASTOLIC_PER_MMHG = 0.11
+
+# Treatment lowers pressure; it does not abolish it. Real treated patients are not
+# found at 70/40, and without a floor a patient on four agents would be. These are
+# physiological bounds of the same kind as the marginals' truncation limits, not a
+# tuning knob — no benchmark in this project depends on their exact value.
+TREATED_SYSTOLIC_FLOOR = 95.0
+TREATED_DIASTOLIC_FLOOR = 55.0
+
+
+def antihypertensive_response(
+    *,
+    systolic: float,
+    diastolic: float,
+    agent_count: int,
+) -> tuple[float, float]:
+    """Observed blood pressure after `agent_count` standard-dose agents, per Law 2003.
+
+    `systolic`/`diastolic` are the *pre-treatment* pressure. Returns the pressure a
+    clinic would actually record. With `agent_count == 0` the pressure is returned
+    unchanged, which is what an untreated diagnosed hypertensive looks like.
+
+    Raises on a negative agent count: that is a caller bug, and silently treating it
+    as zero would hide a miscount behind plausible-looking output.
+    """
+    if agent_count < 0:
+        raise ValueError(f"agent_count must be non-negative, got {agent_count}")
+
+    for _ in range(agent_count):
+        systolic -= LAW_SYSTOLIC_REDUCTION + LAW_SYSTOLIC_PER_MMHG * (
+            systolic - LAW_REFERENCE_SYSTOLIC
+        )
+        diastolic -= LAW_DIASTOLIC_REDUCTION + LAW_DIASTOLIC_PER_MMHG * (
+            diastolic - LAW_REFERENCE_DIASTOLIC
+        )
+        systolic = max(systolic, TREATED_SYSTOLIC_FLOOR)
+        diastolic = max(diastolic, TREATED_DIASTOLIC_FLOOR)
+
+    return systolic, diastolic
+
+
 # --- CKD-EPI 2021 (race-free) ----------------------------------------------------
 # Inker LA et al., NEJM 2021; endorsed by NKF/ASN.
 #   eGFR = 142 x min(Scr/K, 1)^a x max(Scr/K, 1)^-1.200 x 0.9938^age x 1.012 [female]
