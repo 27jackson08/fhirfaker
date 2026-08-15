@@ -1,0 +1,227 @@
+# Roadmap: competing with Synthea
+
+**Status:** proposal, not yet started. Phases 0–5 (the build document) are complete and shipped.
+**Written:** August 15, 2026
+
+---
+
+## 1. The strategic problem with the obvious plan
+
+The obvious plan is "add disease modules until we catch up." That plan loses, and the build
+document already says why in Section 14:
+
+> **Scope creep toward "Synthea but worse."** The moment this tries to simulate full patient
+> lifecycles, it competes on Synthea's terms and loses.
+
+That warning is still correct and this roadmap does not overturn it. Synthea has 231 disease
+modules, a decade of development, MITRE behind it, and — since PySynthea — a JVM-free Python
+port. Breadth is not winnable. Neither is "easier to install", which was a real differentiator
+until May 2026 and is now gone.
+
+So the plan is not to out-simulate Synthea. It is to **out-validate** it, on ground where
+Synthea has a published, peer-reviewed, measured weakness and where this project's architecture
+is already the right shape.
+
+## 2. The evidence this is built on
+
+Two findings reframe the whole competitive picture. Both are external and citable, which
+matters: this project's positioning rule is that claims are checked, not asserted.
+
+### 2.1 Synthea fails outcome measures, and it is documented
+
+A validation study in *BMC Medical Informatics and Decision Making* tested Synthea against four
+CMS clinical quality measures:
+
+| Quality measure | Type | Synthea | Real (MA) | Real (US) |
+|---|---|---:|---:|---:|
+| Colorectal cancer screening | process | 68.7% | 77.3% | 69.8% |
+| COPD 30-day mortality | outcome | 0.7% | 7.0% | 8.0% |
+| Complications after hip/knee replacement | outcome | **0%** | 2.9% | 2.8% |
+| Controlling high blood pressure | outcome | **0%** | 74.5% | 69.7% |
+
+Synthea tracks reality closely on the *process* measure and collapses on every *outcome*
+measure. The authors' conclusion names the mechanism:
+
+> "Synthea and other synthetic patient generators do not currently model for deviations in care
+> and the potential outcomes that may result from care deviations."
+
+**Why this happens is architectural, not a bug.** Synthea's state machines model care
+*pathways* — was the patient screened, was a drug prescribed. They do not model *physiological
+response* — what the blood pressure actually did after the thiazide started. A pathway
+simulator cannot produce a blood-pressure control rate, because control is a property of the
+value, not of the pathway.
+
+**This project models clinical state directly.** Analytes are drawn from calibrated joint
+distributions; derived quantities are computed from identities. That is the machinery an
+outcome measure needs and the machinery Synthea does not have.
+
+`Controlling High Blood Pressure` is the single most common chronic-disease quality measure in
+US healthcare. Synthea scores **0%**. This project already emits hypertensive patients with
+real blood-pressure distributions. **That gap is the wedge.**
+
+### 2.2 The field's failure mode is exactly what the copula was chosen to prevent
+
+"Synthetic but Not Realistic" (arXiv:2606.08903, 2026) evaluated four generative paradigms
+(GAN, VAE, diffusion, masked modelling) on a 50,000-person cardiovascular cohort and found:
+
+> "models with strong distributional fidelity can exhibit poor calibration and distorted
+> relationships, leading to unreliable inference"
+
+and that **none** of the four simultaneously preserved subgroup structure, effect estimates and
+dependency relationships.
+
+Preserving dependency relationships is the copula's entire job here. Preserving effect
+estimates is what asserting the ADAG slope and R² in CI already does. Preserving subgroup
+structure is what age/sex-stratified, per-profile marginals already do. The paper proposes a
+three-dimension evaluation framework — **descriptive fidelity, clinical utility, structural
+validity** — and the honest read is that this project is closer to satisfying it than the
+generative-model literature is, and does not currently say so.
+
+### 2.3 The other documented gap: synthetic data is too clean
+
+Recurring in the literature: real EHR extracts contain transcription errors, missing fields,
+inconsistent formatting and local coding conventions that Synthea output does not have. For the
+actual use case here — testing your application — clean data is the *wrong* data. Software that
+only ever sees well-formed bundles has untested error paths, and the bug reaches production the
+first time a real feed arrives.
+
+Nobody in this space generates realistic imperfection on purpose.
+
+## 3. The positioning this produces
+
+> Synthea simulates **care pathways** across a lifetime.
+> This simulates **clinical state** with evidence that the numbers are right.
+>
+> Where those two overlap, Synthea wins on breadth. Where they diverge — outcome measures,
+> analyte relationships, statistical defensibility — it scores zero and this does not.
+
+This is a claim that can be *measured*, published, and re-checked in CI. It is not a claim about
+ergonomics, which is what the last differentiator turned out to be worth.
+
+## 4. Phases
+
+Same contract as the build document: every phase has an exit criterion that is machine-checkable,
+or it is not a phase.
+
+| Phase | Content | Exit criterion |
+|---|---|---|
+| **6. The benchmark** | Reproduce the published CQM study against our output | `Controlling High Blood Pressure` within the published real-world band, asserted in CI |
+| **7. Treatment response** | Bounded longitudinal: analyte trajectories under therapy | Metformin lowers HbA1c by a published effect size, asserted in CI |
+| **8. Evaluation as product** | Adopt the three-dimension framework; publish it | FIDELITY.md restructured; preprint drafted |
+| **9. Realistic imperfection** | Opt-in messiness with labelled defects | `imperfection=` flag; conformance still provable when off |
+| **10. Breadth that pays** | More profiles, more US Core profiles | Each new profile ships with fidelity assertions, not just code |
+| **11. Calibrate to your population** | Fit marginals from user-supplied aggregates | A user's summary stats reproduce their distributions |
+
+### Phase 6 — The benchmark (do this first)
+
+**This is the highest-leverage work in the document and the cheapest.** It is mostly measurement
+of what already exists.
+
+Build `carebundle.benchmark`: compute CMS clinical quality measures over generated bundles, the
+same four the validation study used. Then publish `BENCHMARK.md` with our column beside
+Synthea's published column and the real-world column.
+
+Realistic scope on day one: only **Controlling High Blood Pressure** is reachable now, because
+it needs hypertensive patients with BP observations and those exist. The other three need
+procedures, mortality and longitudinal follow-up that are Phase 7 or out of scope. **Say so in
+the table.** A benchmark that quietly omits the measures we lose is the same dishonesty this
+project has spent five phases avoiding — publish the row with "not modelled" and let the
+comparison be real.
+
+Exit: the generated hypertensive cohort's BP control rate lands within the published real-world
+band (69.7–74.5%), asserted in the fidelity suite with a tolerance that is meaningful but not
+knife-edge, against Synthea's published 0%.
+
+Watch for: the control rate is a *policy* choice as much as a measurement — it is set by how
+many hypertensives are modelled as treated-and-controlled. That must be calibrated to a cited
+source (NHANES has hypertension control rates directly) rather than tuned until the benchmark
+passes. **Tuning the generator to hit the benchmark is cheating, and it is the single easiest
+way to destroy this project's credibility.** Calibrate to the source; let the benchmark be the
+independent check.
+
+### Phase 7 — Treatment response
+
+The mechanism behind Synthea's zeroes, and the thing that makes outcome measures possible.
+
+Model a bounded trajectory: a patient on therapy, sampled at N encounters, with analytes
+responding to treatment at published effect sizes. Not a lifetime. Not disease progression
+modules. A chronic condition under management for a bounded window.
+
+- Metformin monotherapy lowers HbA1c by roughly 1.0–1.5 percentage points — a well-published
+  effect size with confidence intervals.
+- Antihypertensive response by drug class, likewise.
+- Non-response and non-adherence as explicit modelled fractions, because "deviations in care"
+  is precisely what the validation study says nobody models.
+
+Exit: an assertion that generated HbA1c declines by the published effect size, with the
+published scatter, over a modelled course. Same standard as the ADAG assertion — reproduce the
+relationship *including its variance*, not just its direction.
+
+This keeps the Section 14 line intact. Trajectories under treatment are not lifecycle
+simulation; there is no birth, no death, no 231 modules, no comorbidity cascade. It is the
+existing distributional model given a time axis.
+
+### Phase 8 — Evaluation as the product
+
+Restructure the fidelity report onto the published three-dimension framework: descriptive
+fidelity, clinical utility, structural validity. Add clinical-utility evidence — that a model
+trained on generated data transfers, or that an effect estimate computed on generated data
+matches the published estimate.
+
+Then write it up. The literature says evaluation is the field's open problem; this project has
+an unusually strong evaluation story and no publication. A preprint plus the benchmark is the
+distribution strategy that Section 14 flags as necessary and that building alone does not
+provide.
+
+### Phase 9 — Realistic imperfection
+
+Opt-in, off by default, and every defect labelled:
+
+- Missing must-support fields where real systems omit them
+- Plausible coding variance — the same concept coded two ways across encounters
+- Duplicate and near-duplicate records
+- Timestamps that arrive out of order
+- Values at implausible-but-real extremes
+
+Two hard constraints. Conformance must stay provable with imperfection off — that is Layer 1
+and it is not negotiable. And every injected defect must be machine-readable, so a user can
+assert "my parser rejected exactly the three bad records" rather than eyeballing it.
+
+This is the feature with no competitor at all, and it is directly aimed at what people actually
+do with this library.
+
+### Phases 10–11
+
+Breadth, but only where it pays: each new profile ships with fidelity assertions or it is
+decoration. And calibration from user-supplied aggregate statistics — health systems have
+their own distributions and cannot share their data; letting them shape output from summary
+stats alone is a capability Synthea structurally cannot offer.
+
+## 5. How to make it happen
+
+**Sequence.** 6 → 7 → 8 is the spine, and it is ordered by leverage. Phase 6 is days of work
+mostly spent measuring what exists, and it produces the headline. Phase 7 is the real
+engineering. Phase 8 converts both into reach. Phases 9–11 are parallelisable afterwards and
+9 is the one users will ask for first.
+
+**The one thing that must not slip.** Every number published in the benchmark has to come from a
+cited source and be re-checked in CI. This project's entire credibility rests on the difference
+between measured and asserted, and a benchmark is exactly the artefact where the temptation to
+tune runs highest. Calibrate to sources; let benchmarks check.
+
+**What would make me abandon this.** If Phase 6 shows the BP control rate cannot be reproduced
+without tuning the generator to the answer, the wedge is not real and the roadmap should stop at
+Phase 6 rather than proceed on a claim that does not survive its own test.
+
+**Re-run the prior-art sweep first.** It cost the "no JVM" differentiator once already, in the
+gap between the build document and shipping. Before committing to this roadmap, check whether
+anyone has moved on outcome-measure fidelity.
+
+## 6. Sources
+
+- [The validity of synthetic clinical data: a validation study of Synthea using clinical quality measures](https://pmc.ncbi.nlm.nih.gov/articles/PMC6416981/) — *BMC Med Inform Decis Mak*; the four-measure table and the "deviations in care" conclusion
+- [Synthetic but Not Realistic: The Evaluation Challenge in Generative Modelling for Structured EMRs](https://arxiv.org/abs/2606.08903) — the three-dimension framework; no paradigm preserved structure, effects and dependencies together
+- [Evaluating Synthea (OHDSI 2024)](https://www.ohdsi.org/wp-content/uploads/2024/10/41-Wagner-Evaluating_Synthea-Clair-Blacketer.pdf)
+- [A novel method to create realistic synthetic medication data](https://academic.oup.com/jamiaopen/article/6/3/ooad052/7223896) — the Medication Diversification Tool, i.e. Synthea medication data needing external correction
+- [Leveraging generative AI to enhance Synthea model development](https://academic.oup.com/jamiaopen/article/9/1/ooaf123/8415656) — where Synthea itself is heading
+- [tietai-synthea / PySynthea](https://github.com/TIET-AI/tietai-synthea) — the competitor that closed the install-weight gap

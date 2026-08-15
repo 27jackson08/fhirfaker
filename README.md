@@ -71,6 +71,9 @@ taking `fhir.resources` as a dependency.
 **What this is explicitly not:** a population health simulator, a replacement for
 Synthea's or PySynthea's disease-module depth, or a terminology server.
 
+Where this is heading — and the peer-reviewed evidence behind the direction — is in
+[ROADMAP.md](ROADMAP.md).
+
 ---
 
 ## What makes the data defensible

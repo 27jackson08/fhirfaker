@@ -371,6 +371,15 @@ This is a multi-week project at a realistic pace alongside everything else curre
 ## 14. Risks
 
 - **Scope creep toward "Synthea but worse."** The moment this tries to simulate full patient lifecycles, it competes on Synthea's terms and loses. Stay in the "quick, coherent, embeddable" lane.
+  > **Still binding, and deliberately tested by `ROADMAP.md`.** That document proposes
+  > competing with Synthea directly, which is the thing this risk warns about — so it is
+  > worth being precise about why it survives the warning. It does not add lifecycle
+  > simulation, disease modules or comorbidity cascades. It adds *bounded treatment
+  > response* and *published-benchmark evidence*, on the ground where Synthea's own
+  > peer-reviewed validation measures 0% (outcome-based quality measures) because a
+  > pathway simulator structurally cannot produce them. Competing on breadth would still
+  > lose. If a future phase starts arguing for more disease modules, this risk has won and
+  > the roadmap is wrong.
 - **US Core Condition binding vs. the no-SNOMED decision.** May constrain Condition conformance. Settled empirically by the validator in Phase 0 — do not assert either way before then.
 - **JVM in CI undercuts the "no JVM" pitch.** Mitigated by stating clearly that it is dev/CI-only. Left unstated, it reads as a contradiction.
 - **Codegen maintenance.** Owning the models means owning spec updates. Mitigated by narrow scope (8 resources, write-side only) and by R4 4.0.1 being frozen.
