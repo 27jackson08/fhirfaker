@@ -6,7 +6,8 @@ name: Release
 #
 # Before the first run, register the publisher at
 # https://pypi.org/manage/account/publishing/ with:
-#   project: carebundle | owner/repo: <this repo> | workflow: release.yml | environment: pypi
+#   project: carebundle | owner: 27jackson08 | repo: fhirfaker
+#   workflow: release.yml | environment: pypi
 on:
   push:
     tags: ["v*"]

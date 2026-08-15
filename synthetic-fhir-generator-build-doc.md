@@ -403,6 +403,14 @@ Using "FHIR®" **descriptively** in the README, PyPI description, and prose is f
 
 If the mark is used descriptively, include: *"FHIR® is the registered trademark of HL7 and is used with the permission of HL7."*
 
+> **Open, and inconsistent with the above: the repository is hosted at
+> `27jackson08/fhirfaker`.** That combines the mark with another word — structurally the
+> same objection that eliminated `fhirforge` and `synthfhir` in the table. The PyPI
+> distribution is `carebundle`, so the package name is clean; the exposure is the
+> repository URL, which is the project's public face. Renaming a GitHub repository is
+> cheap and redirects are preserved, so this is worth settling before the project has
+> traction rather than after. Tracked in `RELEASING.md`.
+
 **RESOLVED: `carebundle`.** Both surviving candidates were free on PyPI when checked; `carebundle`
 was preferred because `Bundle` is the FHIR resource type the library actually returns, so the name
 describes the product rather than merely disclaiming it — `mockcare`'s "mock" undersells calibrated

@@ -23,6 +23,12 @@ dependencies = [
     "numpy>=1.24",
 ]
 
+[project.urls]
+Homepage = "https://github.com/27jackson08/fhirfaker"
+Repository = "https://github.com/27jackson08/fhirfaker"
+Changelog = "https://github.com/27jackson08/fhirfaker/blob/main/CHANGELOG.md"
+Issues = "https://github.com/27jackson08/fhirfaker/issues"
+
 [project.scripts]
 carebundle = "carebundle.cli:run"
 

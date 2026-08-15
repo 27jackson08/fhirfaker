@@ -6,27 +6,32 @@ irreversible step is the *last* one and the cheapest to get right.
 
 ## Before the first release only
 
-1. **Push the repository to GitHub.** It is local-only today, so no CI has ever run.
-   Until it does, the conformance and fidelity gates are only ever as fresh as the last
-   local run.
-2. **Add `[project.urls]` to `pyproject.toml`** once the repository has a URL.
-   Deliberately absent now rather than pointed at a repository that does not exist:
-
-   ```toml
-   [project.urls]
-   Homepage = "https://github.com/<owner>/<repo>"
-   Repository = "https://github.com/<owner>/<repo>"
-   Changelog = "https://github.com/<owner>/<repo>/blob/main/CHANGELOG.md"
-   Issues = "https://github.com/<owner>/<repo>/issues"
-   ```
-
+1. ~~Push the repository to GitHub.~~ Done — <https://github.com/27jackson08/fhirfaker>.
+   Check that the first CI run went green; until it has, the conformance and fidelity
+   gates are only as fresh as the last local run.
+2. ~~Add `[project.urls]` to `pyproject.toml`.~~ Done.
 3. **Register the Trusted Publisher** at <https://pypi.org/manage/account/publishing/>:
-   project `carebundle`, owner/repo as above, workflow `release.yml`, environment `pypi`.
+
+   | Field | Value |
+   |---|---|
+   | PyPI project name | `carebundle` |
+   | Owner | `27jackson08` |
+   | Repository name | `fhirfaker` |
+   | Workflow name | `release.yml` |
+   | Environment name | `pypi` |
+
    This is why there is no PyPI token in the repository — there is nothing to leak.
-4. **Create the `pypi` environment** in GitHub repository settings and, if you want a
+4. **Create the `pypi` environment** at
+   <https://github.com/27jackson08/fhirfaker/settings/environments> and, if you want a
    human gate on an irreversible action, add yourself as a required reviewer.
 5. **Confirm the copyright holder** in `LICENSE`. It currently reads `Copyright 2026
    Jackson`; use your full legal name if you want it formal.
+6. **Decide on the repository name.** `fhirfaker` combines the FHIR mark with another
+   word, which is the pattern HL7's trademark policy forbids and the reason
+   `fhirforge` and `synthfhir` were rejected in build doc Section 15. The published
+   package is `carebundle`, so the distribution name is clean either way — but the
+   repository URL is the project's public face, and renaming a GitHub repository is
+   cheap (redirects are kept) while renaming one with traction is not.
 
 ## Every release
 

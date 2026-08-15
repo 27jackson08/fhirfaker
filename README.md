@@ -301,11 +301,16 @@ contract and [RELEASING.md](RELEASING.md) for the release process.
 
 ## Naming
 
-The name carries no HL7 mark, deliberately. HL7's
+The published package is **`carebundle`**, and it carries no HL7 mark deliberately. HL7's
 [FHIR trademark policy](https://www.hl7.org/documentcenter/public/legal/FHIR_Trademark_Policy.pdf)
 forbids abbreviating the mark or combining it with other words, and bars its use in
 product names without written permission — so `fhirforge` and `synthfhir` were not
 available. Using "FHIR®" descriptively in prose, as this README does, is fine.
+
+> The repository is currently hosted at `fhirfaker`, which does combine the mark with
+> another word and so falls under the same restriction. The distribution name on PyPI
+> is unaffected. Flagged here rather than left for a reader to notice; see
+> [RELEASING.md](RELEASING.md).
 
 ## Licence
 
