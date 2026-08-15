@@ -1,0 +1,116 @@
+name: Release
+
+# Publishes to PyPI when a v* tag is pushed. Uses Trusted Publishing (OIDC), so there
+# is no API token in this repository's secrets to leak or rotate — PyPI is configured
+# to trust this workflow in this repository instead.
+#
+# Before the first run, register the publisher at
+# https://pypi.org/manage/account/publishing/ with:
+#   project: carebundle | owner/repo: <this repo> | workflow: release.yml | environment: pypi
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  # A tag that disagrees with pyproject is the classic release footgun: it publishes
+  # the wrong version under the right name, and PyPI will not let you reuse the number.
+  # Fail here rather than after upload.
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Tag must match the version in pyproject.toml
+        run: |
+          python - <<'PY'
+          import os, pathlib, re, sys, tomllib
+          tag = os.environ["GITHUB_REF_NAME"]
+          version = tomllib.loads(pathlib.Path("pyproject.toml").read_text())["project"]["version"]
+          if tag != f"v{version}":
+              sys.exit(f"::error::tag {tag} does not match pyproject version {version} (expected v{version})")
+          changelog = pathlib.Path("CHANGELOG.md").read_text()
+          if not re.search(rf"^## \[{re.escape(version)}\]", changelog, re.M):
+              sys.exit(f"::error::CHANGELOG.md has no '## [{version}]' section")
+          print(f"tag {tag} matches pyproject and CHANGELOG")
+          PY
+
+  # Do not publish something the gates have not passed. This duplicates ci.yml
+  # deliberately: a tag can be pushed at a commit CI never ran on.
+  gates:
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: astral-sh/setup-uv@v5
+      - name: Install
+        run: uv pip install --system -e ".[dev]"
+      - name: Lint
+        run: ruff check carebundle tests
+      - name: Unit, property and determinism tests
+        run: pytest tests/ -q -m "not conformance and not fidelity" --cov --cov-report=term-missing
+      - name: Fetch HL7 validator and R4 definitions
+        run: |
+          mkdir -p .tools/spec
+          curl -sSL -o .tools/validator_cli.jar \
+            "https://github.com/hapifhir/org.hl7.fhir.core/releases/latest/download/validator_cli.jar"
+          curl -sSL -o .tools/spec/definitions.json.zip https://hl7.org/fhir/R4/definitions.json.zip
+          (cd .tools/spec && unzip -o -q definitions.json.zip)
+      - name: US Core conformance (full matrix)
+        run: pytest tests/ -q -m conformance --conformance-scale=full
+
+  build:
+    needs: gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build
+        run: |
+          python -m pip install --quiet build twine
+          python -m build
+      - name: Check metadata
+        run: twine check --strict dist/*
+      - name: Smoke-test the wheel outside the repo
+        run: |
+          python -m venv /tmp/probe
+          /tmp/probe/bin/pip install --quiet dist/*.whl
+          cd /tmp && /tmp/probe/bin/python -c "
+          import json, carebundle
+          b = json.loads(carebundle.to_json(
+              carebundle.generate_bundle(profile='type2_diabetes', seed=42, sex='F')))
+          assert b['resourceType'] == 'Bundle' and b['entry']
+          print('wheel OK:', len(b['entry']), 'entries')
+          "
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    # The environment gives you a manual approval gate: enable required reviewers on
+    # the `pypi` environment and the upload waits for a human. PyPI uploads cannot be
+    # undone — a deleted version number can never be reused.
+    environment:
+      name: pypi
+      url: https://pypi.org/p/carebundle
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1

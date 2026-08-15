@@ -283,7 +283,7 @@ python -m carebundle.calibration.nhanes --data-dir <dir>   # re-derive marginals
 `carebundle/models/r4.py` is generated from the official FHIR R4 4.0.1 StructureDefinitions
 and checked in; CI fails if it drifts from the spec.
 
-Coverage is enforced at 80% (currently 83% on the PR gate, 88% including the fidelity
+Coverage is enforced at 80% (currently ~85% on the PR gate, ~91% including the fidelity
 suite). Generated models and offline build tooling are excluded — counting 886
 statements of generated code would flatter the number rather than measure anything.
 
@@ -292,6 +292,10 @@ To intentionally change generated output:
 ```bash
 pytest tests/test_golden.py --update-golden   # then review the diff
 ```
+
+Changing seeded output at all is a **major** version bump, not a minor one — users pin
+test fixtures to a seed. See [CHANGELOG.md](CHANGELOG.md) for the versioned determinism
+contract and [RELEASING.md](RELEASING.md) for the release process.
 
 ---
 
