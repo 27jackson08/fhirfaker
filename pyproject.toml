@@ -1,18 +1,30 @@
 [project]
-# Placeholder name — the FHIR trademark policy rules out `fhirforge`/`synthfhir`,
-# and the final name is settled before first publish (build doc Section 15).
-name = "pkg"
+# The FHIR trademark policy forbids combining the mark with other words, which ruled
+# out `fhirforge`/`synthfhir`; `carebundle` carries no mark (build doc Section 15).
+name = "carebundle"
 version = "0.1.0"
 description = "Clinically coherent synthetic FHIR(R) R4 test data for Python"
 readme = "README.md"
 requires-python = ">=3.10"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+keywords = ["fhir", "healthcare", "synthetic-data", "test-data", "us-core", "hl7"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Healthcare Industry",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+    "Topic :: Software Development :: Testing",
+    "Typing :: Typed",
+]
 dependencies = [
     "pydantic>=2.0",
     "numpy>=1.24",
 ]
 
 [project.scripts]
-pkg = "pkg.cli:main"
+carebundle = "carebundle.cli:run"
 
 [project.optional-dependencies]
 dev = [
@@ -27,7 +39,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["pkg"]
+packages = ["carebundle"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -37,16 +49,16 @@ markers = [
 ]
 
 [tool.coverage.run]
-source = ["pkg"]
+source = ["carebundle"]
 omit = [
     # Generated from the R4 spec and checked by the conformance gate, not by unit
     # tests; 886 statements of generated models would flatter the number.
-    "pkg/models/r4.py",
+    "carebundle/models/r4.py",
     # Offline build tooling, equivalent to build scripts. codegen is verified by the
     # stale-model check in CI, and the NHANES reader's parsing is unit-tested
-    # through pkg/calibration/xpt.py.
-    "pkg/spec/codegen.py",
-    "pkg/calibration/nhanes.py",
+    # through carebundle/calibration/xpt.py.
+    "carebundle/spec/codegen.py",
+    "carebundle/calibration/nhanes.py",
 ]
 
 [tool.coverage.report]
@@ -56,4 +68,4 @@ show_missing = true
 [tool.ruff]
 line-length = 90
 # Generated code is not hand-maintained and does not follow the house style.
-extend-exclude = ["pkg/models/r4.py"]
+extend-exclude = ["carebundle/models/r4.py"]

@@ -8,8 +8,8 @@ from __future__ import annotations
 
 import pytest
 
-from pkg.conformance.validator import validate
-from pkg.generate import generate_bundle, generate_patient, to_json
+from carebundle.conformance.validator import validate
+from carebundle.generate import generate_bundle, generate_patient, to_json
 
 pytestmark = pytest.mark.conformance
 

@@ -4,7 +4,7 @@ We emit FHIR; we do not parse arbitrary FHIR. That asymmetry is what keeps this
 codegen small enough to own outright (see build doc Section 4) instead of taking a
 dependency on `fhir.resources`, which dropped R4 4.0.1 at v7.0.0.
 
-Run:  python -m pkg.spec.codegen
+Run:  python -m carebundle.spec.codegen
 """
 
 from __future__ import annotations
@@ -256,8 +256,8 @@ class Generator:
 
         header = f'''"""GENERATED FILE — do not edit by hand.
 
-Written by pkg/spec/codegen.py from the official FHIR R4 {FHIR_VERSION}
-StructureDefinitions. Regenerate with:  python -m pkg.spec.codegen
+Written by carebundle/spec/codegen.py from the official FHIR R4 {FHIR_VERSION}
+StructureDefinitions. Regenerate with:  python -m carebundle.spec.codegen
 """
 
 from __future__ import annotations

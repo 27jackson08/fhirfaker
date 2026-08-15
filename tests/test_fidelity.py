@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from pkg.fidelity.report import DEFAULT_SEED, render_markdown, run_all
+from carebundle.fidelity.report import DEFAULT_SEED, render_markdown, run_all
 
 pytestmark = pytest.mark.fidelity
 

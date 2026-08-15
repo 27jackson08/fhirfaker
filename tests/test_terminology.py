@@ -1,7 +1,7 @@
 """Terminology table consistency.
 
 These run offline. The network check that every code and display matches its source
-vocabulary lives in `pkg/terminology/verify.py` and runs nightly, because a unit test
+vocabulary lives in `carebundle/terminology/verify.py` and runs nightly, because a unit test
 that needs three external APIs is a flaky test.
 """
 
@@ -12,9 +12,9 @@ from collections import Counter
 
 import pytest
 
-from pkg.terminology import systems
-from pkg.terminology.codes import Code
-from pkg.terminology.verify import registered_codes
+from carebundle.terminology import systems
+from carebundle.terminology.codes import Code
+from carebundle.terminology.verify import registered_codes
 
 # Target subset sizes from build doc Section 6. Full coverage is a maintenance burden
 # with no v1 payoff; too few codes makes the profiles repetitive.
@@ -105,7 +105,7 @@ def test_display_text_can_be_overridden():
 
 def test_ckd_stage_codes_cover_every_kdigo_band():
     """A missing stage code would silently fall back to the unspecified one."""
-    from pkg.terminology import codes as table
+    from carebundle.terminology import codes as table
 
     for expected in ("N18.1", "N18.2", "N18.30", "N18.31", "N18.32", "N18.4", "N18.5"):
         assert any(c.code == expected for c in registered_codes()), expected
@@ -115,7 +115,7 @@ def test_ckd_stage_codes_cover_every_kdigo_band():
 
 def test_metformin_constants_do_not_mix_release_profiles():
     """861007 is immediate-release; 860975 is 24 HR extended-release."""
-    from pkg.terminology import codes as table
+    from carebundle.terminology import codes as table
 
     assert table.METFORMIN_500.code == "861007"
     assert "Extended Release" not in table.METFORMIN_500.display
@@ -123,7 +123,7 @@ def test_metformin_constants_do_not_mix_release_profiles():
 
 
 def test_units_pair_a_display_with_a_ucum_code():
-    from pkg.terminology import codes as table
+    from carebundle.terminology import codes as table
 
     units = [
         value for name, value in vars(table).items()
@@ -149,9 +149,9 @@ def test_every_defined_code_is_either_emitted_or_explicitly_reserved():
     import subprocess
     from pathlib import Path
 
-    from pkg.terminology import codes as table
+    from carebundle.terminology import codes as table
 
-    package = Path(__file__).resolve().parents[1] / "pkg"
+    package = Path(__file__).resolve().parents[1] / "carebundle"
     defined = {
         name for name, value in vars(table).items() if isinstance(value, Code)
     }
@@ -173,14 +173,14 @@ def test_every_defined_code_is_either_emitted_or_explicitly_reserved():
 
 def test_reserved_codes_all_exist():
     """A stale RESERVED_CODES entry would silently widen the exemption."""
-    from pkg.terminology import codes as table
+    from carebundle.terminology import codes as table
 
     for name in table.RESERVED_CODES:
         assert isinstance(getattr(table, name, None), Code), f"{name} no longer exists"
 
 
 def test_reserved_codes_each_carry_a_reason():
-    from pkg.terminology import codes as table
+    from carebundle.terminology import codes as table
 
     for name, reason in table.RESERVED_CODES.items():
         assert reason.strip(), f"{name} is reserved without a reason"
@@ -191,7 +191,7 @@ def test_reserved_codes_each_carry_a_reason():
 # what matters here is that a lookup result is turned into the right verdict.
 
 def test_matching_display_verifies_ok(monkeypatch):
-    from pkg.terminology import systems, verify
+    from carebundle.terminology import systems, verify
 
     code = Code(systems.LOINC, "1234-5", "Some analyte")
     monkeypatch.setitem(verify.FETCHERS, systems.LOINC, lambda _: "Some analyte")
@@ -200,7 +200,7 @@ def test_matching_display_verifies_ok(monkeypatch):
 
 def test_differing_display_is_reported_with_the_authoritative_text(monkeypatch):
     """The failure mode that shipped a wrong eGFR display past review."""
-    from pkg.terminology import systems, verify
+    from carebundle.terminology import systems, verify
 
     code = Code(systems.LOINC, "98979-8", "a display from a third-party aggregator")
     monkeypatch.setitem(verify.FETCHERS, systems.LOINC, lambda _: "the real display")
@@ -212,7 +212,7 @@ def test_differing_display_is_reported_with_the_authoritative_text(monkeypatch):
 
 
 def test_unknown_code_is_reported_as_missing(monkeypatch):
-    from pkg.terminology import systems, verify
+    from carebundle.terminology import systems, verify
 
     monkeypatch.setitem(verify.FETCHERS, systems.RXNORM, lambda _: None)
     finding = verify.verify(Code(systems.RXNORM, "999999999", "not a drug"))
@@ -221,7 +221,7 @@ def test_unknown_code_is_reported_as_missing(monkeypatch):
 
 
 def test_systems_without_a_public_authority_are_unchecked_not_failed():
-    from pkg.terminology import systems, verify
+    from carebundle.terminology import systems, verify
 
     finding = verify.verify(Code(systems.ACT_CODE, "AMB", "ambulatory"))
     assert finding.status == verify.UNCHECKED
@@ -237,7 +237,7 @@ def test_a_network_outage_is_not_reported_as_a_bad_code(monkeypatch):
     """
     import urllib.error
 
-    from pkg.terminology import verify
+    from carebundle.terminology import verify
 
     def explode(url):
         raise urllib.error.HTTPError(url, 503, "Service Unavailable", {}, None)
@@ -250,7 +250,7 @@ def test_a_network_outage_is_not_reported_as_a_bad_code(monkeypatch):
 def test_a_missing_prescribable_code_returns_none(monkeypatch):
     import urllib.error
 
-    from pkg.terminology import verify
+    from carebundle.terminology import verify
 
     def not_found(url):
         raise urllib.error.HTTPError(url, 404, "Not Found", {}, None)
@@ -260,7 +260,7 @@ def test_a_missing_prescribable_code_returns_none(monkeypatch):
 
 
 def test_verify_all_covers_every_registered_code(monkeypatch):
-    from pkg.terminology import verify
+    from carebundle.terminology import verify
 
     for system in list(verify.FETCHERS):
         monkeypatch.setitem(verify.FETCHERS, system, lambda _: None)

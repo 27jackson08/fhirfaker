@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from decimal import Decimal
 
-from pkg.core import uscore
-from pkg.core.safety import htest_meta, synthetic_narrative
-from pkg.models.r4 import (
+from carebundle.core import uscore
+from carebundle.core.safety import htest_meta, synthetic_narrative
+from carebundle.models.r4 import (
     AllergyIntolerance,
     CodeableConcept,
     Condition,
@@ -15,8 +15,8 @@ from pkg.models.r4 import (
     Quantity,
     Reference,
 )
-from pkg.terminology import codes
-from pkg.terminology.systems import UCUM
+from carebundle.terminology import codes
+from carebundle.terminology.systems import UCUM
 
 
 def _ref(urn: str) -> Reference:

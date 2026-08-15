@@ -14,8 +14,8 @@ import struct
 import numpy as np
 import pytest
 
-from pkg.calibration.xpt import NAMESTR_SIZE, _parse_namestrs, ibm_to_double
-from pkg.correlation.distributions import (
+from carebundle.calibration.xpt import NAMESTR_SIZE, _parse_namestrs, ibm_to_double
+from carebundle.correlation.distributions import (
     LogNormalMarginal,
     Marginal,
     fit_truncated_normal,
@@ -169,7 +169,7 @@ def test_quartiles_must_be_ordered():
 
 def test_mixed_marginal_families_work_inside_one_joint_model():
     """The copula only calls ppf, which is what makes mixing families free."""
-    from pkg.correlation.engine import JointModel
+    from carebundle.correlation.engine import JointModel
 
     model = JointModel(
         marginals=(

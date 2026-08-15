@@ -4,7 +4,7 @@ NHANES publishes only in XPT. Reading it needs either pandas (a very large runti
 dependency for a library that advertises `pydantic` + `numpy`) or about a hundred
 lines of well-documented binary parsing. This is the hundred lines.
 
-Calibration is an offline step, like `pkg/spec/codegen.py` — nothing here is imported
+Calibration is an offline step, like `carebundle/spec/codegen.py` — nothing here is imported
 on the generation path.
 
 Format reference: SAS Technical Support document TS-140.

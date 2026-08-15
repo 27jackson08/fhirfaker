@@ -14,9 +14,9 @@ from decimal import Decimal
 
 import numpy as np
 
-from pkg.correlation import relations
-from pkg.correlation.engine import JointModel
-from pkg.terminology.codes import Code
+from carebundle.correlation import relations
+from carebundle.correlation.engine import JointModel
+from carebundle.terminology.codes import Code
 
 # How eGFR is obtained. Both paths end with eGFR consistent with creatinine; they
 # differ in which one is sampled and which is computed.

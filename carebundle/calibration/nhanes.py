@@ -5,9 +5,9 @@ not fits to a named cohort". This closes that: it reads the NHANES 2017-March 20
 pre-pandemic public files, restricts to the generator's target age band, stratifies by
 sex and by glycaemic status, and reports the moments a profile should use.
 
-Offline, like `pkg/spec/codegen.py` — nothing here runs on the generation path.
+Offline, like `carebundle/spec/codegen.py` — nothing here runs on the generation path.
 
-    python -m pkg.calibration.nhanes --data-dir <dir>
+    python -m carebundle.calibration.nhanes --data-dir <dir>
 
 Files (https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/):
     P_DEMO P_GHB P_BIOPRO P_TCHOL P_HDL P_TRIGLY P_BMX P_BPXO P_CBC
@@ -21,7 +21,7 @@ from pathlib import Path
 
 import numpy as np
 
-from pkg.calibration.xpt import read_xpt
+from carebundle.calibration.xpt import read_xpt
 
 # NHANES variable -> the analyte name this project uses.
 VARIABLES = {

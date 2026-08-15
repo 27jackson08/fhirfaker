@@ -1,11 +1,12 @@
 # Build Document: Synthetic FHIR Data Generator
 
-**Working name:** TBD — see Section 15 (two prior candidates are legally unusable)
+**Name:** `carebundle` — settled, see Section 15 (two prior candidates are legally unusable)
+**Licence:** Apache 2.0 — settled, see Section 16
 **Author:** Jackson
-**Status:** Draft v2 — **built**. Every phase in Section 12 is complete; this document is
-now the design record rather than a forward plan. Section 18 collects what the build
+**Status:** Draft v2 — **built**. Every phase in Section 12 is complete, Phase 5 included; this
+document is now the design record rather than a forward plan. Section 18 collects what the build
 actually taught, which is the part worth reading twice.
-**Last updated:** August 11, 2026 (plan) · August 2026 (build notes)
+**Last updated:** August 11, 2026 (plan) · August 15, 2026 (ship pass: name, licence, packaging)
 
 > **What changed from v1.** Every factual claim in v1 was checked against primary sources. Three
 > things broke: (1) the `fhir.resources` dependency cannot deliver FHIR R4 4.0.1 anymore, (2) the
@@ -169,7 +170,7 @@ Requires an affiliate license outside member countries; sub-licensees are explic
 ## 7. Architecture
 
 ```
-pkg/
+carebundle/
 ├── spec/
 │   ├── structuredefinitions/   # vendored official R4 4.0.1 SDs, in-scope resources only
 │   └── codegen.py              # SD -> pydantic v2 model generation
@@ -206,7 +207,7 @@ Absent from v1, cheap to implement, and a strong signal of domain competence to 
 ### Core API shape
 
 ```python
-from pkg import generate_patient, ClinicalProfile
+from carebundle import generate_patient, ClinicalProfile
 
 bundle = generate_patient(
     profile=ClinicalProfile.TYPE2_DIABETES,
@@ -220,7 +221,7 @@ bundle.entry
 ```
 
 ```bash
-pkg generate --profile type2_diabetes --count 20 --seed 42 --out ./fixtures/
+carebundle generate --profile type2_diabetes --count 20 --seed 42 --out ./fixtures/
 ```
 
 ---
@@ -333,7 +334,7 @@ Two tiers, both in v1:
 | **2. Terminology** | Curated LOINC/RxNorm/ICD-10-CM subsets with provenance metadata | Every emitted code traces to a licensed, recorded source | **done** — 85 codes (40 LOINC, 23 RxNorm, 22 ICD-10-CM), all verified against their source vocabularies |
 | **3. Correlation engine** | Copula sampling + `relations.py`; 4 profiles | **The differentiator — allocate the most time here** | **done** — 10/10 fidelity checks |
 | **4. Fidelity + determinism** | Fidelity report generation, golden snapshots | Report published; drift fails CI | **done** — including NHANES calibration, no longer deferred |
-| **5. Ship** | CLI, packaging, docs, README positioning, name decision + rename pass | PyPI 0.1.0 | **partial** — CLI, README and packaging done; name and licence still open |
+| **5. Ship** | CLI, packaging, docs, README positioning, name decision + rename pass | PyPI 0.1.0 | **done** — CLI, README, packaging, `carebundle` rename and Apache 2.0 licence all landed; wheel + sdist build clean. Remaining is the publish itself, which is a decision, not a build step |
 
 **Since built:** AllergyIntolerance is emitted (RxNorm ingredient-coded drug allergies at
 reported prevalence), and `generate_cohort` draws mixed populations by prevalence.
@@ -361,7 +362,7 @@ This is a multi-week project at a realistic pace alongside everything else curre
 - **Codegen maintenance.** Owning the models means owning spec updates. Mitigated by narrow scope (8 resources, write-side only) and by R4 4.0.1 being frozen.
 - **Statistical test flakiness.** See Section 11.
 - ~~**Terminology maintenance.** Curated subsets go stale.~~ → **Mitigated.**
-  `python -m pkg.terminology.verify` re-checks every shipped code *and display* against LOINC,
+  `python -m carebundle.terminology.verify` re-checks every shipped code *and display* against LOINC,
   RxNorm and ICD-10-CM, and runs nightly in CI. The registry is introspected rather than
   hand-listed, so a newly added code cannot escape verification by being forgotten. RxNorm
   lookups go through the RxNav `/Prescribe/` endpoints, which serve only Current Prescribable
@@ -381,14 +382,18 @@ This is a multi-week project at a realistic pace alongside everything else curre
 |---|---|
 | `fhirforge` | ❌ Mark combined with another word |
 | `synthfhir` | ❌ Mark combined with another word |
-| `carebundle` | ✅ Clean |
+| `carebundle` | ✅ Clean — **chosen** |
 | `mockcare` | ✅ Clean |
 
 Using "FHIR®" **descriptively** in the README, PyPI description, and prose is fine and encouraged — the constraint is only on the product name and domain. If a FHIR-containing name is genuinely wanted, HL7 does grant written permission to open-source projects, but that adds an approval dependency and a rename risk if refused after traction.
 
 If the mark is used descriptively, include: *"FHIR® is the registered trademark of HL7 and is used with the permission of HL7."*
 
-**Decision deferred.** The build uses placeholder `pkg` throughout; a rename pass happens before first PyPI publish.
+**RESOLVED: `carebundle`.** Both surviving candidates were free on PyPI when checked; `carebundle`
+was preferred because `Bundle` is the FHIR resource type the library actually returns, so the name
+describes the product rather than merely disclaiming it — `mockcare`'s "mock" undersells calibrated
+distributions as stubs. The rename pass is done: the placeholder `pkg` is gone from code, tests,
+CI, packaging and docs, and the console script is `carebundle`.
 
 ---
 
@@ -398,8 +403,11 @@ If the mark is used descriptively, include: *"FHIR® is the registered trademark
 - ~~Whether HL7 validator integration is in scope for v1~~ → **Resolved:** yes, and it gates releases. See Section 10.
 - ~~FHIR version and model layer~~ → **Resolved:** R4 4.0.1, self-owned pydantic v2 models. See Section 4.
 - ~~Whether US Core Condition conformance is achievable with ICD-10-CM alone~~ → **Resolved in Phase 1: yes**, zero errors and zero warnings. See Section 6.
-- **Still open:** MIT vs Apache 2.0.
-- **Still open:** final name (Section 15).
+- ~~MIT vs Apache 2.0~~ → **Resolved: Apache 2.0.** Chosen over MIT for the express patent grant
+  and the defensive patent-termination clause. This library implements published clinical
+  algorithms (CKD-EPI 2021, ADAG, Friedewald) in a patent-active field, so an explicit grant is
+  worth more here than MIT's brevity.
+- ~~Final name (Section 15)~~ → **Resolved: `carebundle`.** See Section 15.
 - **New, opened by Phase 1:** whether to offer an opt-in hook for users who *hold* a SNOMED/CPT licence to supply their own Encounter.type and Condition codes. That would close the one remaining binding gap without shipping licensed content — the mechanism Section 6 already proposes for SNOMED generally.
 
 ---
@@ -490,6 +498,19 @@ documentation, and each would otherwise be rediscovered the hard way.
   marginal left diabetic patients with the same BMI as the general population — contradicting
   the strongest association in type 2 diabetes. Individually every value looked fine; only a
   cross-profile comparison exposed it.
+- **A `try/except BrokenPipeError` around the command does not fix `| head`.** Python
+  sets SIGPIPE to `SIG_IGN`, so a closed pipe surfaces as an exception — but stdout is
+  buffered, so the *second* failure happens during the interpreter's shutdown flush,
+  outside any handler the CLI controls. That one prints `Exception ignored while
+  flushing sys.stdout` no matter what `main` catches. Restoring `SIG_DFL` on the console
+  entry point is the actual fix, and it belongs there rather than in `main` because it
+  is a process-wide change that the in-process test suite should not inherit.
+- **Redirecting a real stdout fd inside a test takes the whole session down.** The
+  broken-pipe handler points stdout at devnull via `os.dup2`. Under pytest's default
+  fd-level capture `sys.stdout.fileno()` is a genuine descriptor — pytest's own capture
+  file — so calling the handler for real silently redirected it and produced 277 errors
+  in unrelated tests. The handler is also guarded against `fileno()` raising, which is
+  the opposite failure and happens whenever the CLI is driven in-process.
 - **Derived codes beat fixed ones.** ICD-10-CM splits CKD stage 3 into `N18.31` (3a) and
   `N18.32` (3b) by eGFR band. Emitting a fixed code would let the coded diagnosis contradict
   the lab value in the same bundle; picking the code from the drawn eGFR is the coherence

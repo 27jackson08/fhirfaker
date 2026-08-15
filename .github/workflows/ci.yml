@@ -24,9 +24,57 @@ jobs:
       - name: Install
         run: uv pip install --system -e ".[dev]"
       - name: Lint
-        run: ruff check pkg tests
+        run: ruff check carebundle tests
       - name: Unit, property and determinism tests
         run: pytest tests/ -q -m "not conformance and not fidelity" --cov --cov-report=term-missing
+
+  # Guards the artefacts themselves. The unit job installs from the source tree, so it
+  # cannot catch a packaging fault: a missing py.typed, a data file left out of the
+  # wheel, or metadata PyPI will reject. This installs the built wheel into a clean
+  # environment, outside the repo, and exercises the README's entry points there.
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build sdist and wheel
+        run: |
+          python -m pip install --quiet build twine
+          python -m build
+      - name: Check metadata renders on PyPI
+        run: twine check --strict dist/*
+      - name: Install the wheel into a clean environment
+        run: |
+          python -m venv /tmp/probe
+          /tmp/probe/bin/pip install --quiet dist/*.whl
+      - name: Smoke-test the installed package from outside the repo
+        working-directory: /tmp
+        run: |
+          /tmp/probe/bin/python -c "
+          import json, pathlib, carebundle
+          bundle = json.loads(carebundle.to_json(
+              carebundle.generate_bundle(profile='type2_diabetes', seed=42, sex='F')))
+          assert bundle['resourceType'] == 'Bundle', bundle['resourceType']
+          assert bundle['entry'], 'installed package generated an empty bundle'
+          marker = pathlib.Path(carebundle.__file__).parent / 'py.typed'
+          assert marker.exists(), 'py.typed missing from the wheel'
+          data = pathlib.Path(carebundle.__file__).parent / 'calibration/data/nhanes_targets.json'
+          assert data.exists(), 'calibration data missing from the wheel'
+          print('installed package OK:', len(bundle['entry']), 'entries')
+          "
+          /tmp/probe/bin/carebundle profiles
+          /tmp/probe/bin/carebundle generate --profile healthy --seed 1 --out /tmp/fixtures
+      - name: A closed pipe must not print a traceback
+        working-directory: /tmp
+        run: |
+          /tmp/probe/bin/carebundle generate --profile healthy --seed 1 2>/tmp/err.txt | head -3
+          if [ -s /tmp/err.txt ]; then echo "::error::stderr noise on a closed pipe"; cat /tmp/err.txt; exit 1; fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: distributions
+          path: dist/
 
   # Authoritative conformance gate. The JVM lives HERE and only here — it is never a
   # runtime or install dependency of the published package (build doc Section 10).
@@ -57,9 +105,9 @@ jobs:
           (cd .tools/spec && unzip -o -q definitions.json.zip)
       - name: Verify generated models match the spec
         run: |
-          python -m pkg.spec.codegen
-          git diff --exit-code pkg/models/r4.py \
-            || (echo "::error::pkg/models/r4.py is stale — run 'python -m pkg.spec.codegen' and commit" && exit 1)
+          python -m carebundle.spec.codegen
+          git diff --exit-code carebundle/models/r4.py \
+            || (echo "::error::carebundle/models/r4.py is stale — run 'python -m carebundle.spec.codegen' and commit" && exit 1)
       - name: US Core conformance
         # On PRs this runs a small sample to keep the loop tight; nightly runs the
         # full profile x resource-type matrix.
@@ -82,7 +130,7 @@ jobs:
       - name: Install
         run: uv pip install --system -e ".[dev]"
       - name: Verify codes against LOINC, RxNorm and ICD-10-CM
-        run: python -m pkg.terminology.verify
+        run: python -m carebundle.terminology.verify
 
   # Statistical evidence for the clinical-coherence claim (build doc Section 8).
   # Nightly only: N=10,000 patients per profile is too slow for a PR gate.

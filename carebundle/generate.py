@@ -13,26 +13,26 @@ from datetime import date, timedelta
 
 import numpy as np
 
-from pkg.builders.clinical import (
+from carebundle.builders.clinical import (
     build_allergy_intolerance,
     build_blood_pressure,
     build_condition,
     build_lab_observation,
     build_vital_observation,
 )
-from pkg.builders.orders import (
+from carebundle.builders.orders import (
     build_diagnostic_report,
     build_encounter,
     build_medication_request,
 )
-from pkg.builders.people import build_patient, build_practitioner
-from pkg.core import uscore
-from pkg.core.bundle import Entry, build_transaction_bundle, to_json  # noqa: F401
-from pkg.core.ids import deterministic_uuid, stable_digest, urn_uuid
-from pkg.models.r4 import Bundle, CodeableConcept
-from pkg.profiles.base import ProfileDraw, draw
-from pkg.profiles.library import PROFILES, get_profile
-from pkg.terminology import codes
+from carebundle.builders.people import build_patient, build_practitioner
+from carebundle.core import uscore
+from carebundle.core.bundle import Entry, build_transaction_bundle, to_json  # noqa: F401
+from carebundle.core.ids import deterministic_uuid, stable_digest, urn_uuid
+from carebundle.models.r4 import Bundle, CodeableConcept
+from carebundle.profiles.base import ProfileDraw, draw
+from carebundle.profiles.library import PROFILES, get_profile
+from carebundle.terminology import codes
 
 # Injected rather than read from the clock: any datetime.now() call would destroy the
 # determinism contract (build doc Section 9).

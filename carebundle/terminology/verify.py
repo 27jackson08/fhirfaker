@@ -11,7 +11,7 @@ Two problems this solves.
 
 Network-dependent, so this is a command and a nightly CI job — never a unit test.
 
-    python -m pkg.terminology.verify
+    python -m carebundle.terminology.verify
 
 Exit code is non-zero if any code is unknown, mis-displayed, or (for RxNorm) outside
 the Current Prescribable Content subset the licence position depends on.
@@ -26,9 +26,9 @@ import urllib.parse
 import urllib.request
 from dataclasses import dataclass
 
-from pkg.terminology import codes as code_module
-from pkg.terminology import systems
-from pkg.terminology.codes import Code
+from carebundle.terminology import codes as code_module
+from carebundle.terminology import systems
+from carebundle.terminology.codes import Code
 
 TIMEOUT_SECONDS = 30
 

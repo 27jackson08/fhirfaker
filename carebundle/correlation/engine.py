@@ -16,7 +16,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from pkg.correlation.distributions import AnyMarginal, standard_normal_cdf
+from carebundle.correlation.distributions import AnyMarginal, standard_normal_cdf
 
 # Below this, a correlation matrix is treated as non-positive-definite. Cholesky on a
 # matrix that is merely near-singular yields silently wrong dependence.

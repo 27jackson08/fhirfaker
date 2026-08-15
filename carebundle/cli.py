@@ -10,12 +10,14 @@ true, and a CLI does not justify a dependency.
 from __future__ import annotations
 
 import argparse
+import os
+import signal
 import sys
 from datetime import date
 from pathlib import Path
 
-from pkg.core.bundle import to_json
-from pkg.generate import (
+from carebundle.core.bundle import to_json
+from carebundle.generate import (
     ALL_PANELS,
     DEFAULT_COHORT_PREVALENCE,
     DEFAULT_REFERENCE_DATE,
@@ -23,12 +25,15 @@ from pkg.generate import (
     generate_bundle,
     generate_cohort,
 )
-from pkg.profiles.library import PROFILES
+from carebundle.profiles.library import PROFILES
 
 MIXED = "mixed"
 
 EXIT_OK = 0
 EXIT_USAGE = 2
+# Shell convention for death by signal: 128 + signal number.
+EXIT_SIGINT = 130
+EXIT_SIGPIPE = 141
 
 
 def _parse_reference_date(value: str) -> date:
@@ -49,7 +54,7 @@ def _positive_int(value: str) -> int:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="pkg",
+        prog="carebundle",
         description=(
             "Generate clinically coherent synthetic FHIR R4 test data. "
             "Output is US Core 6.1.0 conformant and deterministic for a given seed."
@@ -198,10 +203,74 @@ def command_profiles(_: argparse.Namespace) -> int:
 COMMANDS = {"generate": command_generate, "profiles": command_profiles}
 
 
+def _restore_default_sigpipe() -> None:
+    """Die quietly when a downstream reader closes the pipe.
+
+    Python installs SIGPIPE as SIG_IGN, which converts a closed pipe into a
+    BrokenPipeError and — because stdout is buffered — a shutdown-time "Exception
+    ignored while flushing sys.stdout" that no `except` block around the command can
+    suppress. Restoring the default disposition makes `carebundle generate | head`
+    behave like any other Unix filter.
+
+    No-op where SIGPIPE does not exist (Windows) or where the signal cannot be set
+    (not the main thread); the BrokenPipeError handler in `main` covers those.
+    """
+    if not hasattr(signal, "SIGPIPE"):
+        return
+    try:
+        signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+    except (ValueError, OSError):
+        pass
+
+
+def _silence_stdout() -> None:
+    """Redirect stdout to devnull after a broken pipe.
+
+    `carebundle generate ... | head` is ordinary usage, and the default behaviour is a
+    traceback plus "Exception ignored while flushing sys.stdout" at interpreter
+    shutdown. Giving that final flush somewhere to go suppresses both.
+
+    Guarded because stdout is not always a real file descriptor — under pytest capture,
+    or whenever the CLI is driven in-process, `fileno()` raises. Failing to silence the
+    stream is cosmetic; raising a second exception out of the handler is not.
+    """
+    try:
+        target = sys.stdout.fileno()
+    except (OSError, ValueError):
+        return
+    devnull = os.open(os.devnull, os.O_WRONLY)
+    try:
+        os.dup2(devnull, target)
+    except OSError:
+        pass
+    finally:
+        os.close(devnull)
+
+
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    return COMMANDS[args.command](args)
+    try:
+        return COMMANDS[args.command](args)
+    except BrokenPipeError:
+        # Reached on platforms without SIGPIPE (Windows), and on POSIX when `main` is
+        # driven in-process rather than through `run`.
+        _silence_stdout()
+        return EXIT_SIGPIPE
+    except KeyboardInterrupt:
+        # A large cohort takes a while; Ctrl-C should not look like a crash.
+        print("interrupted", file=sys.stderr)
+        return EXIT_SIGINT
+
+
+def run() -> int:
+    """Console-script entry point: `main` plus the process-level signal disposition.
+
+    Kept separate from `main` deliberately. Resetting SIGPIPE is a whole-process change
+    and `main` is called in-process by the test suite, which should not inherit it.
+    """
+    _restore_default_sigpipe()
+    return main()
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(run())

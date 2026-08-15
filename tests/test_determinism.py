@@ -10,13 +10,13 @@ from datetime import date
 
 import pytest
 
-from pkg.core.safety import (
+from carebundle.core.safety import (
     HTEST_CODE,
     SSN_SAFE_AREA_MAX,
     SSN_SAFE_AREA_MIN,
     synthetic_ssn,
 )
-from pkg.generate import generate_patient, to_json
+from carebundle.generate import generate_patient, to_json
 
 
 def test_same_seed_produces_byte_identical_output():

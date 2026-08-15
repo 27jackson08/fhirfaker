@@ -9,7 +9,7 @@ See build doc Section 7.
 
 from __future__ import annotations
 
-from pkg.models.r4 import Coding, HumanName, Identifier, Meta, Narrative
+from carebundle.models.r4 import Coding, HumanName, Identifier, Meta, Narrative
 
 # FHIR's own security label for test health data. Tagging every resource with this is
 # what stops synthetic records from silently contaminating a production system.

@@ -3,7 +3,7 @@
 This is the moat (build doc Section 3, Layer 2). Anyone can claim clinical coherence;
 this module regenerates the evidence for it on every run and fails when it drifts.
 
-Run:  python -m pkg.fidelity.report
+Run:  python -m carebundle.fidelity.report
 """
 
 from __future__ import annotations
@@ -14,9 +14,9 @@ from pathlib import Path
 
 import numpy as np
 
-from pkg.correlation import relations
-from pkg.profiles.base import draw
-from pkg.profiles.library import get_profile
+from carebundle.correlation import relations
+from carebundle.profiles.base import draw
+from carebundle.profiles.library import get_profile
 
 DEFAULT_SAMPLE_SIZE = 10_000
 DEFAULT_SEED = 20260101  # Fixed: a fidelity suite that flakes gets ignored.
@@ -235,7 +235,7 @@ def nhanes_checks(size: int, seed: int) -> list[Check]:
     """Generated marginals against the NHANES medians they were calibrated to.
 
     Reads a committed targets file rather than the network, so the check runs
-    offline. Regenerate it with `pkg/calibration/nhanes.py` when the source release
+    offline. Regenerate it with `carebundle/calibration/nhanes.py` when the source release
     changes — and expect this to fail if it does, which is the point.
     """
     if not NHANES_TARGETS.exists():
@@ -272,7 +272,7 @@ def nhanes_checks(size: int, seed: int) -> list[Check]:
 
 def hash_free_index(analyte: str, sex: str) -> int:
     """A stable per-check stream id. Python's hash() is salted per process."""
-    from pkg.core.ids import stable_digest
+    from carebundle.core.ids import stable_digest
 
     return stable_digest(f"{analyte}:{sex}", bits=16)
 

@@ -3,7 +3,7 @@
 Every code and display in this file was fetched from its source vocabulary, never
 typed from memory. Re-check them at any time with:
 
-    python -m pkg.terminology.verify
+    python -m carebundle.terminology.verify
 
 Licensing constraints that shape this file (build doc Section 6):
   * LOINC     — redistributable with attribution; codes keep their meanings and
@@ -30,8 +30,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from pkg.models.r4 import CodeableConcept, Coding
-from pkg.terminology import systems
+from carebundle.models.r4 import CodeableConcept, Coding
+from carebundle.terminology import systems
 
 
 @dataclass(frozen=True)

@@ -7,15 +7,15 @@ import math
 import numpy as np
 import pytest
 
-from pkg.correlation import relations
-from pkg.correlation.distributions import (
+from carebundle.correlation import relations
+from carebundle.correlation.distributions import (
     Marginal,
     correlation_from_r_squared,
     sd_from_regression_slope,
     standard_normal_cdf,
     standard_normal_ppf,
 )
-from pkg.correlation.engine import JointModel
+from carebundle.correlation.engine import JointModel
 
 # --- normal transforms -----------------------------------------------------------
 

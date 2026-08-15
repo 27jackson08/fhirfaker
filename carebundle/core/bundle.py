@@ -7,7 +7,7 @@ import re
 from dataclasses import dataclass
 from decimal import Decimal
 
-from pkg.models.r4 import Bundle, BundleEntry, BundleEntryRequest
+from carebundle.models.r4 import Bundle, BundleEntry, BundleEntryRequest
 
 # FHIR requires `decimal` to be a JSON *number*, and requires its precision to be
 # preserved exactly ("1.50" carries three significant figures and is not "1.5").

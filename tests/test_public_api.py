@@ -12,62 +12,62 @@ from pathlib import Path
 
 import pytest
 
-import pkg
+import carebundle
 
 README = Path(__file__).resolve().parents[1] / "README.md"
 
 
 def test_top_level_imports_match_the_documented_surface():
-    from pkg import (  # noqa: F401
+    from carebundle import (  # noqa: F401
         generate_bundle,
         generate_draw,
         generate_patient,
         to_json,
     )
 
-    assert set(pkg.__all__) >= {
+    assert set(carebundle.__all__) >= {
         "generate_bundle", "generate_draw", "generate_patient", "to_json"
     }
 
 
 def test_readme_first_example_runs():
-    bundle = pkg.generate_bundle(profile="type2_diabetes", seed=42, sex="F")
+    bundle = carebundle.generate_bundle(profile="type2_diabetes", seed=42, sex="F")
     assert bundle.entry
 
 
 def test_readme_usage_block_runs():
-    bundle = pkg.generate_bundle(
+    bundle = carebundle.generate_bundle(
         profile="type2_diabetes", seed=42, sex="F", age_range=(45, 65)
     )
-    patient = pkg.generate_patient(seed=42, sex="M")
-    drawn = pkg.generate_draw(profile="ckd_stage3", seed=42, sex="F", age_years=58)
+    patient = carebundle.generate_patient(seed=42, sex="M")
+    drawn = carebundle.generate_draw(profile="ckd_stage3", seed=42, sex="F", age_years=58)
 
-    assert json.loads(pkg.to_json(bundle))["resourceType"] == "Bundle"
+    assert json.loads(carebundle.to_json(bundle))["resourceType"] == "Bundle"
     assert patient.gender == "male"
     assert "egfr" in drawn.analytes
     assert drawn.conditions
 
 
 def test_version_is_exposed():
-    assert pkg.__version__.count(".") == 2
+    assert carebundle.__version__.count(".") == 2
 
 
 @pytest.mark.parametrize("profile", ["healthy", "hypertension", "type2_diabetes", "ckd_stage3"])
 def test_every_documented_profile_is_generable(profile):
-    assert profile in pkg.PROFILES
-    assert pkg.generate_bundle(profile=profile, seed=1).entry
+    assert profile in carebundle.PROFILES
+    assert carebundle.generate_bundle(profile=profile, seed=1).entry
 
 
 def test_unknown_profile_names_are_rejected():
     with pytest.raises(ValueError, match="unknown profile"):
-        pkg.generate_bundle(profile="not_a_profile", seed=1)
+        carebundle.generate_bundle(profile="not_a_profile", seed=1)
 
 
 # --- README claims that must stay true -------------------------------------------
 
 def test_readme_documents_the_profiles_that_actually_exist():
     text = README.read_text()
-    for profile in pkg.PROFILES:
+    for profile in carebundle.PROFILES:
         assert f"`{profile}`" in text, f"README does not document profile {profile}"
 
 
@@ -80,15 +80,28 @@ def test_readme_declares_only_the_real_runtime_dependencies():
         assert declared in runtime
 
 
+def test_typed_classifier_is_backed_by_a_py_typed_marker():
+    """A `Typing :: Typed` classifier without the marker ships types nobody can read.
+
+    PEP 561 requires the marker file; without it type checkers ignore the annotations
+    entirely and the classifier is a claim the package does not honour.
+    """
+    pyproject = (README.parent / "pyproject.toml").read_text()
+    if "Typing :: Typed" not in pyproject:
+        pytest.skip("package does not advertise inline types")
+    marker = Path(carebundle.__file__).parent / "py.typed"
+    assert marker.exists(), "pyproject claims 'Typing :: Typed' but carebundle/py.typed is missing"
+
+
 def test_htest_label_claim_in_readme_holds():
-    bundle = json.loads(pkg.to_json(pkg.generate_bundle(profile="healthy", seed=3)))
+    bundle = json.loads(carebundle.to_json(carebundle.generate_bundle(profile="healthy", seed=3)))
     for entry in bundle["entry"]:
         codes = [c["code"] for c in entry["resource"]["meta"]["security"]]
         assert "HTEST" in codes
 
 
 def test_synthetic_narrative_claim_in_readme_holds():
-    bundle = json.loads(pkg.to_json(pkg.generate_bundle(profile="healthy", seed=3)))
+    bundle = json.loads(carebundle.to_json(carebundle.generate_bundle(profile="healthy", seed=3)))
     for entry in bundle["entry"]:
         assert "SYNTHETIC TEST DATA" in entry["resource"]["text"]["div"]
 
@@ -110,13 +123,13 @@ def _documented_entry_counts(text: str) -> dict[str, int]:
     return {
         name: int(count)
         for name, count in _TABLE_ROW.findall(text)
-        if name in pkg.PROFILES
+        if name in carebundle.PROFILES
     }
 
 
 def test_readme_code_counts_match_the_terminology_tables():
-    from pkg.terminology import systems
-    from pkg.terminology.verify import registered_codes
+    from carebundle.terminology import systems
+    from carebundle.terminology.verify import registered_codes
 
     match = _COUNT_CLAIM.search(README.read_text())
     assert match, "README no longer states a terminology count"
@@ -136,14 +149,14 @@ def test_readme_code_counts_match_the_terminology_tables():
 
 @pytest.mark.parametrize("document", ["README.md", "CONFORMANCE.md"])
 def test_documented_bundle_sizes_match_generated_bundles(document):
-    from pkg.core.bundle import to_json
+    from carebundle.core.bundle import to_json
 
     text = (README.parent / document).read_text()
     documented = _documented_entry_counts(text)
     assert documented, f"{document} no longer tabulates bundle sizes"
 
     for profile, claimed in documented.items():
-        actual = len(json.loads(to_json(pkg.generate_bundle(profile=profile, seed=42)))["entry"])
+        actual = len(json.loads(to_json(carebundle.generate_bundle(profile=profile, seed=42)))["entry"])
         assert claimed == actual, (
             f"{document} claims {profile} has {claimed} entries; it has {actual}"
         )

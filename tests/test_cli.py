@@ -6,12 +6,15 @@ file layout, and that the determinism contract survives the command line.
 
 from __future__ import annotations
 
+import contextlib
+import io
 import json
 
 import pytest
 
-from pkg.cli import main
-from pkg.profiles.library import PROFILES
+from carebundle import cli
+from carebundle.cli import main
+from carebundle.profiles.library import PROFILES
 
 
 def test_profiles_lists_every_available_profile(capsys):
@@ -29,6 +32,72 @@ def test_mixed_cohort_from_the_cli(tmp_path, capsys):
     written = sorted(p.name for p in tmp_path.glob("*.json"))
     assert len(written) == 6
     assert all(name.startswith("mixed-11-") for name in written)
+
+
+def test_a_closed_pipe_exits_cleanly_rather_than_tracebacking(monkeypatch):
+    """`carebundle generate | head` is ordinary usage and must not look like a crash."""
+    def explode(*_args, **_kwargs):
+        raise BrokenPipeError
+
+    monkeypatch.setitem(cli.COMMANDS, "profiles", explode)
+    # dup2 must be stubbed: under pytest's default fd-level capture `sys.stdout` has a
+    # real descriptor, so a live call would point pytest's own capture file at devnull
+    # and silently break every test that runs afterwards.
+    redirected: list[int] = []
+    monkeypatch.setattr(cli.os, "dup2", lambda source, target: redirected.append(target))
+
+    assert main(["profiles"]) == cli.EXIT_SIGPIPE
+    assert redirected, "stdout was not redirected, so the shutdown flush will still raise"
+
+
+def test_console_entry_point_restores_default_sigpipe(monkeypatch):
+    """pyproject points the `carebundle` script at `run`, not `main` — keep it honest."""
+    import signal
+
+    called: list[tuple] = []
+    monkeypatch.setattr(signal, "signal", lambda *a: called.append(a))
+    monkeypatch.setattr(cli, "main", lambda: cli.EXIT_OK)
+
+    assert cli.run() == cli.EXIT_OK
+    if hasattr(signal, "SIGPIPE"):
+        assert (signal.SIGPIPE, signal.SIG_DFL) in called
+
+
+def test_restoring_sigpipe_off_the_main_thread_does_not_raise():
+    """signal.signal raises off-thread; the handler is best-effort, never fatal."""
+    import threading
+
+    errors: list[BaseException] = []
+
+    def target() -> None:
+        try:
+            cli._restore_default_sigpipe()
+        except BaseException as exc:  # noqa: BLE001 - the point is that nothing escapes
+            errors.append(exc)
+
+    thread = threading.Thread(target=target)
+    thread.start()
+    thread.join()
+    assert not errors
+
+
+def test_silencing_stdout_survives_a_stream_with_no_file_descriptor():
+    """Raising out of the broken-pipe handler would replace one crash with another."""
+    class NoFileno(io.StringIO):
+        def fileno(self):
+            raise io.UnsupportedOperation("fileno")
+
+    with contextlib.redirect_stdout(NoFileno()):
+        cli._silence_stdout()  # must not raise
+
+
+def test_ctrl_c_reports_interruption_rather_than_a_traceback(monkeypatch, capsys):
+    def interrupt(*_args, **_kwargs):
+        raise KeyboardInterrupt
+
+    monkeypatch.setitem(cli.COMMANDS, "profiles", interrupt)
+    assert main(["profiles"]) == cli.EXIT_SIGINT
+    assert "interrupted" in capsys.readouterr().err
 
 
 def test_generate_writes_valid_json_to_stdout(capsys):

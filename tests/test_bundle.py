@@ -8,9 +8,9 @@ from decimal import Decimal
 
 import pytest
 
-from pkg.core.bundle import URN_UUID_RE, dangling_references, to_json
-from pkg.core.safety import HTEST_CODE
-from pkg.generate import generate_bundle
+from carebundle.core.bundle import URN_UUID_RE, dangling_references, to_json
+from carebundle.core.safety import HTEST_CODE
+from carebundle.generate import generate_bundle
 
 PROFILES = ("healthy", "hypertension", "type2_diabetes", "ckd_stage3")
 
@@ -70,7 +70,7 @@ def test_healthy_profile_prescribes_nothing(seed):
 @pytest.mark.parametrize("seed", range(12))
 def test_diabetes_code_never_contradicts_the_generated_egfr(seed):
     """E11.9 'without complications' beside an eGFR of 45 is a contradiction."""
-    from pkg.generate import generate_draw
+    from carebundle.generate import generate_draw
 
     drawn = generate_draw(profile="type2_diabetes", seed=seed, sex="F", age_years=58.0)
     emitted = {c.code for c in drawn.conditions}
@@ -84,8 +84,8 @@ def test_diabetes_code_never_contradicts_the_generated_egfr(seed):
 @pytest.mark.parametrize("seed", range(12))
 def test_lipid_panel_is_internally_consistent(seed):
     """LDL is calculated from the panel, so the four numbers cannot disagree."""
-    from pkg.correlation.relations import friedewald_ldl
-    from pkg.generate import generate_draw
+    from carebundle.correlation.relations import friedewald_ldl
+    from carebundle.generate import generate_draw
 
     drawn = generate_draw(profile="type2_diabetes", seed=seed, sex="M", age_years=58.0)
     expected = friedewald_ldl(
@@ -185,7 +185,7 @@ def test_sentinel_never_leaks_into_output(bundle):
 
 
 def test_unserializable_type_raises_rather_than_silently_dropping():
-    from pkg.core.bundle import _mark_decimals
+    from carebundle.core.bundle import _mark_decimals
 
     with pytest.raises(TypeError, match="cannot serialize"):
         _mark_decimals(object())
@@ -221,7 +221,7 @@ def test_profiles_do_not_collide_at_the_same_seed():
 
 def test_output_does_not_depend_on_python_hash_randomization():
     """`hash()` is salted per process; anything seeded from it breaks determinism."""
-    from pkg.core.ids import stable_digest
+    from carebundle.core.ids import stable_digest
 
     assert stable_digest("type2_diabetes") == stable_digest("type2_diabetes")
     assert stable_digest("healthy") != stable_digest("hypertension")
@@ -229,8 +229,8 @@ def test_output_does_not_depend_on_python_hash_randomization():
 
 def test_ckd_condition_code_agrees_with_the_generated_egfr():
     """The coded diagnosis and the lab value must not contradict each other."""
-    from pkg.correlation.relations import ckd_stage_for
-    from pkg.generate import generate_draw
+    from carebundle.correlation.relations import ckd_stage_for
+    from carebundle.generate import generate_draw
 
     for seed in range(20):
         drawn = generate_draw(profile="ckd_stage3", seed=seed, sex="M", age_years=58.0)

@@ -4,15 +4,15 @@ from __future__ import annotations
 
 from datetime import date
 
-from pkg.core import uscore
-from pkg.core.safety import (
+from carebundle.core import uscore
+from carebundle.core.safety import (
     fictional_name,
     htest_meta,
     synthetic_mrn,
     synthetic_narrative,
     synthetic_npi,
 )
-from pkg.models.r4 import Patient, Practitioner
+from carebundle.models.r4 import Patient, Practitioner
 
 SEX_TO_FHIR_GENDER = {"F": "female", "M": "male"}
 

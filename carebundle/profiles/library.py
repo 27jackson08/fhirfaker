@@ -5,7 +5,7 @@ public files, restricted to ages 45-65 and stratified by sex and glycaemic statu
 Centre and spread come from the median and IQR/1.349 rather than the mean and SD:
 creatinine, triglycerides and HbA1c are all right-skewed (raw SD up to 3.8x the
 robust one), so a symmetric truncated normal fitted to the raw moments would match
-neither the centre nor the spread. Regenerate with `pkg/calibration/nhanes.py`.
+neither the centre nor the spread. Regenerate with `carebundle/calibration/nhanes.py`.
 
 Two things are NOT NHANES-derived, deliberately:
   * Blood pressure marginals are clinical definitions. "Normotensive" and
@@ -23,16 +23,16 @@ BMI are computed from their inputs rather than sampled.
 
 from __future__ import annotations
 
-from pkg.correlation import relations
-from pkg.correlation.distributions import (
+from carebundle.correlation import relations
+from carebundle.correlation.distributions import (
     Marginal,
     calibrate_latent_correlation,
     correlation_from_r_squared,
     lognormal_from_quartiles,
     sd_from_regression_slope,
 )
-from pkg.correlation.engine import JointModel
-from pkg.profiles.base import (
+from carebundle.correlation.engine import JointModel
+from carebundle.profiles.base import (
     EGFR_FROM_CREATININE,
     EGFR_FROM_TARGET,
     AllergyRule,
@@ -40,7 +40,7 @@ from pkg.profiles.base import (
     ComorbidityRule,
     MedicationRule,
 )
-from pkg.terminology import codes
+from carebundle.terminology import codes
 
 # --- shared marginals ------------------------------------------------------------
 # Creatinine reference intervals are sex-specific; using one distribution for both

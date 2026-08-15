@@ -1,7 +1,7 @@
 """GENERATED FILE — do not edit by hand.
 
-Written by pkg/spec/codegen.py from the official FHIR R4 4.0.1
-StructureDefinitions. Regenerate with:  python -m pkg.spec.codegen
+Written by carebundle/spec/codegen.py from the official FHIR R4 4.0.1
+StructureDefinitions. Regenerate with:  python -m carebundle.spec.codegen
 """
 
 from __future__ import annotations

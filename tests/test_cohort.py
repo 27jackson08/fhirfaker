@@ -7,8 +7,8 @@ from collections import Counter
 
 import pytest
 
-from pkg.core.bundle import dangling_references, to_json
-from pkg.generate import DEFAULT_COHORT_PREVALENCE, generate_cohort, generate_draw
+from carebundle.core.bundle import dangling_references, to_json
+from carebundle.generate import DEFAULT_COHORT_PREVALENCE, generate_cohort, generate_draw
 
 
 def _resource_types(bundle) -> list[str]:
@@ -115,7 +115,7 @@ def test_allergies_use_rxnorm_ingredients_not_snomed():
 
 
 def test_allergy_resources_appear_in_the_bundle_when_drawn():
-    from pkg.generate import generate_bundle
+    from carebundle.generate import generate_bundle
 
     seed = next(
         s for s in range(60) if generate_draw(profile="healthy", seed=s).allergies
@@ -125,7 +125,7 @@ def test_allergy_resources_appear_in_the_bundle_when_drawn():
 
 def test_sulfamethoxazole_is_not_the_veterinary_sulfonamide():
     """RxNav's approximate search returns 10178 sulfamethazine for this query."""
-    from pkg.terminology import codes
+    from carebundle.terminology import codes
 
     assert codes.ALLERGEN_SULFAMETHOXAZOLE.code == "10180"
     assert codes.ALLERGEN_SULFAMETHOXAZOLE.display == "sulfamethoxazole"
@@ -134,7 +134,7 @@ def test_sulfamethoxazole_is_not_the_veterinary_sulfonamide():
 # --- panel selection --------------------------------------------------------------
 
 def test_panel_selection_shrinks_the_bundle():
-    from pkg.generate import ALL_PANELS, LEAN_PANELS, generate_bundle
+    from carebundle.generate import ALL_PANELS, LEAN_PANELS, generate_bundle
 
     sizes = {
         label: len(json.loads(to_json(generate_bundle(seed=42, **kwargs)))["entry"])
@@ -149,7 +149,7 @@ def test_panel_selection_shrinks_the_bundle():
 
 def test_narrowing_panels_does_not_change_the_clinical_draw():
     """Emitting less must never change what was generated, only what is reported."""
-    from pkg.generate import generate_bundle
+    from carebundle.generate import generate_bundle
 
     def observation_values(**kwargs):
         payload = json.loads(to_json(generate_bundle(seed=42, **kwargs)))
@@ -169,14 +169,14 @@ def test_narrowing_panels_does_not_change_the_clinical_draw():
 
 
 def test_unknown_panel_is_rejected():
-    from pkg.generate import generate_bundle
+    from carebundle.generate import generate_bundle
 
     with pytest.raises(ValueError, match="unknown panel"):
         generate_bundle(seed=1, panels=("not_a_panel",))
 
 
 def test_cli_accepts_panel_shortcuts(tmp_path, capsys):
-    from pkg.cli import main
+    from carebundle.cli import main
 
     for value in ("all", "lean", "none", "cmp,lipid"):
         assert main(["generate", "--panels", value, "--out", str(tmp_path)]) == 0
@@ -184,7 +184,7 @@ def test_cli_accepts_panel_shortcuts(tmp_path, capsys):
 
 
 def test_cli_rejects_unknown_panel():
-    from pkg.cli import main
+    from carebundle.cli import main
 
     with pytest.raises(SystemExit, match="unknown panel"):
         main(["generate", "--panels", "bogus"])
@@ -197,7 +197,7 @@ def test_cli_rejects_unknown_panel():
 def test_library_validates_age_range_with_its_own_message(age_range, match):
     """Previously this surfaced as numpy's "low >= high" from inside the sampler,
     which says nothing about which argument was wrong."""
-    from pkg.generate import generate_bundle
+    from carebundle.generate import generate_bundle
 
     with pytest.raises(ValueError, match=match):
         generate_bundle(seed=1, age_range=age_range)

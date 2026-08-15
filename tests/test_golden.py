@@ -20,8 +20,8 @@ from pathlib import Path
 
 import pytest
 
-from pkg.core.bundle import to_json
-from pkg.generate import generate_bundle, generate_patient
+from carebundle.core.bundle import to_json
+from carebundle.generate import generate_bundle, generate_patient
 
 GOLDEN_DIR = Path(__file__).parent / "golden"
 PROFILES = ("healthy", "hypertension", "type2_diabetes", "ckd_stage3")

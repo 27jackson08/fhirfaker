@@ -2,16 +2,16 @@
 
 from __future__ import annotations
 
-from pkg.core import uscore
-from pkg.core.safety import htest_meta, synthetic_narrative
-from pkg.models.r4 import (
+from carebundle.core import uscore
+from carebundle.core.safety import htest_meta, synthetic_narrative
+from carebundle.models.r4 import (
     DiagnosticReport,
     Encounter,
     MedicationRequest,
     Period,
     Reference,
 )
-from pkg.terminology import codes
+from carebundle.terminology import codes
 
 
 def _ref(urn: str) -> Reference:

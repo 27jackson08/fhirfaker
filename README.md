@@ -1,20 +1,17 @@
-# pkg — clinically coherent synthetic FHIR® test data for Python
-
-> **Working title.** The package name is not settled — see [Naming](#naming). Every
-> command below uses the placeholder `pkg`.
+# carebundle — clinically coherent synthetic FHIR® test data for Python
 
 `pip install`, import, and get a **US Core-conformant FHIR R4 Bundle** back as a Python
 object. No JVM, no config file, no output directory to manage.
 
 ```python
-from pkg import generate_bundle
+from carebundle import generate_bundle
 
 bundle = generate_bundle(profile="type2_diabetes", seed=42, sex="F")
 bundle.entry            # work with it in-process
 ```
 
 ```bash
-pkg generate --profile type2_diabetes --count 20 --seed 42 --out ./fixtures/
+carebundle generate --profile type2_diabetes --count 20 --seed 42 --out ./fixtures/
 ```
 
 ---
@@ -126,10 +123,12 @@ can safely pin test fixtures to a seed.
 ## Install
 
 ```bash
-pip install pkg
+pip install carebundle
 ```
 
 Runtime dependencies: `pydantic>=2`, `numpy>=1.24`. That is the whole list.
+Python 3.10+. Type annotations ship inline (PEP 561), so `mypy` and `pyright` read them
+without a stubs package.
 
 > The HL7 validator needs a JVM, but it is a **development and CI dependency only**.
 > It is never required to install or run this package.
@@ -139,7 +138,7 @@ Runtime dependencies: `pydantic>=2`, `numpy>=1.24`. That is the whole list.
 ## Usage
 
 ```python
-from pkg import generate_bundle, generate_patient, generate_draw
+from carebundle import generate_bundle, generate_patient, generate_draw
 
 # A full transaction bundle: Patient, Practitioner, Encounter, Conditions,
 # Observations, MedicationRequests, DiagnosticReport.
@@ -157,7 +156,7 @@ draw.conditions   # (N18.31 Chronic kidney disease stage 3a, I10 ...)
 Serialize with `to_json`:
 
 ```python
-from pkg.core.bundle import to_json
+from carebundle.core.bundle import to_json
 open("fixture.json", "w").write(to_json(bundle))
 ```
 
@@ -176,7 +175,7 @@ open("fixture.json", "w").write(to_json(bundle))
 fixtures rather than a run of identical cases:
 
 ```python
-from pkg import generate_cohort
+from carebundle import generate_cohort
 
 cohort = generate_cohort(count=100, seed=42)                       # default mix
 cohort = generate_cohort(count=100, seed=42,
@@ -196,10 +195,10 @@ Diagnosis codes follow the values drawn: a diabetic whose eGFR falls below 60 is
 ### CLI
 
 ```bash
-pkg profiles
-pkg generate --profile ckd_stage3 --count 20 --seed 42 --sex mixed --out ./fixtures/
-pkg generate --profile mixed --count 100 --seed 42 --out ./cohort/   # mixed cohort
-pkg generate --profile healthy --seed 1            # JSON to stdout
+carebundle profiles
+carebundle generate --profile ckd_stage3 --count 20 --seed 42 --sex mixed --out ./fixtures/
+carebundle generate --profile mixed --count 100 --seed 42 --out ./cohort/   # mixed cohort
+carebundle generate --profile healthy --seed 1            # JSON to stdout
 ```
 
 ---
@@ -239,7 +238,7 @@ Stated here rather than left for you to discover.
 - **One encounter per bundle.** No longitudinal history — that is Synthea's territory.
 - **Terminology is a curated subset** — 102 codes (42 LOINC, 29 RxNorm, 21 ICD-10-CM),
   not full coverage. Every code *and display* is verified against its source vocabulary
-  by `python -m pkg.terminology.verify`, which runs nightly in CI.
+  by `python -m carebundle.terminology.verify`, which runs nightly in CI.
 
 ---
 
@@ -253,13 +252,13 @@ uv pip install -e ".[dev]"
 pytest -m "not conformance and not fidelity"   # ~5s, no JVM, no network
 pytest -m fidelity                             # ~45s, 10k draws per profile
 pytest -m conformance                          # ~4min, needs a JVM and network
-python -m pkg.fidelity.report     # regenerate the fidelity report
-python -m pkg.spec.codegen        # regenerate models from the R4 StructureDefinitions
-python -m pkg.terminology.verify  # re-check every code against LOINC/RxNorm/ICD-10-CM
-python -m pkg.calibration.nhanes --data-dir <dir>   # re-derive marginals from NHANES
+python -m carebundle.fidelity.report     # regenerate the fidelity report
+python -m carebundle.spec.codegen        # regenerate models from the R4 StructureDefinitions
+python -m carebundle.terminology.verify  # re-check every code against LOINC/RxNorm/ICD-10-CM
+python -m carebundle.calibration.nhanes --data-dir <dir>   # re-derive marginals from NHANES
 ```
 
-`pkg/models/r4.py` is generated from the official FHIR R4 4.0.1 StructureDefinitions
+`carebundle/models/r4.py` is generated from the official FHIR R4 4.0.1 StructureDefinitions
 and checked in; CI fails if it drifts from the spec.
 
 Coverage is enforced at 80% (currently 83% on the PR gate, 88% including the fidelity
@@ -276,15 +275,17 @@ pytest tests/test_golden.py --update-golden   # then review the diff
 
 ## Naming
 
-The package name is unsettled. HL7's
+The name carries no HL7 mark, deliberately. HL7's
 [FHIR trademark policy](https://www.hl7.org/documentcenter/public/legal/FHIR_Trademark_Policy.pdf)
 forbids abbreviating the mark or combining it with other words, and bars its use in
-product names without written permission — so `fhirforge` and `synthfhir` are not
+product names without written permission — so `fhirforge` and `synthfhir` were not
 available. Using "FHIR®" descriptively in prose, as this README does, is fine.
 
 ## Licence
 
-Project licence: **TBD** (MIT or Apache 2.0).
+Licensed under the **Apache License 2.0** — see [LICENSE](LICENSE). Apache 2.0 over MIT
+for the express patent grant, which matters more than usual for a library that
+implements published clinical algorithms.
 
 **Terminology attribution:**
 

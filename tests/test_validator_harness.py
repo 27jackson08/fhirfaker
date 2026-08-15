@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import pytest
 
-from pkg.conformance.validator import ANSI_RE, ISSUE_RE, SUMMARY_RE
+from carebundle.conformance.validator import ANSI_RE, ISSUE_RE, SUMMARY_RE
 
 # Real validator output, colour codes and all.
 COLOURED_ERROR = (
@@ -64,7 +64,7 @@ def test_message_containing_colons_is_not_truncated_at_the_wrong_one():
 # the discrimination is tested directly rather than trusted.
 
 def test_transient_network_failures_are_recognised():
-    from pkg.conformance.validator import _looks_transient
+    from carebundle.conformance.validator import _looks_transient
 
     for signature in (
         "java.net.SocketException: Socket closed",
@@ -76,7 +76,7 @@ def test_transient_network_failures_are_recognised():
 
 
 def test_a_genuine_validation_failure_is_not_treated_as_transient():
-    from pkg.conformance.validator import _looks_transient
+    from carebundle.conformance.validator import _looks_transient
 
     output = (
         "*FAILURE*: 2 errors, 0 warnings, 0 notes\n"
@@ -86,7 +86,7 @@ def test_a_genuine_validation_failure_is_not_treated_as_transient():
 
 
 def test_validate_retries_only_while_the_run_fails_transiently(monkeypatch, tmp_path):
-    from pkg.conformance import validator
+    from carebundle.conformance import validator
 
     target = tmp_path / "patient.json"
     target.write_text("{}")
@@ -114,7 +114,7 @@ def test_validate_retries_only_while_the_run_fails_transiently(monkeypatch, tmp_
 
 
 def test_validate_does_not_retry_a_run_that_produced_a_verdict(monkeypatch, tmp_path):
-    from pkg.conformance import validator
+    from carebundle.conformance import validator
 
     target = tmp_path / "patient.json"
     target.write_text("{}")
