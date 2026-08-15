@@ -530,6 +530,17 @@ documentation, and each would otherwise be rediscovered the hard way.
   marginal left diabetic patients with the same BMI as the general population — contradicting
   the strongest association in type 2 diabetes. Individually every value looked fine; only a
   cross-profile comparison exposed it.
+- **Four population-mismatch traps in one sitting; assume the denominators differ until
+  shown otherwise.** Every one of these looked like a straightforward comparison and was
+  not: NHANES reports blood-pressure control over *all* hypertensives at **<130/80**
+  while HEDIS CBP reports *diagnosed, in-care* patients at **<140/90** (20.7% vs ~70%,
+  and picking the wrong one moves the target by fifty points); population-wide
+  medication-adherence figures do not apply to a HEDIS denominator that already selects
+  for people who attend appointments; and published HbA1c tail fractions are all-adult
+  while this project calibrates to ages 45-65, which alone explains most of a 22-point
+  discrepancy that otherwise reads as a model defect. A figure quoted without its
+  denominator is not a target, and three of these were caught only because the numbers
+  disagreed with each other in a way that could not be true of one population.
 - **Whether a marginal is "observed" or "pre-treatment" decides whether adding a drug
   effect is a fix or a bug.** Blood pressure marginals here are clinical definitions of
   the *untreated* population, so computing the recorded pressure from the prescribed

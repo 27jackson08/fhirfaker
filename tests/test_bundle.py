@@ -240,19 +240,28 @@ def test_ckd_condition_code_agrees_with_the_generated_egfr():
         )
 
 
-def test_no_diagnosed_diabetic_falls_below_the_diagnostic_threshold():
+def test_hba1c_marginal_is_not_shifted_by_a_treatment_effect():
     """Guards the asymmetry that makes a metformin 'treatment effect' a trap.
 
     Blood pressure marginals are clinical definitions of the *untreated* population, so
     subtracting a treatment effect from them is correct — that is what Phase 7 did. The
     diabetic HbA1c marginal is the opposite: it is fitted to NHANES quartiles for
     *observed* diabetics, who are predominantly already on therapy. Subtracting a drug
-    effect from it double-counts treatment.
+    effect from it double-counts treatment, and measurably: a 1.0-point effect applied
+    on top moves the median from 7.41 to 6.88, half a point below the target the
+    fidelity suite asserts.
 
-    Measured, not assumed: a 1.0-point metformin effect applied on top moves the median
-    from 7.41 to 6.88 and puts 32% of diagnosed diabetics under 6.5% — a diagnosed
-    diabetic whose HbA1c says they are not diabetic. This test fails if that is ever
-    done.
+    **The 6.5 bound is a modelling choice, not a clinical invariant, and this test does
+    not claim otherwise.** An earlier version of this docstring argued that a diagnosed
+    diabetic below 6.5% "contradicts its own diagnosis". That is wrong: 6.5% is the
+    threshold for *making* a diagnosis, the diagnosis then persists, and a treated
+    patient at 6.1% is well controlled rather than misclassified. The bound exists
+    because the marginal was fitted to a population defined by it (build doc Section 18),
+    which is a different and weaker justification.
+
+    So this test guards the double-count, not the clinical claim. Lowering the bound is
+    legitimate future work — it needs an age-matched target, since this project
+    calibrates to NHANES ages 45-65 while published tail figures are all-adult.
     """
     from carebundle.generate import generate_draw
 

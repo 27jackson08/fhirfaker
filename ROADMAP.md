@@ -98,6 +98,44 @@ Nobody in this space generates realistic imperfection on purpose.
 This is a claim that can be *measured*, published, and re-checked in CI. It is not a claim about
 ergonomics, which is what the last differentiator turned out to be worth.
 
+## 3a. When the README stops saying "you probably should use Synthea"
+
+The README currently opens the comparison with *"You probably should use Synthea."*
+That will not be true forever, and the temptation to drop it will arrive well before
+the evidence does — which is why the conditions belong here, written down now, while
+being honest about them is still free.
+
+**The framing flips when the evidence table flips, not when it feels earned.**
+Specifically, all four of:
+
+1. **Three or more out-of-sample checks**, not one. Today the fidelity report grades 1
+   of 38 that way, and a single measure is an anecdote with a CI job attached.
+2. **At least two of the four CMS benchmark measures reproduced**, rather than one of
+   four with three marked *not modelled*. Publishing the losing rows is what makes the
+   winning row credible; a table that is three-quarters "not modelled" does not yet
+   support "use this instead".
+3. **A defensible answer to "what do I lose"** for the common case. Right now that
+   answer is "231 disease modules and a lifetime per patient", and it is disqualifying
+   for most people who arrive wanting a population to analyse.
+4. **Someone other than the author has run it.** Real issues from real users, or a
+   preprint that survived review. Self-assessed superiority is not evidence, and this
+   project's entire pitch is that it does not assert things it has not checked.
+
+**Until then the current wording stays**, because it is accurate and because it is
+load-bearing: a reader who has been told the honest limitation up front believes the
+benchmark table. One who has been oversold checks it, finds the three "not modelled"
+rows, and disbelieves everything else on the page — including the parts that are true.
+
+**What changes in the meantime is emphasis, not claim.** It is already fair to lead the
+Synthea section with what this does that Synthea measurably does not, and let "use
+Synthea for breadth" follow rather than open. That is a reordering of true statements.
+Replacing them is what needs the four conditions above.
+
+**A note on the failure mode this guards against.** The tempting move is to grow the
+out-of-sample row by relabelling existing checks. A test pins that count at 1 precisely
+so it cannot happen quietly, and condition 1 above should be read as "three checks that
+would each survive an outsider asking *what was this fitted to?*".
+
 ## 4. Phases
 
 Same contract as the build document: every phase has an exit criterion that is machine-checkable,
