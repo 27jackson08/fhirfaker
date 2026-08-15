@@ -108,7 +108,7 @@ or it is not a phase.
 | ~~**6. The benchmark**~~ **done** | Reproduce the published CQM study against our output | **Met at 64.1%** vs Synthea's published 0%; asserted in CI. See `BENCHMARK.md` |
 | **7. Treatment response** *(part done)* | Bounded longitudinal: analyte trajectories under therapy | **BP titration done — hypothesis confirmed, 64.1% → 71.5%.** HbA1c/metformin trajectories and multi-visit encounters still open |
 | **8. Evaluation as product** | Adopt the three-dimension framework; publish it | FIDELITY.md restructured; preprint drafted |
-| **9. Realistic imperfection** | Opt-in messiness with labelled defects | `imperfection=` flag; conformance still provable when off |
+| ~~**9. Realistic imperfection**~~ **done** | Opt-in messiness with labelled defects | **Met.** `carebundle.imperfection`, five defect kinds, all enumerable; CI asserts conformance holds when off and genuinely breaks when on |
 | **10. Breadth that pays** | More profiles, more US Core profiles | Each new profile ships with fidelity assertions, not just code |
 | **11. Calibrate to your population** | Fit marginals from user-supplied aggregates | A user's summary stats reproduce their distributions |
 
@@ -241,7 +241,20 @@ an unusually strong evaluation story and no publication. A preprint plus the ben
 distribution strategy that Section 14 flags as necessary and that building alone does not
 provide.
 
-### Phase 9 — Realistic imperfection
+### Phase 9 — Realistic imperfection — **complete**
+
+> Shipped as `carebundle.imperfection` with five defect kinds: `missing_field`,
+> `duplicate_entry`, `out_of_order_timestamp`, `unparseable_value` and
+> `unknown_code_system`. Both hard constraints are enforced by tests rather than by
+> intention — `Imperfection()` is a no-op, and a conformance-marked test asserts that
+> the clean bundle validates with zero errors while the dirtied one genuinely fails
+> the HL7 validator (32 errors on the sample). A "malformed" fixture the validator
+> accepts would exercise none of the error paths it exists to exercise.
+>
+> Injection is seeded, never mutates its input, and returns the defects it applied so
+> a caller can assert against them.
+
+### Phase 9 — original plan (retained for the record)
 
 Opt-in, off by default, and every defect labelled:
 

@@ -78,6 +78,36 @@ Epic, Cerner and essentially every US production FHIR API are 4.0.1. It is also 
 reason this project generates its own models from the R4 StructureDefinitions instead of
 taking `fhir.resources` as a dependency.
 
+### Deliberately imperfect data
+
+Nothing else in this space generates data that is *wrong on purpose*, and for testing
+an application that is the gap that matters: code which has only ever seen well-formed
+bundles has untested error paths, and the bug surfaces the first time a real feed
+arrives. Real extracts have missing fields, replayed duplicates, site-local code
+systems and `"QNS"` where a number should be.
+
+```python
+from carebundle import generate_bundle, to_json, Imperfection, inject_defects
+import json
+
+clean = json.loads(to_json(generate_bundle(profile="type2_diabetes", seed=42)))
+dirty, defects = inject_defects(
+    clean, Imperfection(missing_field=0.3, unparseable_value=0.2), seed=5
+)
+
+for defect in defects:            # every flaw is enumerable
+    print(defect.kind, defect.entry_index, defect.detail)
+```
+
+Two rules make it usable rather than merely messy:
+
+- **Off by default.** `Imperfection()` is a no-op. US Core conformance stays provable
+  and dirt is something you ask for — CI asserts both halves: clean output validates
+  with zero errors, and the dirty output above genuinely fails the HL7 validator.
+- **Every defect is machine-readable.** You can assert *"my parser rejected exactly
+  these three records"* instead of eyeballing output. Injection is seeded and never
+  mutates its input.
+
 **What this is explicitly not:** a population health simulator, a replacement for
 Synthea's or PySynthea's disease-module depth, or a terminology server.
 

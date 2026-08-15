@@ -43,6 +43,15 @@ and it is landing pre-1.0 and pre-publication precisely so that it costs nothing
   reported as such rather than omitted, and the record of a published prediction that
   was subsequently tested: the first measurement was 64.1% with the shortfall
   attributed to dose titration, and modelling titration closed it.
+- `carebundle.imperfection` — **deliberately imperfect FHIR**, for testing the code
+  paths clean data never reaches. Five defect kinds (`missing_field`,
+  `duplicate_entry`, `out_of_order_timestamp`, `unparseable_value`,
+  `unknown_code_system`), seeded, non-mutating, and every injected flaw returned so a
+  test can assert against it. Off by default: `Imperfection()` is a no-op, US Core
+  conformance stays provable, and CI asserts both that clean output validates with
+  zero errors and that dirtied output genuinely fails the HL7 validator.
+- `generate_cohort`, `Imperfection`, `Defect` and `inject_defects` are now exported
+  from the package root.
 - [ROADMAP.md](ROADMAP.md) — the plan this came from.
 
 ## [0.1.0] — unreleased

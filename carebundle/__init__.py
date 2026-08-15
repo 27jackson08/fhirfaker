@@ -6,16 +6,26 @@ FHIR(R) is the registered trademark of HL7 and is used with the permission of HL
 from __future__ import annotations
 
 from carebundle.core.bundle import to_json
-from carebundle.generate import generate_bundle, generate_draw, generate_patient
+from carebundle.generate import (
+    generate_bundle,
+    generate_cohort,
+    generate_draw,
+    generate_patient,
+)
+from carebundle.imperfection import Defect, Imperfection, inject_defects
 from carebundle.profiles.library import PROFILES
 
 __version__ = "0.1.0"
 
 __all__ = [
     "PROFILES",
+    "Defect",
+    "Imperfection",
     "__version__",
     "generate_bundle",
+    "generate_cohort",
     "generate_draw",
     "generate_patient",
+    "inject_defects",
     "to_json",
 ]
