@@ -107,7 +107,7 @@ or it is not a phase.
 |---|---|---|
 | ~~**6. The benchmark**~~ **done** | Reproduce the published CQM study against our output | **Met at 64.1%** vs Synthea's published 0%; asserted in CI. See `BENCHMARK.md` |
 | **7. Treatment response** *(part done)* | Bounded longitudinal: analyte trajectories under therapy | **BP titration done — hypothesis confirmed, 64.1% → 71.5%.** HbA1c/metformin trajectories and multi-visit encounters still open |
-| **8. Evaluation as product** | Adopt the three-dimension framework; publish it | FIDELITY.md restructured; preprint drafted |
+| **8. Evaluation as product** *(part done)* | Adopt the three-dimension framework; publish it | **FIDELITY.md restructured** — every check graded by evidential strength, out-of-sample count pinned by test. Preprint still open |
 | ~~**9. Realistic imperfection**~~ **done** | Opt-in messiness with labelled defects | **Met.** `carebundle.imperfection`, five defect kinds, all enumerable; CI asserts conformance holds when off and genuinely breaks when on |
 | **10. Breadth that pays** | More profiles, more US Core profiles | Each new profile ships with fidelity assertions, not just code |
 | **11. Calibrate to your population** | Fit marginals from user-supplied aggregates | A user's summary stats reproduce their distributions |
@@ -229,7 +229,28 @@ This keeps the Section 14 line intact. Trajectories under treatment are not life
 simulation; there is no birth, no death, no 231 modules, no comorbidity cascade. It is the
 existing distributional model given a time axis.
 
-### Phase 8 — Evaluation as the product
+### Phase 8 — Evaluation as the product — **part done**
+
+> **The report was over-claiming, and grading it was the fix.** "37/37 checks passed"
+> reads as strong external validation. Grading them by what a pass actually proves
+> shows the real position: of 38 checks, **1** is out-of-sample, 29 are calibration
+> round-trips against marginals fitted to NHANES, 4 verify the sampler reproduces its
+> own configuration, and 4 are identities that cannot fail unless the code is broken.
+>
+> None of that is new weakness — the checks are exactly as strong as they always were.
+> What changed is that the report no longer lets a reader mistake self-consistency for
+> fidelity, which is precisely the criticism arXiv:2606.08903 makes of the field.
+>
+> The single out-of-sample check is the CMS blood-pressure measure, now included in the
+> fidelity report as well as `BENCHMARK.md`. A test pins the count at 1, so a future
+> out-of-sample claim has to be argued for rather than arrived at by relabelling —
+> which is the failure mode grading would otherwise invite.
+>
+> **Still open:** clinical-utility evidence (does a model trained on generated data
+> transfer?), and the preprint. The grading makes both easier to write honestly:
+> the obvious next move is to grow the out-of-sample row, not the total.
+
+### Phase 8 — original plan (retained for the record)
 
 Restructure the fidelity report onto the published three-dimension framework: descriptive
 fidelity, clinical utility, structural validity. Add clinical-utility evidence — that a model

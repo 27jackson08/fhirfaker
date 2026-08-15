@@ -3,6 +3,27 @@
 Generated distributions checked against published clinical relationships.
 Regenerated per release from n=10,000 draws, seed 20260101.
 
+## How much each check proves
+
+Checks are **graded by evidential strength**, because they are not equivalent and a flat pass count implies more than most of them carry. Reporting statistical similarity as though it established clinical validity is the specific criticism levelled at synthetic-data evaluation in [arXiv:2606.08903](https://arxiv.org/abs/2606.08903), and it is easier to avoid by grading than by adding more checks.
+
+| Grade | Checks | What a pass means |
+|---|---:|---|
+| **out_of_sample** | 1 | A published relationship the model was NOT fitted to. This is the only category that is evidence of fidelity in the sense the word implies. |
+| **calibration** | 29 | Verifies a marginal fitted to a published source survived truncation and the copula. Meaningful — this is where truncation attenuation was caught — but in-sample by construction. |
+| **round_trip** | 4 | Verifies the sampler reproduces a value it was configured with. Proves the engine works; proves nothing about whether the configured value is right. |
+| **identity** | 4 | Computed from its own inputs. Cannot fail unless the code is broken, so it is a regression test, not evidence of fidelity. |
+
+**Read the top row first.** Only 1 of 38 checks is genuinely out-of-sample. The rest establish self-consistency, which is necessary but is a weaker claim than the phrase 'fidelity report' suggests on its own.
+
+### out_of_sample (1)
+
+| Check | Observed | Expected | Delta | Tolerance | Source | |
+|---|---:|---:|---:|---:|---|:--:|
+| CMS Controlling High Blood Pressure | 0.7323 | 0.72 | +0.0123 | ±0.09 | Chen 2019 (CMS/HEDIS) | PASS |
+
+### calibration (29)
+
 | Check | Observed | Expected | Delta | Tolerance | Source | |
 |---|---:|---:|---:|---:|---|:--:|
 | ADAG slope | 28.59 | 28.7 | -0.113 | ±1 | Nathan 2008 | PASS |
@@ -10,14 +31,6 @@ Regenerated per release from n=10,000 draws, seed 20260101.
 | glucose at HbA1c 6.5% | 139.9 | 139.8 | +0.0219 | ±5 | Nathan 2008 | PASS |
 | glucose at HbA1c 8.0% | 182.8 | 182.9 | -0.148 | ±5 | Nathan 2008 | PASS |
 | glucose at HbA1c 9.5% | 225.6 | 225.9 | -0.318 | ±5 | Nathan 2008 | PASS |
-| CKD stage-3 eGFR within band | 1 | 1 | +0 | ±0 | KDIGO 2012 | PASS |
-| eGFR consistent with creatinine | 0 | 0 | +0 | ±1e-09 | CKD-EPI 2021 | PASS |
-| ICD-10 stage code matches eGFR | 1 | 1 | +0 | ±0 | ICD-10-CM | PASS |
-| T2DM hypertension comorbidity | 0.6986 | 0.7 | -0.0014 | ±0.0259 | profile config | PASS |
-| systolic/diastolic correlation | 0.6019 | 0.6 | +0.00193 | ±0.05 | profile config | PASS |
-| LDL consistent with panel (Friedewald) | 0 | 0 | +0 | ±1e-09 | Friedewald 1972 | PASS |
-| triglyceride/HDL correlation | -0.3738 | -0.4 | +0.0262 | ±0.05 | profile config | PASS |
-| BMI consistent with height and weight | 0 | 0 | +0 | ±1e-09 | WHO | PASS |
 | diabetic obesity rate | 0.6565 | 0.612 | +0.0445 | ±0.05 | NHANES 2017-2020 | PASS |
 | typical-adult median BMI | 30.2 | 28.8 | +1.4 | ±1.5 | NHANES 2017-2020 | PASS |
 | hba1c median (healthy/F) | 5.601 | 5.6 | +0.00137 | ±0.168 | NHANES 2017-2020 | PASS |
@@ -43,7 +56,25 @@ Regenerated per release from n=10,000 draws, seed 20260101.
 | weight_kg median (type2_diabetes/F) | 85.67 | 83.15 | +2.52 | ±6.65 | NHANES 2017-2020 | PASS |
 | weight_kg median (type2_diabetes/M) | 95.93 | 92.6 | +3.33 | ±7.41 | NHANES 2017-2020 | PASS |
 
-**37/37 passed.**
+### round_trip (4)
+
+| Check | Observed | Expected | Delta | Tolerance | Source | |
+|---|---:|---:|---:|---:|---|:--:|
+| CKD stage-3 eGFR within band | 1 | 1 | +0 | ±0 | KDIGO 2012 | PASS |
+| T2DM hypertension comorbidity | 0.6986 | 0.7 | -0.0014 | ±0.0259 | profile config | PASS |
+| systolic/diastolic correlation | 0.6019 | 0.6 | +0.00193 | ±0.05 | profile config | PASS |
+| triglyceride/HDL correlation | -0.3738 | -0.4 | +0.0262 | ±0.05 | profile config | PASS |
+
+### identity (4)
+
+| Check | Observed | Expected | Delta | Tolerance | Source | |
+|---|---:|---:|---:|---:|---|:--:|
+| eGFR consistent with creatinine | 0 | 0 | +0 | ±1e-09 | CKD-EPI 2021 | PASS |
+| ICD-10 stage code matches eGFR | 1 | 1 | +0 | ±0 | ICD-10-CM | PASS |
+| LDL consistent with panel (Friedewald) | 0 | 0 | +0 | ±1e-09 | Friedewald 1972 | PASS |
+| BMI consistent with height and weight | 0 | 0 | +0 | ±1e-09 | WHO | PASS |
+
+**38/38 passed.**
 
 ## Why R^2 is the load-bearing number
 

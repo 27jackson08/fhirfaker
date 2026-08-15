@@ -52,6 +52,11 @@ and it is landing pre-1.0 and pre-publication precisely so that it costs nothing
   zero errors and that dirtied output genuinely fails the HL7 validator.
 - `generate_cohort`, `Imperfection`, `Defect` and `inject_defects` are now exported
   from the package root.
+- **Fidelity checks are graded by evidential strength** — `out_of_sample`,
+  `calibration`, `round_trip`, `identity` — and [FIDELITY.md](FIDELITY.md) is grouped
+  by grade rather than reported as a flat pass count. Of 38 checks, 1 is out-of-sample;
+  a test pins that count so it cannot grow by relabelling. The CMS blood-pressure
+  measure is now a fidelity check as well as a benchmark.
 - [ROADMAP.md](ROADMAP.md) — the plan this came from.
 
 ## [0.1.0] — unreleased

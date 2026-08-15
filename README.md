@@ -159,8 +159,23 @@ The claim is checked statistically on every run and published as a
 | triglycerides median (healthy) | 89.3 | 88.0 mg/dL | NHANES 2017-2020 |
 | diabetic obesity rate | 0.657 | 0.612 | NHANES 2017-2020 |
 
-All 37 checks pass. Three of them are *identities* rather than correlations — eGFR,
-LDL and BMI are computed from their inputs, so a bundle cannot contradict itself.
+All 38 checks pass — but they are **not equally strong evidence**, and the report grades
+them rather than reporting a flat total:
+
+| Grade | Checks | What a pass proves |
+|---|---:|---|
+| **out-of-sample** | **1** | A published relationship the model was *not* fitted to. The only category that evidences fidelity in the sense the word implies. |
+| calibration | 29 | A marginal fitted to NHANES survived truncation and the copula. Meaningful, but in-sample by construction. |
+| round-trip | 4 | The sampler reproduces a value it was configured with. Proves the engine works, not that the value is right. |
+| identity | 4 | Computed from its own inputs (eGFR, Friedewald LDL, BMI). Cannot fail unless the code is broken. |
+
+Stating that only one check is genuinely out-of-sample is not a weakness being
+confessed; it is the distinction most synthetic-data validation omits, and omitting it
+is the specific criticism in
+[arXiv:2606.08903](https://arxiv.org/abs/2606.08903) — that evaluation is dominated by
+statistical similarity which does not establish clinical validity. The out-of-sample
+check is the CMS blood-pressure control measure in [BENCHMARK.md](BENCHMARK.md), and a
+test pins the count so it cannot grow by relabelling.
 
 Marginals are calibrated against the **NHANES 2017-March 2020** public files,
 restricted to ages 45-65 and stratified by sex and glycaemic status, and the fidelity

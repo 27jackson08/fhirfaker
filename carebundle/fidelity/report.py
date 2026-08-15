@@ -22,6 +22,32 @@ DEFAULT_SAMPLE_SIZE = 10_000
 DEFAULT_SEED = 20260101  # Fixed: a fidelity suite that flakes gets ignored.
 
 
+# How much a passing check actually proves. These are not equivalent, and a flat
+# "37/37 passed" implies far stronger evidence than most of them carry — which is the
+# exact criticism levelled at synthetic-data evaluation in arXiv:2606.08903, that
+# statistical-similarity reporting is dominated by measures which do not establish
+# clinical validity. Grading them is cheap and makes the report honest.
+EVIDENCE = {
+    "identity": (
+        "Computed from its own inputs. Cannot fail unless the code is broken, so it is "
+        "a regression test, not evidence of fidelity."
+    ),
+    "round_trip": (
+        "Verifies the sampler reproduces a value it was configured with. Proves the "
+        "engine works; proves nothing about whether the configured value is right."
+    ),
+    "calibration": (
+        "Verifies a marginal fitted to a published source survived truncation and the "
+        "copula. Meaningful — this is where truncation attenuation was caught — but "
+        "in-sample by construction."
+    ),
+    "out_of_sample": (
+        "A published relationship the model was NOT fitted to. This is the only "
+        "category that is evidence of fidelity in the sense the word implies."
+    ),
+}
+
+
 @dataclass(frozen=True)
 class Check:
     name: str
@@ -30,6 +56,16 @@ class Check:
     tolerance: float
     unit: str
     source: str
+    # Defaults to the conservative middle grade. Anything claiming to be out_of_sample
+    # has to say so explicitly, because that is the claim worth over-stating and the
+    # one a reader will lean on.
+    evidence: str = "calibration"
+
+    def __post_init__(self) -> None:
+        if self.evidence not in EVIDENCE:
+            raise ValueError(
+                f"unknown evidence grade {self.evidence!r}; known: {sorted(EVIDENCE)}"
+            )
 
     @property
     def delta(self) -> float:
@@ -106,11 +142,11 @@ def ckd_epi_checks(size: int, seed: int) -> list[Check]:
 
     return [
         Check("CKD stage-3 eGFR within band", in_band / size, 1.0, 0.0, "fraction",
-              "KDIGO 2012"),
+              "KDIGO 2012", evidence="round_trip"),
         Check("eGFR consistent with creatinine", round_trip_error, 0.0, 1e-9,
-              "mL/min/1.73m2", "CKD-EPI 2021"),
+              "mL/min/1.73m2", "CKD-EPI 2021", evidence="identity"),
         Check("ICD-10 stage code matches eGFR", code_agrees / size, 1.0, 0.0,
-              "fraction", "ICD-10-CM"),
+              "fraction", "ICD-10-CM", evidence="identity"),
     ]
 
 
@@ -127,7 +163,7 @@ def comorbidity_checks(size: int, seed: int) -> list[Check]:
     tolerance = 4.0 * (0.70 * 0.30 / size) ** 0.5
     return [
         Check("T2DM hypertension comorbidity", observed, 0.70, tolerance,
-              "fraction", "profile config")
+              "fraction", "profile config", evidence="round_trip")
     ]
 
 
@@ -138,7 +174,7 @@ def vitals_checks(size: int, seed: int) -> list[Check]:
     observed = float(np.corrcoef(sample["systolic"], sample["diastolic"])[0, 1])
     return [
         Check("systolic/diastolic correlation", observed, 0.60, 0.05, "",
-              "profile config")
+              "profile config", evidence="round_trip")
     ]
 
 
@@ -162,10 +198,10 @@ def lipid_checks(size: int, seed: int) -> list[Check]:
 
     return [
         Check("LDL consistent with panel (Friedewald)", worst_error, 0.0, 1e-9,
-              "mg/dL", "Friedewald 1972"),
+              "mg/dL", "Friedewald 1972", evidence="identity"),
         # Inverse by construction: high-triglyceride/high-HDL patients barely exist.
         Check("triglyceride/HDL correlation", tg_hdl, -0.40, 0.05, "",
-              "profile config"),
+              "profile config", evidence="round_trip"),
     ]
 
 
@@ -197,7 +233,7 @@ def anthropometric_checks(size: int, seed: int) -> list[Check]:
 
     return [
         Check("BMI consistent with height and weight", worst_error, 0.0, 1e-9,
-              "kg/m2", "WHO"),
+              "kg/m2", "WHO", evidence="identity"),
         # Both figures are measured from NHANES 45-65, not chosen. They previously
         # sat at 0.60 and 26.5 — my own estimates — and calibrating the marginals
         # made the suite flag the disagreement. The data is the authority here, so
@@ -277,6 +313,43 @@ def hash_free_index(analyte: str, sex: str) -> int:
     return stable_digest(f"{analyte}:{sex}", bits=16)
 
 
+def quality_measure_checks(size: int, seed: int) -> list[Check]:
+    """CMS/HEDIS Controlling High Blood Pressure — the one out-of-sample check.
+
+    Everything else in this report is in-sample: identities verify their own formula,
+    round-trips verify the sampler reproduces a configured value, and the NHANES
+    medians verify that a marginal fitted to NHANES survived truncation. None of them
+    can tell you the model is *right*, only that it is self-consistent.
+
+    This one can. The inputs are NHANES treatment prevalence and Law 2003 effect sizes;
+    the control rate is not fitted to anything, and it is checked against a rate
+    published by somebody else. Synthea scores 0% on the same measure. `BENCHMARK.md`
+    is the authoritative version — it computes the measure from emitted FHIR rather
+    than from draws — and this row exists so the report says out loud that it has
+    exactly one such check.
+    """
+    rng = np.random.default_rng(seed + 6)
+    profile = get_profile("hypertension", "F")
+    controlled = 0
+    for _ in range(size):
+        drawn = draw(profile, rng=rng, age_years=58.0, sex="F")
+        if drawn.raw["systolic"] < 140.0 and drawn.raw["diastolic"] < 90.0:
+            controlled += 1
+    # Band spans the published US (69.7%) and Massachusetts (74.5%) comparators, plus
+    # room for sampling noise. Wide on purpose: a fidelity suite that flakes is ignored.
+    return [
+        Check(
+            "CMS Controlling High Blood Pressure",
+            controlled / size,
+            0.72,
+            0.09,
+            "fraction",
+            "Chen 2019 (CMS/HEDIS)",
+            evidence="out_of_sample",
+        )
+    ]
+
+
 def run_all(size: int = DEFAULT_SAMPLE_SIZE, seed: int = DEFAULT_SEED) -> list[Check]:
     return [
         *adag_checks(size, seed),
@@ -286,28 +359,69 @@ def run_all(size: int = DEFAULT_SAMPLE_SIZE, seed: int = DEFAULT_SEED) -> list[C
         *lipid_checks(min(size, 2_000), seed),
         *anthropometric_checks(min(size, 2_000), seed),
         *nhanes_checks(min(size, 1_500), seed),
+        *quality_measure_checks(min(size, 3_000), seed),
     ]
 
 
 def render_markdown(checks: list[Check], *, size: int, seed: int) -> str:
+    by_grade = {grade: [c for c in checks if c.evidence == grade] for grade in EVIDENCE}
+    failed = [c for c in checks if not c.passed]
+
     lines = [
         "# Fidelity Report",
         "",
         "Generated distributions checked against published clinical relationships.",
         f"Regenerated per release from n={size:,} draws, seed {seed}.",
         "",
-        "| Check | Observed | Expected | Delta | Tolerance | Source | |",
-        "|---|---:|---:|---:|---:|---|:--:|",
+        "## How much each check proves",
+        "",
+        (
+            "Checks are **graded by evidential strength**, because they are not "
+            "equivalent and a flat pass count implies more than most of them carry. "
+            "Reporting statistical similarity as though it established clinical "
+            "validity is the specific criticism levelled at synthetic-data evaluation "
+            "in [arXiv:2606.08903](https://arxiv.org/abs/2606.08903), and it is easier "
+            "to avoid by grading than by adding more checks."
+        ),
+        "",
+        "| Grade | Checks | What a pass means |",
+        "|---|---:|---|",
     ]
-    for check in checks:
+    order = ("out_of_sample", "calibration", "round_trip", "identity")
+    for grade in order:
         lines.append(
-            f"| {check.name} | {check.observed:.4g} | {check.expected:.4g} | "
-            f"{check.delta:+.3g} | ±{check.tolerance:.3g} | {check.source} | "
-            f"{'PASS' if check.passed else 'FAIL'} |"
+            f"| **{grade}** | {len(by_grade[grade])} | {EVIDENCE[grade]} |"
         )
-    failed = [c for c in checks if not c.passed]
     lines += [
         "",
+        (
+            f"**Read the top row first.** Only {len(by_grade['out_of_sample'])} of "
+            f"{len(checks)} checks is genuinely out-of-sample. The rest establish "
+            "self-consistency, which is necessary but is a weaker claim than the "
+            "phrase 'fidelity report' suggests on its own."
+        ),
+        "",
+    ]
+
+    for grade in order:
+        graded = by_grade[grade]
+        if not graded:
+            continue
+        lines += [
+            f"### {grade} ({len(graded)})",
+            "",
+            "| Check | Observed | Expected | Delta | Tolerance | Source | |",
+            "|---|---:|---:|---:|---:|---|:--:|",
+        ]
+        for check in graded:
+            lines.append(
+                f"| {check.name} | {check.observed:.4g} | {check.expected:.4g} | "
+                f"{check.delta:+.3g} | ±{check.tolerance:.3g} | {check.source} | "
+                f"{'PASS' if check.passed else 'FAIL'} |"
+            )
+        lines.append("")
+
+    lines += [
         f"**{len(checks) - len(failed)}/{len(checks)} passed.**",
         "",
         "## Why R^2 is the load-bearing number",
