@@ -8,9 +8,16 @@ name: Release
 # https://pypi.org/manage/account/publishing/ with:
 #   project: carebundle | owner: 27jackson08 | repo: fhirfaker
 #   workflow: release.yml | environment: pypi
+#
+# workflow_dispatch runs everything EXCEPT the publish job, so the pipeline can be
+# rehearsed on a branch. Publishing is gated on `github.ref_type == 'tag'`, which a
+# manual dispatch on a branch can never satisfy — the dry run cannot upload by
+# accident. Rehearse before relying on this: the previous CI workflow was silently
+# broken for months precisely because nobody had watched it run.
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -27,6 +34,8 @@ jobs:
         with:
           python-version: "3.12"
       - name: Tag must match the version in pyproject.toml
+        # Only meaningful on a tag; on a dispatch rehearsal GITHUB_REF_NAME is a branch.
+        if: github.ref_type == 'tag'
         run: |
           python - <<'PY'
           import os, pathlib, re, sys, tomllib
@@ -105,6 +114,9 @@ jobs:
 
   publish:
     needs: build
+    # Tags only. A workflow_dispatch rehearsal on a branch stops after `build`, so the
+    # irreversible step cannot be reached by anything except pushing a version tag.
+    if: github.ref_type == 'tag'
     runs-on: ubuntu-latest
     # The environment gives you a manual approval gate: enable required reviewers on
     # the `pypi` environment and the upload waits for a human. PyPI uploads cannot be
