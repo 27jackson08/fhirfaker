@@ -119,13 +119,46 @@ because of adherence — so an adherence gap would have made the modelled rate t
 **high**, not too low. Undershooting pointed at a missing treatment intensity, which
 is what titration supplies.
 
-Remaining caveats:
+## Non-adherence: a prediction that failed, and was not shipped
 
-- Non-adherence is still not modelled. It is a real effect in the opposite direction,
-  and the fact that the rate lands mid-band without it suggests the two are partially
-  cancelling rather than that adherence is absent from reality.
+The previous section predicted that adding non-adherence "should push the rate down".
+It does — by far too much to be right.
+
+| Model | CBP rate |
+|---|---:|
+| Current (no explicit adherence term) | 74.7% |
+| 45% of patients take nothing ([Abegaz 2017 meta-analysis](https://pubmed.ncbi.nlm.nih.gov/28121920/)) | 50.4% |
+| Effect scaled by proportion-of-days-covered (62.2%) | 49.3% |
+| **Real-world comparators** | **69.7% – 74.5%** |
+
+Both formulations land roughly 20 points **below** reality. The prediction was right
+about direction and badly wrong about magnitude, and the honest conclusion is that the
+naive adherence term is a worse model, not a missing one. It is therefore **not
+shipped**. Two reasons it fails:
+
+- **The population-wide adherence figures do not transfer to this denominator.** HEDIS
+  CBP counts patients who are diagnosed *and* have an outpatient encounter — people
+  engaged enough with care to show up. Adherence meta-analyses are drawn from a much
+  broader population. Applying the broader figure to the narrower denominator imports
+  a selection effect that the denominator has already excluded.
+- **"Non-adherent" is not "untreated".** A patient with 62% days covered takes most of
+  their doses and gets most of the benefit. Modelling them as receiving nothing is a
+  category error, and the PDC-scaled variant fails for the related reason that response
+  is not linear in coverage.
+
+Recording this matters more than the result. The rate is close to reality *without*
+this term, so a naive version would have made the benchmark worse while sounding more
+sophisticated — and the reason it is excluded is that it contradicts the data by 20
+points, which is model falsification rather than parameter fitting. If adherence is
+modelled later it needs a dose-response formulation and a denominator-matched source.
+
+## Remaining caveats
+
 - The comparators are from 2019 and reflect the plans and years measured then. The
   national HEDIS figure has sat in the low-to-mid 60s in other years.
+- Titration is modelled as an equilibrium rather than a trajectory: the recorded
+  pressure is where a titrated patient ends up, not a series of readings over a year.
+  Multi-visit encounters remain open work.
 
 ## What this does and does not establish
 

@@ -238,3 +238,31 @@ def test_ckd_condition_code_agrees_with_the_generated_egfr():
         assert any(c.code == expected for c in drawn.conditions), (
             f"seed {seed}: eGFR {drawn.raw['egfr']:.1f} should code {expected}"
         )
+
+
+def test_no_diagnosed_diabetic_falls_below_the_diagnostic_threshold():
+    """Guards the asymmetry that makes a metformin 'treatment effect' a trap.
+
+    Blood pressure marginals are clinical definitions of the *untreated* population, so
+    subtracting a treatment effect from them is correct — that is what Phase 7 did. The
+    diabetic HbA1c marginal is the opposite: it is fitted to NHANES quartiles for
+    *observed* diabetics, who are predominantly already on therapy. Subtracting a drug
+    effect from it double-counts treatment.
+
+    Measured, not assumed: a 1.0-point metformin effect applied on top moves the median
+    from 7.41 to 6.88 and puts 32% of diagnosed diabetics under 6.5% — a diagnosed
+    diabetic whose HbA1c says they are not diabetic. This test fails if that is ever
+    done.
+    """
+    from carebundle.generate import generate_draw
+
+    for index in range(200):
+        drawn = generate_draw(
+            profile="type2_diabetes", seed=4242, sex="F" if index % 2 else "M",
+            age_years=45.0 + index % 40,
+        )
+        assert float(drawn.raw["hba1c"]) >= 6.5, (
+            "a diagnosed diabetic below the diagnostic threshold contradicts its own "
+            "diagnosis; if a treatment effect was added to HbA1c, the marginal must be "
+            "re-derived as pre-treatment rather than reused as observed"
+        )

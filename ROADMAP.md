@@ -172,12 +172,40 @@ independent check.
 > further down; and the two-doubling ceiling was fixed on clinical grounds before the
 > rate was measured.
 >
-> **Still open in this phase:** multi-visit encounters (a patient sampled at N points
-> in time), HbA1c trajectories under metformin, and explicit non-adherence. The last
-> of those is now the most interesting: the rate lands mid-band *without* modelling
-> non-adherence, which acts in the opposite direction, so the two are probably
-> partially cancelling. Adding adherence alone should push the rate down, and that is
-> the next falsifiable prediction.
+> **Non-adherence: predicted, tested, rejected.** The prediction was that adding it
+> would push the rate down. It does — to 50.4% (binary) or 49.3% (PDC-scaled), roughly
+> 20 points *below* reality. Right about direction, badly wrong about magnitude, so the
+> naive term is a worse model rather than a missing one and is not shipped. The reasons
+> are in `BENCHMARK.md`: population-wide adherence figures do not transfer to a
+> denominator already selected for engagement with care, and "non-adherent" is not
+> "untreated". Modelling it properly needs a dose-response formulation and a
+> denominator-matched source.
+>
+> **The stated exit criterion for this phase was wrong, and is corrected below.** It
+> read "metformin lowers HbA1c by a published effect size, asserted in CI". Implementing
+> that would double-count treatment, because BP and HbA1c are *not symmetric* in this
+> model:
+>
+> * Blood pressure marginals are clinical definitions of the **untreated** population —
+>   the module docstring says so explicitly — which is exactly why subtracting a
+>   treatment effect from them was correct.
+> * The diabetic HbA1c marginal is fitted to NHANES quartiles for **observed**
+>   diabetics, who are predominantly already on therapy. It is already post-treatment.
+>
+> Measured rather than argued: applying a 1.0-point metformin effect on top moves the
+> HbA1c median from 7.41 to 6.88, 0.52 below the NHANES target the fidelity suite
+> asserts, and puts **32% of diagnosed diabetics under the 6.5% diagnostic threshold** —
+> a diagnosed diabetic whose own labs say they are not diabetic. A regression test now
+> pins that invariant.
+>
+> **Corrected criterion.** Doing this properly means re-deriving the diabetic HbA1c
+> marginal as *pre-treatment* and solving so the observed mixture still reproduces
+> NHANES — a deconvolution, not a subtraction. It buys internal coherence (an untreated
+> diabetic should not look like a treated one), not better fidelity, since the observed
+> distribution is pinned either way. Worth doing, but it is not the cheap win the
+> original wording implied.
+>
+> **Still open:** multi-visit encounters, and the HbA1c deconvolution above.
 
 ### Phase 7 — original plan (retained for the record)
 

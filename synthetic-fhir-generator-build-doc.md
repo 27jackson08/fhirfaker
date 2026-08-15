@@ -530,6 +530,24 @@ documentation, and each would otherwise be rediscovered the hard way.
   marginal left diabetic patients with the same BMI as the general population — contradicting
   the strongest association in type 2 diabetes. Individually every value looked fine; only a
   cross-profile comparison exposed it.
+- **Whether a marginal is "observed" or "pre-treatment" decides whether adding a drug
+  effect is a fix or a bug.** Blood pressure marginals here are clinical definitions of
+  the *untreated* population, so computing the recorded pressure from the prescribed
+  regimen corrected a real incoherence and moved a quality measure from 21% to 71%. The
+  diabetic HbA1c marginal is fitted to NHANES quartiles for *observed* diabetics, who
+  are mostly already treated — so the identical-looking change double-counts. Measured:
+  a 1.0-point metformin effect on top moves the median from 7.41 to 6.88 and puts 32%
+  of diagnosed diabetics below the 6.5% diagnostic threshold. The two marginals look
+  interchangeable in the code and are not, and nothing in the type system says so — a
+  regression test pins the invariant instead.
+- **A plausible mechanism can make a calibrated model worse, and the only way to know
+  is to measure it.** Non-adherence is real, well documented, and acts in the direction
+  of an observed shortfall — every reason to add it. Adding it naively (45% take
+  nothing, per meta-analysis) moved the blood-pressure control rate 20 points *below*
+  reality. The population-wide adherence figure does not transfer to a HEDIS
+  denominator that already selects for patients engaged enough with care to attend an
+  appointment, and "non-adherent" is not "untreated". It was tested and dropped rather
+  than shipped on plausibility.
 - **A CI matrix that never installed its own Python was green-by-absence for months.**
   The `unit` job declared `python-version: [3.10, 3.12, 3.13]` but had no
   `actions/setup-python` step, so `uv pip install --system` targeted the runner's
