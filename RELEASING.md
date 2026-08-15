@@ -89,5 +89,9 @@ before the version number is spent.
 
 - Verify the install from a clean environment, from outside the repository:
   `pip install carebundle && python -c "import carebundle; print(carebundle.__version__)"`
+- Set the repository homepage to the PyPI page, which only exists once the first
+  upload lands — it is deliberately blank until then rather than a 404 on the repo's
+  public landing card:
+  `gh api -X PATCH repos/27jackson08/fhirfaker -f homepage="https://pypi.org/project/carebundle/"`
 - Distribution is a separate problem from quality (build doc Section 14). A
   differentiated tool that nobody hears about does not get adopted.
