@@ -1,7 +1,15 @@
 # carebundle — clinically coherent synthetic FHIR® test data for Python
 
+[![CI](https://github.com/27jackson08/fhirfaker/actions/workflows/ci.yml/badge.svg)](https://github.com/27jackson08/fhirfaker/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13%20%7C%203.14-blue)](https://github.com/27jackson08/fhirfaker/actions/workflows/ci.yml)
+[![US Core](https://img.shields.io/badge/US%20Core-6.1.0%20validated-brightgreen)](CONFORMANCE.md)
+[![Licence](https://img.shields.io/badge/licence-Apache--2.0-blue)](LICENSE)
+
 `pip install`, import, and get a **US Core-conformant FHIR R4 Bundle** back as a Python
 object. No JVM, no config file, no output directory to manage.
+
+The badge is the point: the conformance and fidelity claims below are machine-checked
+in CI, not asserted in prose. Every Python version listed is actually in the matrix.
 
 ```python
 from carebundle import generate_bundle
