@@ -106,7 +106,7 @@ or it is not a phase.
 | Phase | Content | Exit criterion |
 |---|---|---|
 | ~~**6. The benchmark**~~ **done** | Reproduce the published CQM study against our output | **Met at 64.1%** vs Synthea's published 0%; asserted in CI. See `BENCHMARK.md` |
-| **7. Treatment response** | Bounded longitudinal: analyte trajectories under therapy | Metformin lowers HbA1c by a published effect size, asserted in CI |
+| **7. Treatment response** *(part done)* | Bounded longitudinal: analyte trajectories under therapy | **BP titration done — hypothesis confirmed, 64.1% → 71.5%.** HbA1c/metformin trajectories and multi-visit encounters still open |
 | **8. Evaluation as product** | Adopt the three-dimension framework; publish it | FIDELITY.md restructured; preprint drafted |
 | **9. Realistic imperfection** | Opt-in messiness with labelled defects | `imperfection=` flag; conformance still provable when off |
 | **10. Breadth that pays** | More profiles, more US Core profiles | Each new profile ships with fidelity assertions, not just code |
@@ -159,7 +159,27 @@ passes. **Tuning the generator to hit the benchmark is cheating, and it is the s
 way to destroy this project's credibility.** Calibrate to the source; let the benchmark be the
 independent check.
 
-### Phase 7 — Treatment response
+### Phase 7 — Treatment response — **partly done**
+
+> **The Phase 6 hypothesis was tested and held.** Phase 6 published a 5.6-point
+> shortfall and named dose titration as the cause. Modelling titration moved the CBP
+> rate from 64.1% to **71.5%**, between the US (69.7%) and MA (74.5%) comparators.
+>
+> This counts as a genuine test rather than a fit for three reasons, all recorded in
+> `BENCHMARK.md`: the titration effect size comes from a *different* study than the
+> base effect (Lancet 2025, 1.5 mmHg per doubling); escalation is conditional on being
+> above goal, so it cannot inflate the rate by pushing already-controlled patients
+> further down; and the two-doubling ceiling was fixed on clinical grounds before the
+> rate was measured.
+>
+> **Still open in this phase:** multi-visit encounters (a patient sampled at N points
+> in time), HbA1c trajectories under metformin, and explicit non-adherence. The last
+> of those is now the most interesting: the rate lands mid-band *without* modelling
+> non-adherence, which acts in the opposite direction, so the two are probably
+> partially cancelling. Adding adherence alone should push the rate down, and that is
+> the next falsifiable prediction.
+
+### Phase 7 — original plan (retained for the record)
 
 The mechanism behind Synthea's zeroes, and the thing that makes outcome measures possible.
 

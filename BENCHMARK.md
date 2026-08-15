@@ -30,7 +30,7 @@ measure needs.
 
 | Measure | Synthea | **carebundle** | Real (US) | Real (MA) |
 |---|---:|---:|---:|---:|
-| Controlling high blood pressure (CBP) | 0% | **64.1%** | 69.7% | 74.5% |
+| Controlling high blood pressure (CBP) | 0% | **71.5%** | 69.7% | 74.5% |
 | Colorectal cancer screening | 68.7% | *not modelled* | 69.8% | 77.3% |
 | COPD 30-day mortality | 0.7% | *not modelled* | 8.0% | 7.0% |
 | Complications after hip/knee replacement | 0% | *not modelled* | 2.8% | 2.9% |
@@ -49,10 +49,10 @@ reading below **140/90**, with both components required.
 
 | Population | Denominator | CBP rate |
 |---|---:|---:|
-| `hypertension` profile | 1500 | 63.3% |
-| `type2_diabetes` profile | 1045 | 63.8% |
-| `ckd_stage3` profile | 1197 | 65.6% |
-| **Mixed cohort (prevalence-drawn)** | **1822 / 4000** | **64.1%** |
+| `hypertension` profile | 1500 | 70.3% |
+| `type2_diabetes` profile | 1045 | 70.8% |
+| `ckd_stage3` profile | 1197 | 71.8% |
+| **Mixed cohort (prevalence-drawn)** | **1822 / 4000** | **71.5%** |
 | `healthy` profile | 0 | *not in denominator* |
 
 ## How the number was produced, and why it is not tuned
@@ -86,28 +86,46 @@ distinct drug class sequentially, so Law's baseline-dependence produces diminish
 returns by construction rather than by a fudge factor. A bundle therefore cannot
 prescribe three antihypertensives beside an untreated-looking 168/102.
 
-## The gap, stated plainly
+## The titration hypothesis, tested and confirmed
 
-**64.1% against a US comparator of 69.7% — a 5.6 point shortfall.** It is not rounded
-away and it is not tuned out. The most likely mechanism is dose titration: HEDIS scores
-the *most recent* reading of a year in which clinicians repeatedly re-measure and
-escalate until the patient reaches goal, whereas this models a single visit with a
-fixed regimen at standard doses. Law's own data supports the direction — each doubling
-of dose adds roughly 1.5 mmHg systolic.
+The first version of this benchmark measured **64.1%** against a US comparator of
+69.7% and published the 5.6-point shortfall rather than closing it, along with a
+specific, falsifiable explanation:
 
-That gap is the specific hypothesis Phase 7 of [ROADMAP.md](ROADMAP.md) exists to test.
-If modelled titration closes it, the mechanism was right. If it overshoots, real-world
-adherence is the missing term and the model should say so.
+> The most likely mechanism is dose titration: HEDIS scores the *most recent* reading
+> of a year in which clinicians repeatedly re-measure and escalate until the patient
+> reaches goal, whereas this models a single visit with a fixed regimen at standard
+> doses.
 
-Two caveats worth keeping in view:
+**That prediction was then tested and it held.** Modelling titration moved the rate
+from 64.1% to **71.5%**, between the US (69.7%) and Massachusetts (74.5%) comparators.
 
-- Law's effect sizes are **trial efficacy**. Real-world effectiveness is usually lower
-  because of adherence, which would push the modelled rate *up* relative to reality —
-  the opposite of the observed direction, and part of why titration is the better
-  explanation.
+What makes this a real test rather than a fit:
+
+- The titration effect size comes from a **different study** than the base effect —
+  the [2025 *Lancet* meta-analysis](https://pubmed.ncbi.nlm.nih.gov/40885583/) of 484
+  trials, at 1.5 mmHg systolic per dose doubling — so the correction was not
+  calibrated against the residual it was predicting.
+- Escalation is **conditional on being above goal**, which is what titration is. A
+  patient already at target is never escalated, so the mechanism cannot inflate the
+  control rate from the wrong end by pushing controlled patients further down.
+- The ceiling of two doublings is clinically motivated (beyond roughly four times
+  standard dose, another agent is preferred to another doubling), not fitted. Raising
+  it would push the rate higher; it was fixed before the rate was measured.
+
+The direction of the original error also ruled out the obvious alternative. Law's
+figures are **trial efficacy**, and real-world effectiveness is normally *lower*
+because of adherence — so an adherence gap would have made the modelled rate too
+**high**, not too low. Undershooting pointed at a missing treatment intensity, which
+is what titration supplies.
+
+Remaining caveats:
+
+- Non-adherence is still not modelled. It is a real effect in the opposite direction,
+  and the fact that the rate lands mid-band without it suggests the two are partially
+  cancelling rather than that adherence is absent from reality.
 - The comparators are from 2019 and reflect the plans and years measured then. The
-  national HEDIS figure has sat in the low-to-mid 60s in other years, which is where
-  this lands.
+  national HEDIS figure has sat in the low-to-mid 60s in other years.
 
 ## What this does and does not establish
 

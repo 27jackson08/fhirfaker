@@ -26,13 +26,23 @@ Seeded output therefore changes: golden files were regenerated and `ckd_stage3` 
 emits 52 entries rather than 51. **Under the stability policy this is a major bump**,
 and it is landing pre-1.0 and pre-publication precisely so that it costs nothing.
 
+- **Recorded pressure reflects a titrated regimen**, not a starting one. These bundles
+  depict an established patient at a routine visit, and a clinician who saw 150/95
+  escalated the dose rather than recording it again unchanged. Doses double while the
+  patient is above 140/90, to a ceiling of two doublings, at 1.5 mmHg systolic per
+  doubling ([*Lancet* 2025](https://pubmed.ncbi.nlm.nih.gov/40885583/), 484 trials).
+  Patients already at goal are never escalated.
+
 ### Added
 
 - `carebundle.benchmark` — CMS/HEDIS clinical quality measures computed from emitted
   FHIR, with `Controlling High Blood Pressure` implemented to the NCQA definition.
-- [BENCHMARK.md](BENCHMARK.md) — measured **64.1%** on that measure against Synthea's
-  published **0%** and a real-world 69.7%, from independently cited inputs. Includes
-  the three measures this does *not* model, reported as such rather than omitted.
+- [BENCHMARK.md](BENCHMARK.md) — measured **71.5%** on that measure against Synthea's
+  published **0%**, between the US (69.7%) and MA (74.5%) comparators, from
+  independently cited inputs. Includes the three measures this does *not* model,
+  reported as such rather than omitted, and the record of a published prediction that
+  was subsequently tested: the first measurement was 64.1% with the shortfall
+  attributed to dose titration, and modelling titration closed it.
 - [ROADMAP.md](ROADMAP.md) — the plan this came from.
 
 ## [0.1.0] — unreleased

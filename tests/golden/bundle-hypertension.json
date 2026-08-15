@@ -2514,7 +2514,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Blood pressure 145/95 mmHg (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Blood pressure 142/93 mmHg (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -2564,7 +2564,7 @@
               "text": "Systolic blood pressure"
             },
             "valueQuantity": {
-              "value": 145,
+              "value": 142,
               "unit": "mmHg",
               "system": "http://unitsofmeasure.org",
               "code": "mm[Hg]"
@@ -2582,7 +2582,7 @@
               "text": "Diastolic blood pressure"
             },
             "valueQuantity": {
-              "value": 95,
+              "value": 93,
               "unit": "mmHg",
               "system": "http://unitsofmeasure.org",
               "code": "mm[Hg]"

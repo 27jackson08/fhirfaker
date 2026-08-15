@@ -296,3 +296,57 @@ def test_a_negative_agent_count_raises_rather_than_silently_passing():
         relations.antihypertensive_response(
             systolic=150.0, diastolic=90.0, agent_count=-1
         )
+
+
+# --- dose titration (Lancet 2025) -------------------------------------------------
+
+def test_titration_does_not_touch_a_patient_already_at_goal():
+    """Escalating a controlled patient would inflate a control rate from the wrong end."""
+    standard = relations.antihypertensive_response(
+        systolic=150.0, diastolic=95.0, agent_count=2
+    )
+    assert standard[0] < relations.GOAL_SYSTOLIC, "precondition: already controlled"
+    assert relations.titrated_response(
+        systolic=150.0, diastolic=95.0, agent_count=2
+    ) == standard
+
+
+def test_titration_lowers_a_patient_left_above_goal_by_standard_dose():
+    standard = relations.antihypertensive_response(
+        systolic=180.0, diastolic=105.0, agent_count=3
+    )
+    titrated = relations.titrated_response(
+        systolic=180.0, diastolic=105.0, agent_count=3
+    )
+    assert standard[0] >= relations.GOAL_SYSTOLIC, "precondition: still uncontrolled"
+    assert titrated[0] < standard[0]
+    assert titrated[1] < standard[1]
+
+
+def test_an_untreated_patient_has_no_dose_to_escalate():
+    assert relations.titrated_response(
+        systolic=168.0, diastolic=102.0, agent_count=0
+    ) == (168.0, 102.0)
+
+
+def test_titration_is_bounded_by_the_doubling_ceiling():
+    """Without a ceiling a severely hypertensive patient would titrate to the floor."""
+    capped = relations.titrated_response(
+        systolic=210.0, diastolic=120.0, agent_count=1, max_doublings=2
+    )
+    uncapped = relations.titrated_response(
+        systolic=210.0, diastolic=120.0, agent_count=1, max_doublings=8
+    )
+    assert capped[0] > uncapped[0], "more doublings must lower it further"
+    standard = relations.antihypertensive_response(
+        systolic=210.0, diastolic=120.0, agent_count=1
+    )
+    expected = standard[0] - 2 * relations.LANCET_SYSTOLIC_PER_DOUBLING
+    assert capped[0] == pytest.approx(expected)
+
+
+def test_a_bigger_regimen_gains_more_from_each_doubling():
+    """Doubling three agents' doses beats doubling one, per-step."""
+    one = relations.titrated_response(systolic=200.0, diastolic=115.0, agent_count=1)
+    three = relations.titrated_response(systolic=200.0, diastolic=115.0, agent_count=3)
+    assert three[0] < one[0]

@@ -2664,7 +2664,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Blood pressure 144/82 mmHg (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Blood pressure 138/78 mmHg (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -2714,7 +2714,7 @@
               "text": "Systolic blood pressure"
             },
             "valueQuantity": {
-              "value": 144,
+              "value": 138,
               "unit": "mmHg",
               "system": "http://unitsofmeasure.org",
               "code": "mm[Hg]"
@@ -2732,7 +2732,7 @@
               "text": "Diastolic blood pressure"
             },
             "valueQuantity": {
-              "value": 82,
+              "value": 78,
               "unit": "mmHg",
               "system": "http://unitsofmeasure.org",
               "code": "mm[Hg]"

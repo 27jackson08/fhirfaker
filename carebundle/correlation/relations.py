@@ -99,6 +99,64 @@ def antihypertensive_response(
     return systolic, diastolic
 
 
+# --- Dose titration ----------------------------------------------------------------
+# "Blood pressure-lowering efficacy of antihypertensive drugs and their combinations",
+# Lancet 2025 (484 trials): each doubling of dose confers an additional 1.5 mm Hg
+# systolic (95% CI 1.2-1.7) beyond the standard-dose effect.
+#
+# Why this exists. `antihypertensive_response` models a regimen at *standard* dose,
+# which is what a newly-treated patient receives. It is not what a measure like HEDIS
+# CBP scores: that takes the most recent reading of a year in which the clinician
+# re-measures and escalates until the patient reaches goal. An established patient's
+# recorded pressure reflects a titrated regimen, not a starting one.
+#
+# Escalation is conditional on being above goal, which is what titration *is*. A
+# patient already at target is not escalated, so this cannot push a controlled
+# population further down and inflate a control rate from the wrong end.
+LANCET_SYSTOLIC_PER_DOUBLING = 1.5
+# Law's standard-dose systolic:diastolic ratio, applied to keep the doubling effect
+# internally consistent rather than introducing a second unsourced constant.
+_SYSTOLIC_TO_DIASTOLIC = LAW_DIASTOLIC_REDUCTION / LAW_SYSTOLIC_REDUCTION
+
+# Standard dose to twice to four times: two doublings is the practical ceiling for most
+# antihypertensives before a further agent is preferred to a further dose. This bounds
+# titration clinically; it is not fitted to any benchmark.
+MAX_DOSE_DOUBLINGS_PER_AGENT = 2
+
+GOAL_SYSTOLIC = 140.0
+GOAL_DIASTOLIC = 90.0
+
+
+def titrated_response(
+    *,
+    systolic: float,
+    diastolic: float,
+    agent_count: int,
+    max_doublings: int = MAX_DOSE_DOUBLINGS_PER_AGENT,
+) -> tuple[float, float]:
+    """Blood pressure after a regimen is escalated toward goal, per Lancet 2025.
+
+    Applies `antihypertensive_response` first (standard dose), then doubles doses while
+    the patient remains above 140/90 and doublings remain. An untreated patient
+    (`agent_count == 0`) has no dose to escalate and is returned unchanged.
+    """
+    systolic, diastolic = antihypertensive_response(
+        systolic=systolic, diastolic=diastolic, agent_count=agent_count
+    )
+    if agent_count == 0:
+        return systolic, diastolic
+
+    for _ in range(max_doublings):
+        if systolic < GOAL_SYSTOLIC and diastolic < GOAL_DIASTOLIC:
+            break
+        systolic -= LANCET_SYSTOLIC_PER_DOUBLING * agent_count
+        diastolic -= LANCET_SYSTOLIC_PER_DOUBLING * _SYSTOLIC_TO_DIASTOLIC * agent_count
+        systolic = max(systolic, TREATED_SYSTOLIC_FLOOR)
+        diastolic = max(diastolic, TREATED_DIASTOLIC_FLOOR)
+
+    return systolic, diastolic
+
+
 # --- CKD-EPI 2021 (race-free) ----------------------------------------------------
 # Inker LA et al., NEJM 2021; endorsed by NKF/ASN.
 #   eGFR = 142 x min(Scr/K, 1)^a x max(Scr/K, 1)^-1.200 x 0.9938^age x 1.012 [female]

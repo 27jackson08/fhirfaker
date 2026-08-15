@@ -42,7 +42,7 @@ overkill:
 | Shape | batch — generates a population into a folder | library — returns a `Bundle` object in-process |
 | Scope | full patient lifecycle simulation | one visit, clinically coherent |
 | Reproducible fixtures | not a contract | **byte-identical for a given seed** |
-| CMS *Controlling High Blood Pressure* | **0%** (published) | **64.1%** (real-world 69.7%) |
+| CMS *Controlling High Blood Pressure* | **0%** (published) | **71.5%** (real-world 69.7–74.5%) |
 
 If you want a realistic population to analyse, use Synthea. If you want five diabetic
 patients with coherent lab panels inside a pytest fixture, this is smaller.

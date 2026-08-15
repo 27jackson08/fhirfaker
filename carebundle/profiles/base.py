@@ -184,7 +184,10 @@ def draw(
         raw["antihypertensive_classes"] = float(
             codes_module.antihypertensive_class_count(medications)
         )
-        raw["systolic"], raw["diastolic"] = relations.antihypertensive_response(
+        # Titrated rather than standard-dose: these bundles depict an established
+        # patient at a routine visit, not one starting therapy that morning, and a
+        # clinician who saw 150/95 escalated the dose rather than recording it twice.
+        raw["systolic"], raw["diastolic"] = relations.titrated_response(
             systolic=raw["systolic"],
             diastolic=raw["diastolic"],
             agent_count=int(raw["antihypertensive_classes"]),
