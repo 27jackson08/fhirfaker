@@ -7,10 +7,13 @@ irreversible step is the *last* one and the cheapest to get right.
 ## Before the first release only
 
 1. ~~Push the repository to GitHub.~~ Done — <https://github.com/27jackson08/fhirfaker>.
-   Check that the first CI run went green; until it has, the conformance and fidelity
-   gates are only as fresh as the last local run.
+   CI is green across Python 3.10–3.14, plus conformance, packaging, fidelity and
+   terminology.
 2. ~~Add `[project.urls]` to `pyproject.toml`.~~ Done.
-3. **Register the Trusted Publisher** at <https://pypi.org/manage/account/publishing/>:
+3. **Register the Trusted Publisher** at <https://pypi.org/manage/account/publishing/>.
+   **This is the only remaining blocker, and it can only be done by the account owner
+   through the PyPI web UI.** Until it exists, the `publish` job will fail — the
+   `build` job before it will still have succeeded, so nothing is lost but a re-run.
 
    | Field | Value |
    |---|---|
@@ -21,9 +24,11 @@ irreversible step is the *last* one and the cheapest to get right.
    | Environment name | `pypi` |
 
    This is why there is no PyPI token in the repository — there is nothing to leak.
-4. **Create the `pypi` environment** at
-   <https://github.com/27jackson08/fhirfaker/settings/environments> and, if you want a
-   human gate on an irreversible action, add yourself as a required reviewer.
+4. ~~Create the `pypi` environment.~~ Done, and restricted by a deployment branch
+   policy to `v*` **tags** only, so GitHub refuses to deploy that environment from a
+   branch even if a workflow condition were wrong. If you also want a human gate on an
+   irreversible action, add yourself as a required reviewer at
+   <https://github.com/27jackson08/fhirfaker/settings/environments>.
 5. **Confirm the copyright holder** in `LICENSE`. It currently reads `Copyright 2026
    Jackson`; use your full legal name if you want it formal.
 6. **Decide on the repository name.** `fhirfaker` combines the FHIR mark with another
@@ -59,7 +64,19 @@ Run the sweep first — it is the only item here whose answer changes on its own
    python -m build && twine check --strict dist/*
    ```
 
-6. **Commit, tag, push.** The tag must match the version or the workflow refuses:
+6. **Rehearse the release pipeline** without publishing:
+
+   ```bash
+   gh workflow run release.yml --ref main
+   gh run watch $(gh run list --workflow=release.yml --limit 1 --json databaseId --jq '.[0].databaseId')
+   ```
+
+   This runs verify, gates and build and stops there — `publish` is gated on
+   `github.ref_type == 'tag'`, and the `pypi` environment additionally only accepts
+   `v*` tags. Worth doing whenever the workflow itself has changed: the original CI
+   workflow was silently broken for months because nobody had ever watched it run.
+
+7. **Commit, tag, push.** The tag must match the version or the workflow refuses:
 
    ```bash
    git commit -am "chore: release 0.1.0"
@@ -67,9 +84,13 @@ Run the sweep first — it is the only item here whose answer changes on its own
    git push origin main --tags
    ```
 
-7. The `Release` workflow verifies the tag against `pyproject.toml` and `CHANGELOG.md`,
+8. The `Release` workflow verifies the tag against `pyproject.toml` and `CHANGELOG.md`,
    re-runs lint, unit and the **full** conformance matrix, builds, smoke-tests the wheel
    in a clean environment outside the repo, then publishes.
+
+   If `publish` fails because the Trusted Publisher is not registered yet, register it
+   and re-run **only that job** — the artefacts from `build` are unchanged and the tag
+   does not need to move.
 
 ## Publishing by hand
 
