@@ -9,7 +9,9 @@
 object. No JVM, no config file, no output directory to manage.
 
 The badge is the point: the conformance and fidelity claims below are machine-checked
-in CI, not asserted in prose. Every Python version listed is actually in the matrix.
+in CI, not asserted in prose. Every Python version listed is actually in the matrix, on
+Linux, macOS and Windows — including the byte-identical golden files, so the
+determinism contract holds across platforms rather than only on the one that wrote it.
 
 ```python
 from carebundle import generate_bundle
