@@ -47,6 +47,16 @@ and it is landing pre-1.0 and pre-publication precisely so that it costs nothing
   heavier so pooling manufactures correlation a sex-stratified model cannot reproduce.
   The calibration now emits correlations alongside the marginals, and a test pins the
   constants to that extraction.
+- **The diabetes/hypertension comorbidity rate is measured too.** NHANES puts it at
+  0.6997 (F) / 0.6939 (M) among diagnosed diabetics against a hand-set 0.70 — this one
+  was right. Recorded because it is the counterexample: the three correlations checked
+  at the same time were all wrong, and it would be easy to conclude every estimate was.
+
+Together these take the fidelity report's weakest grade, `round_trip`, from 4 checks to
+1. Nothing is now checked against "profile config" except the CKD stage band, which is
+structural. The out-of-sample count is unchanged at 1 — better evidence and
+out-of-sample evidence are different claims, and the test pinning that count is what
+kept them apart.
 - **Recorded pressure reflects a titrated regimen**, not a starting one. These bundles
   depict an established patient at a routine visit, and a clinician who saw 150/95
   escalated the dose rather than recording it again unchanged. Doses double while the

@@ -10,7 +10,7 @@ Offline, like `carebundle/spec/codegen.py` — nothing here runs on the generati
     python -m carebundle.calibration.nhanes --data-dir <dir>
 
 Files (https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/):
-    P_DEMO P_GHB P_BIOPRO P_TCHOL P_HDL P_TRIGLY P_BMX P_BPXO P_CBC
+    P_DEMO P_GHB P_DIQ P_BPQ P_BIOPRO P_TCHOL P_HDL P_TRIGLY P_BMX P_BPXO P_CBC
 """
 
 from __future__ import annotations
@@ -28,6 +28,9 @@ VARIABLES = {
     "P_GHB": {"LBXGH": "hba1c"},
     # Diabetes status by diagnosis rather than by lab threshold — see `in_band`.
     "P_DIQ": {"DIQ010": "diagnosed_diabetes"},
+    # BPQ020: "ever told you had high blood pressure". Diagnosed rather than measured,
+    # to match the `I10` code the comorbidity rule emits.
+    "P_BPQ": {"BPQ020": "diagnosed_hypertension"},
     "P_BIOPRO": {
         "LBXSCR": "creatinine", "LBXSGL": "glucose", "LBXSBU": "bun",
         "LBXSNASI": "sodium", "LBXSKSI": "potassium", "LBXSCLSI": "chloride",
@@ -198,7 +201,7 @@ def moments(records: list[dict], analyte: str, stratum: str) -> Moments | None:
 # Pulled from the files as a stratification variable, not a measurement. Taking
 # quartiles of a questionnaire code would emit a straight-faced "median diabetes
 # status of 1.0".
-NON_ANALYTES = frozenset({"diagnosed_diabetes"})
+NON_ANALYTES = frozenset({"diagnosed_diabetes", "diagnosed_hypertension"})
 
 
 # Analyte pairs whose dependence the copula needs. Emitted alongside the marginals so
@@ -242,6 +245,35 @@ def correlations(people: dict[float, dict]) -> dict[str, dict]:
                 out[f"{sex}/{stratum}/{first}~{second}"] = {
                     "n": len(pairs),
                     "pearson": round(float(np.corrcoef(xs, ys)[0, 1]), 4),
+                }
+    return out
+
+
+# Yes/no questionnaire items whose prevalence a profile models as a comorbidity rule.
+PREVALENCE_ITEMS = ("diagnosed_hypertension",)
+
+
+def prevalences(people: dict[float, dict]) -> dict[str, dict]:
+    """Share answering yes to each questionnaire item, per sex and stratum.
+
+    Emitted so a comorbidity probability can cite a measurement rather than an estimate.
+    Respondents who did not answer yes or no are excluded rather than counted as no,
+    which would bias every rate downward.
+    """
+    out: dict[str, dict] = {}
+    for sex in ("F", "M"):
+        for stratum in STRATA:
+            records = in_band(people, sex, stratum)
+            for item in PREVALENCE_ITEMS:
+                answers = [
+                    r[item] for r in records if r.get(item) in (DIQ_YES, DIQ_NO)
+                ]
+                if len(answers) < 30:
+                    continue
+                yes = sum(1 for a in answers if a == DIQ_YES)
+                out[f"{sex}/{stratum}/{item}"] = {
+                    "n": len(answers),
+                    "rate": round(yes / len(answers), 4),
                 }
     return out
 
@@ -296,11 +328,13 @@ def main() -> int:
                 for r in rows
             },
             "correlations": correlations(people),
+            "prevalences": prevalences(people),
         }
         args.emit_targets.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
         print(
             f"wrote {len(payload['strata'])} strata and "
-            f"{len(payload['correlations'])} correlations to {args.emit_targets}"
+            f"{len(payload['correlations'])} correlations and "
+            f"{len(payload['prevalences'])} prevalences to {args.emit_targets}"
         )
         return 0
 

@@ -165,6 +165,40 @@
       "pearson": 0.9163
     }
   },
+  "prevalences": {
+    "F/all/diagnosed_hypertension": {
+      "n": 1751,
+      "rate": 0.4672
+    },
+    "F/diabetic/diagnosed_hypertension": {
+      "n": 291,
+      "rate": 0.6598
+    },
+    "F/diagnosed/diagnosed_hypertension": {
+      "n": 303,
+      "rate": 0.6997
+    },
+    "F/nondiabetic/diagnosed_hypertension": {
+      "n": 1301,
+      "rate": 0.4304
+    },
+    "M/all/diagnosed_hypertension": {
+      "n": 1688,
+      "rate": 0.4556
+    },
+    "M/diabetic/diagnosed_hypertension": {
+      "n": 295,
+      "rate": 0.6102
+    },
+    "M/diagnosed/diagnosed_hypertension": {
+      "n": 343,
+      "rate": 0.6939
+    },
+    "M/nondiabetic/diagnosed_hypertension": {
+      "n": 1199,
+      "rate": 0.4137
+    }
+  },
   "source": "NHANES 2017-March 2020 pre-pandemic public files",
   "strata": {
     "F/all/albumin": {

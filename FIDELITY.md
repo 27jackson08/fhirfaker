@@ -10,8 +10,8 @@ Checks are **graded by evidential strength**, because they are not equivalent an
 | Grade | Checks | What a pass means |
 |---|---:|---|
 | **out_of_sample** | 1 | A published relationship the model was NOT fitted to. This is the only category that is evidence of fidelity in the sense the word implies. |
-| **calibration** | 31 | Verifies a marginal fitted to a published source survived truncation and the copula. Meaningful — this is where truncation attenuation was caught — but in-sample by construction. |
-| **round_trip** | 2 | Verifies the sampler reproduces a value it was configured with. Proves the engine works; proves nothing about whether the configured value is right. |
+| **calibration** | 32 | Verifies a marginal fitted to a published source survived truncation and the copula. Meaningful — this is where truncation attenuation was caught — but in-sample by construction. |
+| **round_trip** | 1 | Verifies the sampler reproduces a value it was configured with. Proves the engine works; proves nothing about whether the configured value is right. |
 | **identity** | 4 | Computed from its own inputs. Cannot fail unless the code is broken, so it is a regression test, not evidence of fidelity. |
 
 **Read the top row first.** Only 1 of 38 checks is genuinely out-of-sample. The rest establish self-consistency, which is necessary but is a weaker claim than the phrase 'fidelity report' suggests on its own.
@@ -22,7 +22,7 @@ Checks are **graded by evidential strength**, because they are not equivalent an
 |---|---:|---:|---:|---:|---|:--:|
 | CMS Controlling High Blood Pressure | 0.75 | 0.72 | +0.03 | ±0.09 | Chen 2019 (CMS/HEDIS) | PASS |
 
-### calibration (31)
+### calibration (32)
 
 | Check | Observed | Expected | Delta | Tolerance | Source | |
 |---|---:|---:|---:|---:|---|:--:|
@@ -31,6 +31,7 @@ Checks are **graded by evidential strength**, because they are not equivalent an
 | glucose at HbA1c 6.5% | 141.1 | 139.8 | +1.3 | ±5 | Nathan 2008 | PASS |
 | glucose at HbA1c 8.0% | 183.1 | 182.9 | +0.184 | ±5 | Nathan 2008 | PASS |
 | glucose at HbA1c 9.5% | 225 | 225.9 | -0.927 | ±5 | Nathan 2008 | PASS |
+| T2DM hypertension comorbidity | 0.6952 | 0.6997 | -0.0045 | ±0.0259 | NHANES 2017-2020 | PASS |
 | systolic/diastolic correlation | 0.743 | 0.743 | +4.68e-05 | ±0.06 | NHANES 2017-2020 | PASS |
 | triglyceride/HDL correlation | -0.2751 | -0.2969 | +0.0218 | ±0.06 | NHANES 2017-2020 | PASS |
 | diabetic obesity rate | 0.638 | 0.612 | +0.026 | ±0.05 | NHANES 2017-2020 | PASS |
@@ -58,12 +59,11 @@ Checks are **graded by evidential strength**, because they are not equivalent an
 | weight_kg median (type2_diabetes/F) | 85.18 | 83.15 | +2.03 | ±6.65 | NHANES 2017-2020 | PASS |
 | weight_kg median (type2_diabetes/M) | 95.78 | 92.6 | +3.18 | ±7.41 | NHANES 2017-2020 | PASS |
 
-### round_trip (2)
+### round_trip (1)
 
 | Check | Observed | Expected | Delta | Tolerance | Source | |
 |---|---:|---:|---:|---:|---|:--:|
 | CKD stage-3 eGFR within band | 1 | 1 | +0 | ±0 | KDIGO 2012 | PASS |
-| T2DM hypertension comorbidity | 0.6952 | 0.7 | -0.0048 | ±0.0259 | profile config | PASS |
 
 ### identity (4)
 

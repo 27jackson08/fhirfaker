@@ -221,3 +221,26 @@ def test_configured_correlations_match_the_committed_nhanes_extraction():
             assert value == pytest.approx(targets[key]["pearson"], abs=1e-4), (
                 f"{key}: library says {value}, extraction says {targets[key]['pearson']}"
             )
+
+
+def test_configured_comorbidity_prevalence_matches_the_extraction():
+    """The one hand-set number that turned out to be right, now sourced from data.
+
+    0.70 was an estimate and NHANES measures 0.6997/0.6939, so the value barely moved.
+    What moved is what a passing fidelity check means: it used to compare the sampler
+    against its own configuration, and now compares it against a measurement.
+    """
+    import json
+    from pathlib import Path
+
+    from carebundle.profiles import library
+
+    prevalences = json.loads(
+        (Path(library.__file__).parents[1] / "calibration/data/nhanes_targets.json")
+        .read_text()
+    )["prevalences"]
+
+    for sex, value in library.T2DM_HYPERTENSION_PREVALENCE_BY_SEX.items():
+        key = f"{sex}/diagnosed/diagnosed_hypertension"
+        assert key in prevalences, f"{key} missing from the committed extraction"
+        assert value == pytest.approx(prevalences[key]["rate"], abs=1e-4)

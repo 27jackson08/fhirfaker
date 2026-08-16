@@ -110,6 +110,11 @@ BP_CORRELATION_BY_SEX = {"F": 0.6771, "M": 0.743}
 TG_HDL_CORRELATION_BY_SEX = {"F": -0.4332, "M": -0.2969}
 HEIGHT_WEIGHT_CORRELATION_BY_SEX = {"F": 0.3036, "M": 0.446}
 
+# NHANES 45-65: share of *diagnosed* diabetics who report having been told they have
+# high blood pressure (BPQ020). Diagnosed on both sides, matching the `E11.9` and
+# `I10` codes the profile emits rather than a measured-BP definition.
+T2DM_HYPERTENSION_PREVALENCE_BY_SEX = {"F": 0.6997, "M": 0.6939}
+
 # Upper bound sits below Friedewald's validity threshold (400 mg/dL), so the
 # calculated LDL is always one a laboratory would actually report.
 _TG_MAX = 380.0
@@ -512,10 +517,16 @@ def type2_diabetes(sex: str) -> ClinicalProfile:
         ),
         # No fixed primary condition: the diabetes code depends on the draw.
         derived_conditions=_diabetes_conditions,
-        # ~70% hypertension comorbidity is a realistic co-occurrence rate for this
-        # population, not decoration.
+        # Measured, not assumed: NHANES 45-65, share of diagnosed diabetics who have
+        # been told they have high blood pressure (BPQ020). The estimate this replaced
+        # was 0.70, which turned out to be right — worth recording, because the three
+        # correlations checked at the same time were all wrong and it would be easy to
+        # conclude every hand-set number was.
         comorbidities=(
-            ComorbidityRule(codes.ESSENTIAL_HYPERTENSION, 0.70),
+            ComorbidityRule(
+                codes.ESSENTIAL_HYPERTENSION,
+                T2DM_HYPERTENSION_PREVALENCE_BY_SEX[sex],
+            ),
             *BACKGROUND_COMORBIDITIES,
         ),
         medications=(

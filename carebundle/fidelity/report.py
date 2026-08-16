@@ -163,8 +163,9 @@ def comorbidity_checks(size: int, seed: int) -> list[Check]:
     # 4 binomial SEs; wide enough not to flake, tight enough to catch a real drift.
     tolerance = 4.0 * (0.70 * 0.30 / size) ** 0.5
     return [
-        Check("T2DM hypertension comorbidity", observed, 0.70, tolerance,
-              "fraction", "profile config", evidence="round_trip")
+        Check("T2DM hypertension comorbidity", observed,
+              library.T2DM_HYPERTENSION_PREVALENCE_BY_SEX["F"], tolerance,
+              "fraction", "NHANES 2017-2020", evidence="calibration")
     ]
 
 
