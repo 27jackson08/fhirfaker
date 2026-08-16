@@ -12,6 +12,7 @@ from carebundle.generate import (
     generate_draw,
     generate_patient,
 )
+from carebundle.history import generate_history
 from carebundle.imperfection import Defect, Imperfection, inject_defects
 from carebundle.profiles.library import PROFILES
 
@@ -25,6 +26,7 @@ __all__ = [
     "generate_bundle",
     "generate_cohort",
     "generate_draw",
+    "generate_history",
     "generate_patient",
     "inject_defects",
     "to_json",

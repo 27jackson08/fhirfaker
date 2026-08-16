@@ -83,6 +83,37 @@ Epic, Cerner and essentially every US production FHIR API are 4.0.1. It is also 
 reason this project generates its own models from the R4 StructureDefinitions instead of
 taking `fhir.resources` as a dependency.
 
+### Treatment response over time
+
+The single-visit bundle records the pressure a titrated patient *ends up at*. This shows
+how they got there — a patient presenting uncontrolled, escalated at each review until
+they reach goal, then held:
+
+```python
+from carebundle import generate_history
+from carebundle.history import visits_of
+
+for visit in visits_of(profile="hypertension", seed=42, visits=5):
+    print(visit.on, f"{visit.systolic:.0f}/{visit.diastolic:.0f}", visit.agents)
+
+# 2025-01-06  154/101  0     presents untreated
+# 2025-04-06  142/93   1     one agent
+# 2025-07-05  137/90   2     at goal
+# 2025-10-03  137/90   2     held
+# 2026-01-01  137/90   2     held
+
+bundle = generate_history(profile="hypertension", seed=42, visits=5)
+```
+
+This is the thing a care-pathway simulator structurally cannot produce: a state machine
+decides *whether* a drug was prescribed, not what the pressure did afterwards. The
+effect sizes are the same two already cited for the single-visit model (Law 2003 for
+each agent, Lancet 2025 for each dose doubling), so it makes no new evidence claims.
+
+It is bounded on purpose — no birth, no death, no disease-progression modules. Breadth
+is Synthea's, and competing there loses. `generate_bundle` is untouched, so adding this
+changed no existing seeded output.
+
 ### Deliberately imperfect data
 
 Nothing else in this space generates data that is *wrong on purpose*, and for testing

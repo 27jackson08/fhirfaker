@@ -76,7 +76,8 @@ comes from a cited source and the rate is what those inputs imply.
    of 484 trials puts monotherapy at 8.7 (95% CI 8.2–9.2), bracketing the same figure.
 
 **Output (not fitted):** the control rate. Nothing in the model was adjusted to reach
-64.1%. Change either cited input and the number moves.
+71.5%. Change either cited input and the number moves — which is exactly what happened
+when titration was added, and is documented below rather than smoothed over.
 
 The mechanism is the same computed-identity discipline used for eGFR and Friedewald
 LDL: the copula draws a *pre-treatment* pressure, the prescribing rules escalate on it
@@ -156,9 +157,10 @@ modelled later it needs a dose-response formulation and a denominator-matched so
 
 - The comparators are from 2019 and reflect the plans and years measured then. The
   national HEDIS figure has sat in the low-to-mid 60s in other years.
-- Titration is modelled as an equilibrium rather than a trajectory: the recorded
-  pressure is where a titrated patient ends up, not a series of readings over a year.
-  Multi-visit encounters remain open work.
+- Titration is modelled here as an equilibrium: the recorded pressure is where a
+  titrated patient ends up, which is the right value for a most-recent-reading measure.
+  The trajectory behind it is now available separately via `generate_history`, which
+  emits the same patient across several reviews as therapy is escalated.
 
 ## What this does and does not establish
 

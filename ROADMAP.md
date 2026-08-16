@@ -1,7 +1,9 @@
 # Roadmap: competing with Synthea
 
-**Status:** proposal, not yet started. Phases 0–5 (the build document) are complete and shipped.
-**Written:** August 15, 2026
+**Status:** in progress. Phases 0–5 (the build document) shipped; **6 and 9 complete**,
+**7 and 8 partly**, 10–11 not started. Each phase section records what was actually
+measured, including the parts that failed.
+**Written:** August 15, 2026 · **Last updated:** August 16, 2026
 
 ---
 
@@ -243,7 +245,15 @@ independent check.
 > distribution is pinned either way. Worth doing, but it is not the cheap win the
 > original wording implied.
 >
-> **Still open:** multi-visit encounters, and the HbA1c deconvolution above.
+> **Multi-visit encounters: done.** `generate_history` emits one patient across N
+> reviews with the pressure falling as therapy is escalated, closing the caveat
+> `BENCHMARK.md` recorded — that titration was modelled as an equilibrium rather
+> than a trajectory. It reuses the Law 2003 and Lancet 2025 effect sizes, so it adds
+> no new evidence claims, and it is a separate entry point so no existing seeded
+> output changed.
+>
+> **Still open:** the HbA1c deconvolution above, which measurement showed is lower
+> value than this document originally implied.
 
 ### Phase 7 — original plan (retained for the record)
 

@@ -74,6 +74,13 @@ kept them apart.
   reported as such rather than omitted, and the record of a published prediction that
   was subsequently tested: the first measurement was 64.1% with the shortfall
   attributed to dose titration, and modelling titration closed it.
+- `carebundle.history` / `generate_history` — **one patient across several visits**,
+  with blood pressure falling as therapy is escalated toward goal. The mechanism the
+  single-visit bundle hides behind an equilibrium value, and the thing a care-pathway
+  simulator structurally cannot produce. Reuses the Law 2003 and Lancet 2025 effect
+  sizes, so it makes no new evidence claims. A separate entry point on a separate RNG
+  stream, so **no existing seeded output changed** — verified by a test that regenerates
+  a single-visit bundle before and after.
 - `carebundle.imperfection` — **deliberately imperfect FHIR**, for testing the code
   paths clean data never reaches. Five defect kinds (`missing_field`,
   `duplicate_entry`, `out_of_order_timestamp`, `unparseable_value`,
