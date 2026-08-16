@@ -134,7 +134,7 @@ every release. The full matrix is published in [CONFORMANCE.md](CONFORMANCE.md).
 |---|---:|---:|---:|
 | healthy | 42 | **0** | 2 |
 | hypertension | 45 | **0** | 4 |
-| type2_diabetes | 51 | **0** | 10 |
+| type2_diabetes | 50 | **0** | 10 |
 | ckd_stage3 | 52 | **0** | 12 |
 
 Every remaining warning is examined and documented with a reason; a *new* warning
@@ -330,16 +330,12 @@ Stated here rather than left for you to discover.
 - **Blood pressure marginals are clinical definitions**, not population fits —
   "normotensive" and "hypertensive" are the populations the profiles mean. Everything
   else is calibrated against NHANES (see below).
-- **Well-controlled diabetes is under-represented.** The NHANES calibration defines its
-  diabetic stratum *by* `HbA1c >= 6.5`, so the generated population is "people with
-  HbA1c at or above 6.5", which is not the same set as "people diagnosed with type 2
-  diabetes" — the latter includes patients whose treatment has brought them below 6.5,
-  and that is a large group. Concretely, 30% of generated diabetics fall under 7.0%
-  against a published all-adult figure of 52.7%. Much of that gap is population
-  mismatch rather than error (this calibrates to ages 45-65, the published figure is
-  all-adult), but the definitional part is real: a diagnosed, well-controlled diabetic
-  at 6.1% is a patient this cannot currently produce. Fixing it means re-running the
-  calibration with the stratum defined by diagnosis rather than by threshold.
+- **Diabetic BMI runs slightly high.** Generated diabetics are 64.8% obese against
+  NHANES's 61.5% for the same age band and stratum, with a median BMI of 32.5 against
+  31.9. Weight is drawn from a symmetric truncated normal while the real distribution is
+  right-skewed, and BMI is computed from it, so the derived median lands a little above
+  target. Within the fidelity tolerance, checked every run, and stated here rather than
+  rounded away.
 - **One encounter per bundle.** No longitudinal history — that is Synthea's territory.
 - **Terminology is a curated subset** — 102 codes (42 LOINC, 29 RxNorm, 21 ICD-10-CM),
   not full coverage. Every code *and display* is verified against its source vocabulary

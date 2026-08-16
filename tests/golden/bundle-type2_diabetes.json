@@ -1051,7 +1051,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Glucose [Mass/volume] in Serum or Plasma: 176 mg/dL (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Glucose [Mass/volume] in Serum or Plasma: 159 mg/dL (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -1089,7 +1089,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 176,
+          "value": 159,
           "unit": "mg/dL",
           "system": "http://unitsofmeasure.org",
           "code": "mg/dL"
@@ -1989,7 +1989,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Hemoglobin A1c/Hemoglobin.total in Blood: 8.0 % (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Hemoglobin A1c/Hemoglobin.total in Blood: 7.9 % (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -2027,7 +2027,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 8.0,
+          "value": 7.9,
           "unit": "%",
           "system": "http://unitsofmeasure.org",
           "code": "%"
@@ -2257,7 +2257,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Body weight: 103.0 kg (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Body weight: 101.7 kg (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -2295,7 +2295,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 103.0,
+          "value": 101.7,
           "unit": "kg",
           "system": "http://unitsofmeasure.org",
           "code": "kg"
@@ -2324,7 +2324,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Body mass index (BMI) [Ratio]: 38.4 kg/m2 (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Body mass index (BMI) [Ratio]: 38.0 kg/m2 (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -2362,7 +2362,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 38.4,
+          "value": 38.0,
           "unit": "kg/m2",
           "system": "http://unitsofmeasure.org",
           "code": "kg/m2"
@@ -2664,7 +2664,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Blood pressure 149/83 mmHg (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Blood pressure 133/76 mmHg (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -2714,7 +2714,7 @@
               "text": "Systolic blood pressure"
             },
             "valueQuantity": {
-              "value": 149,
+              "value": 133,
               "unit": "mmHg",
               "system": "http://unitsofmeasure.org",
               "code": "mm[Hg]"
@@ -2732,7 +2732,7 @@
               "text": "Diastolic blood pressure"
             },
             "valueQuantity": {
-              "value": 83,
+              "value": 76,
               "unit": "mmHg",
               "system": "http://unitsofmeasure.org",
               "code": "mm[Hg]"
@@ -2743,66 +2743,6 @@
       "request": {
         "method": "POST",
         "url": "Observation"
-      }
-    },
-    {
-      "fullUrl": "urn:uuid:56dd5439-668a-58d4-a624-172f5763a626",
-      "resource": {
-        "resourceType": "AllergyIntolerance",
-        "meta": {
-          "profile": [
-            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-allergyintolerance"
-          ],
-          "security": [
-            {
-              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
-              "code": "HTEST",
-              "display": "test health data"
-            }
-          ]
-        },
-        "text": {
-          "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Allergy record (synthetic).</p></div>"
-        },
-        "clinicalStatus": {
-          "coding": [
-            {
-              "system": "http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical",
-              "code": "active",
-              "display": "Active"
-            }
-          ],
-          "text": "Active"
-        },
-        "verificationStatus": {
-          "coding": [
-            {
-              "system": "http://terminology.hl7.org/CodeSystem/allergyintolerance-verification",
-              "code": "confirmed",
-              "display": "Confirmed"
-            }
-          ],
-          "text": "Confirmed"
-        },
-        "code": {
-          "coding": [
-            {
-              "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
-              "code": "7980",
-              "display": "penicillin G"
-            }
-          ],
-          "text": "penicillin G"
-        },
-        "patient": {
-          "reference": "urn:uuid:96baad95-bc36-5844-bc19-86cb1d4022a3"
-        },
-        "recordedDate": "2026-01-01"
-      },
-      "request": {
-        "method": "POST",
-        "url": "AllergyIntolerance"
       }
     },
     {
@@ -2871,7 +2811,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Prescription: sitagliptin 100 MG Oral Tablet (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Prescription: atorvastatin 20 MG Oral Tablet (synthetic).</p></div>"
         },
         "status": "active",
         "intent": "order",
@@ -2879,11 +2819,11 @@
           "coding": [
             {
               "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
-              "code": "665033",
-              "display": "sitagliptin 100 MG Oral Tablet"
+              "code": "617310",
+              "display": "atorvastatin 20 MG Oral Tablet"
             }
           ],
-          "text": "sitagliptin 100 MG Oral Tablet"
+          "text": "atorvastatin 20 MG Oral Tablet"
         },
         "subject": {
           "reference": "urn:uuid:96baad95-bc36-5844-bc19-86cb1d4022a3"
@@ -2919,7 +2859,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Prescription: empagliflozin 10 MG Oral Tablet (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Prescription: lisinopril 10 MG Oral Tablet (synthetic).</p></div>"
         },
         "status": "active",
         "intent": "order",
@@ -2927,11 +2867,11 @@
           "coding": [
             {
               "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
-              "code": "1545658",
-              "display": "empagliflozin 10 MG Oral Tablet"
+              "code": "314076",
+              "display": "lisinopril 10 MG Oral Tablet"
             }
           ],
-          "text": "empagliflozin 10 MG Oral Tablet"
+          "text": "lisinopril 10 MG Oral Tablet"
         },
         "subject": {
           "reference": "urn:uuid:96baad95-bc36-5844-bc19-86cb1d4022a3"
@@ -2967,7 +2907,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Prescription: atorvastatin 20 MG Oral Tablet (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Prescription: amlodipine 5 MG Oral Tablet (synthetic).</p></div>"
         },
         "status": "active",
         "intent": "order",
@@ -2975,11 +2915,11 @@
           "coding": [
             {
               "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
-              "code": "617310",
-              "display": "atorvastatin 20 MG Oral Tablet"
+              "code": "197361",
+              "display": "amlodipine 5 MG Oral Tablet"
             }
           ],
-          "text": "atorvastatin 20 MG Oral Tablet"
+          "text": "amlodipine 5 MG Oral Tablet"
         },
         "subject": {
           "reference": "urn:uuid:96baad95-bc36-5844-bc19-86cb1d4022a3"

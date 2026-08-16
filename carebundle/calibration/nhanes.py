@@ -26,6 +26,8 @@ from carebundle.calibration.xpt import read_xpt
 # NHANES variable -> the analyte name this project uses.
 VARIABLES = {
     "P_GHB": {"LBXGH": "hba1c"},
+    # Diabetes status by diagnosis rather than by lab threshold — see `in_band`.
+    "P_DIQ": {"DIQ010": "diagnosed_diabetes"},
     "P_BIOPRO": {
         "LBXSCR": "creatinine", "LBXSGL": "glucose", "LBXSBU": "bun",
         "LBXSNASI": "sodium", "LBXSKSI": "potassium", "LBXSCLSI": "chloride",
@@ -45,7 +47,11 @@ VARIABLES = {
 }
 
 AGE_LOW, AGE_HIGH = 45, 65
-DIABETES_HBA1C = 6.5  # ADA diagnostic threshold.
+DIABETES_HBA1C = 6.5  # ADA diagnostic threshold, for the lab-defined strata.
+
+# DIQ010: "Other than during pregnancy, has a doctor or other health professional ever
+# told you that you have diabetes?" 1 = yes, 2 = no, 3 = borderline, 7/9 = refused/unknown.
+DIQ_YES, DIQ_NO = 1.0, 2.0
 
 # NHANES codes sex as 1 = male, 2 = female.
 _SEX = {1.0: "M", 2.0: "F"}
@@ -117,17 +123,52 @@ def load(data_dir: Path) -> dict[float, dict[str, float]]:
     return people
 
 
-def in_band(people: dict[float, dict], sex: str, diabetic: bool | None) -> list[dict]:
+# The strata emitted, and why there are two ways of being diabetic here.
+#
+# `diabetic` is lab-defined (HbA1c >= 6.5) and `diagnosed` is diagnosis-defined
+# (DIQ010 == 1). They are different populations and each is correct for a different
+# purpose, so both are emitted rather than one replacing the other:
+#
+#   * A profile that emits `E11.9` — a *diagnosed* type 2 diabetes code — needs
+#     `diagnosed`. 25.5% of diagnosed diabetics aged 45-65 sit below 6.5 because their
+#     treatment works, and the lab definition excludes every one of them.
+#   * A profile meaning "clinically healthy" needs `nondiabetic`, which is lab-defined.
+#     Undiagnosed diabetes is common, so "has not been told they have diabetes" is not
+#     the same as "does not have it" — the diagnosis-defined complement carries a long
+#     upper tail of undiagnosed hyperglycaemia that a healthy baseline should not have.
+#
+# A stratum defined by a threshold also cannot validate that threshold: selecting on
+# `hba1c >= 6.5` makes the extracted 2.5th percentile come out at exactly 6.5, which
+# reads as empirical support for the marginal's lower bound and is the selection
+# criterion reflected back.
+STRATA = ("all", "nondiabetic", "diabetic", "diagnosed")
+
+
+def in_band(people: dict[float, dict], sex: str, stratum: str) -> list[dict]:
+    """Respondents in the target age band for one stratum. See `STRATA`.
+
+    Respondents who answer "borderline" (3), refuse, or do not know are excluded from
+    `diagnosed` rather than being forced to one side: their status is genuinely unknown
+    and guessing would contaminate whichever group they landed in.
+    """
+    if stratum not in STRATA:
+        raise ValueError(f"unknown stratum {stratum!r}; known: {STRATA}")
+
     selected = []
     for record in people.values():
         if not AGE_LOW <= record["age"] <= AGE_HIGH or record["sex"] != sex:
             continue
-        hba1c = record.get("hba1c")
-        if diabetic is not None:
+
+        if stratum in ("nondiabetic", "diabetic"):
+            hba1c = record.get("hba1c")
             if hba1c is None:
                 continue
-            if (hba1c >= DIABETES_HBA1C) != diabetic:
+            if (hba1c >= DIABETES_HBA1C) != (stratum == "diabetic"):
                 continue
+        elif stratum == "diagnosed":
+            if record.get("diagnosed_diabetes") != DIQ_YES:
+                continue
+
         selected.append(record)
     return selected
 
@@ -154,12 +195,20 @@ def moments(records: list[dict], analyte: str, stratum: str) -> Moments | None:
     )
 
 
+# Pulled from the files as a stratification variable, not a measurement. Taking
+# quartiles of a questionnaire code would emit a straight-faced "median diabetes
+# status of 1.0".
+NON_ANALYTES = frozenset({"diagnosed_diabetes"})
+
+
 def report(people: dict[float, dict]) -> list[Moments]:
-    analytes = sorted({a for mapping in VARIABLES.values() for a in mapping.values()})
+    analytes = sorted(
+        {a for mapping in VARIABLES.values() for a in mapping.values()} - NON_ANALYTES
+    )
     results = []
     for sex in ("F", "M"):
-        for label, diabetic in (("all", None), ("nondiabetic", False), ("diabetic", True)):
-            records = in_band(people, sex, diabetic)
+        for label in STRATA:
+            records = in_band(people, sex, label)
             for analyte in analytes:
                 found = moments(records, analyte, f"{sex}/{label}")
                 if found:

@@ -260,7 +260,15 @@ NHANES_CHECKS = (
     ("healthy", "nondiabetic", "creatinine", 0.08),
     ("healthy", "nondiabetic", "weight_kg", 0.06),
     ("healthy", "nondiabetic", "height_cm", 0.02),
-    ("type2_diabetes", "diabetic", "hba1c", 0.05),
+    # HbA1c is checked against the `diagnosed` stratum (DIQ010 == 1) because that is
+    # the population the profile now draws from and the one an `E11.9` code denotes.
+    ("type2_diabetes", "diagnosed", "hba1c", 0.05),
+    # The rest still reference the lab-defined `diabetic` stratum, which is where their
+    # marginals came from. Deliberate rather than overlooked: between the two strata
+    # these medians differ by 1-5%, comfortably inside the tolerances below, so
+    # re-deriving them would churn every golden file to move numbers that no check can
+    # distinguish. HbA1c was the one where the definition genuinely mattered — it moved
+    # the median 7.4 to 7.1 and added the entire sub-6.5 quarter of the population.
     ("type2_diabetes", "diabetic", "triglycerides", 0.12),
     ("type2_diabetes", "diabetic", "hdl", 0.08),
     ("type2_diabetes", "diabetic", "weight_kg", 0.08),

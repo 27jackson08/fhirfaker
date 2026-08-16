@@ -26,13 +26,13 @@ Checks are **graded by evidential strength**, because they are not equivalent an
 
 | Check | Observed | Expected | Delta | Tolerance | Source | |
 |---|---:|---:|---:|---:|---|:--:|
-| ADAG slope | 28.59 | 28.7 | -0.113 | ±1 | Nathan 2008 | PASS |
-| ADAG R^2 | 0.8436 | 0.84 | +0.00358 | ±0.02 | Nathan 2008 | PASS |
-| glucose at HbA1c 6.5% | 139.9 | 139.8 | +0.0219 | ±5 | Nathan 2008 | PASS |
-| glucose at HbA1c 8.0% | 182.8 | 182.9 | -0.148 | ±5 | Nathan 2008 | PASS |
-| glucose at HbA1c 9.5% | 225.6 | 225.9 | -0.318 | ±5 | Nathan 2008 | PASS |
-| diabetic obesity rate | 0.6565 | 0.612 | +0.0445 | ±0.05 | NHANES 2017-2020 | PASS |
-| typical-adult median BMI | 30.2 | 28.8 | +1.4 | ±1.5 | NHANES 2017-2020 | PASS |
+| ADAG slope | 27.96 | 28.7 | -0.741 | ±1 | Nathan 2008 | PASS |
+| ADAG R^2 | 0.8447 | 0.84 | +0.00469 | ±0.02 | Nathan 2008 | PASS |
+| glucose at HbA1c 6.5% | 141.1 | 139.8 | +1.3 | ±5 | Nathan 2008 | PASS |
+| glucose at HbA1c 8.0% | 183.1 | 182.9 | +0.184 | ±5 | Nathan 2008 | PASS |
+| glucose at HbA1c 9.5% | 225 | 225.9 | -0.927 | ±5 | Nathan 2008 | PASS |
+| diabetic obesity rate | 0.6585 | 0.612 | +0.0465 | ±0.05 | NHANES 2017-2020 | PASS |
+| typical-adult median BMI | 30.21 | 28.8 | +1.41 | ±1.5 | NHANES 2017-2020 | PASS |
 | hba1c median (healthy/F) | 5.601 | 5.6 | +0.00137 | ±0.168 | NHANES 2017-2020 | PASS |
 | hba1c median (healthy/M) | 5.604 | 5.6 | +0.00365 | ±0.168 | NHANES 2017-2020 | PASS |
 | triglycerides median (healthy/F) | 89.32 | 88 | +1.32 | ±10.6 | NHANES 2017-2020 | PASS |
@@ -47,21 +47,21 @@ Checks are **graded by evidential strength**, because they are not equivalent an
 | weight_kg median (healthy/M) | 87.33 | 85 | +2.33 | ±5.1 | NHANES 2017-2020 | PASS |
 | height_cm median (healthy/F) | 160.3 | 160.1 | +0.186 | ±3.2 | NHANES 2017-2020 | PASS |
 | height_cm median (healthy/M) | 173.5 | 173.6 | -0.079 | ±3.47 | NHANES 2017-2020 | PASS |
-| hba1c median (type2_diabetes/F) | 7.379 | 7.4 | -0.0211 | ±0.37 | NHANES 2017-2020 | PASS |
-| hba1c median (type2_diabetes/M) | 7.383 | 7.5 | -0.117 | ±0.375 | NHANES 2017-2020 | PASS |
-| triglycerides median (type2_diabetes/F) | 120.4 | 122 | -1.6 | ±14.6 | NHANES 2017-2020 | PASS |
-| triglycerides median (type2_diabetes/M) | 132.7 | 132 | +0.674 | ±15.8 | NHANES 2017-2020 | PASS |
-| hdl median (type2_diabetes/F) | 50.61 | 49 | +1.61 | ±3.92 | NHANES 2017-2020 | PASS |
-| hdl median (type2_diabetes/M) | 43.14 | 42 | +1.14 | ±3.36 | NHANES 2017-2020 | PASS |
-| weight_kg median (type2_diabetes/F) | 85.67 | 83.15 | +2.52 | ±6.65 | NHANES 2017-2020 | PASS |
-| weight_kg median (type2_diabetes/M) | 95.93 | 92.6 | +3.33 | ±7.41 | NHANES 2017-2020 | PASS |
+| hba1c median (type2_diabetes/F) | 7.033 | 7.1 | -0.0668 | ±0.355 | NHANES 2017-2020 | PASS |
+| hba1c median (type2_diabetes/M) | 7.361 | 7.3 | +0.0608 | ±0.365 | NHANES 2017-2020 | PASS |
+| triglycerides median (type2_diabetes/F) | 120.1 | 122 | -1.86 | ±14.6 | NHANES 2017-2020 | PASS |
+| triglycerides median (type2_diabetes/M) | 130.8 | 132 | -1.2 | ±15.8 | NHANES 2017-2020 | PASS |
+| hdl median (type2_diabetes/F) | 50.28 | 49 | +1.28 | ±3.92 | NHANES 2017-2020 | PASS |
+| hdl median (type2_diabetes/M) | 43.29 | 42 | +1.29 | ±3.36 | NHANES 2017-2020 | PASS |
+| weight_kg median (type2_diabetes/F) | 84.33 | 83.15 | +1.18 | ±6.65 | NHANES 2017-2020 | PASS |
+| weight_kg median (type2_diabetes/M) | 95.72 | 92.6 | +3.12 | ±7.41 | NHANES 2017-2020 | PASS |
 
 ### round_trip (4)
 
 | Check | Observed | Expected | Delta | Tolerance | Source | |
 |---|---:|---:|---:|---:|---|:--:|
 | CKD stage-3 eGFR within band | 1 | 1 | +0 | ±0 | KDIGO 2012 | PASS |
-| T2DM hypertension comorbidity | 0.6986 | 0.7 | -0.0014 | ±0.0259 | profile config | PASS |
+| T2DM hypertension comorbidity | 0.6976 | 0.7 | -0.0024 | ±0.0259 | profile config | PASS |
 | systolic/diastolic correlation | 0.6019 | 0.6 | +0.00193 | ±0.05 | profile config | PASS |
 | triglyceride/HDL correlation | -0.3738 | -0.4 | +0.0262 | ±0.05 | profile config | PASS |
 

@@ -530,6 +530,15 @@ documentation, and each would otherwise be rediscovered the hard way.
   marginal left diabetic patients with the same BMI as the general population — contradicting
   the strongest association in type 2 diabetes. Individually every value looked fine; only a
   cross-profile comparison exposed it.
+- **A fixed-seed loop that varies only demographics samples one patient, not hundreds.**
+  A guard test drew 400 times with `seed=4242`, varying age and sex, and asserted a
+  property of every draw. `generate_draw` is deterministic in (seed, profile), so those
+  400 calls produced **two** distinct values — one per sex — and the test read as
+  thorough while sampling nothing. It passed for the wrong reason and would have kept
+  passing through the exact regression it was written to catch. The fix is to vary the
+  seed and to assert on the resulting distribution; the tell is that a test looping over
+  a generator should produce roughly as many distinct values as iterations, which is now
+  itself asserted.
 - **A stratum defined by a threshold cannot then validate that threshold.** The NHANES
   calibration selects its diabetic stratum with `hba1c >= 6.5`, so the extracted 2.5th
   percentile for that stratum is 6.5 — which looks like empirical support for the

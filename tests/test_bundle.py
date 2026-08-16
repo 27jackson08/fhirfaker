@@ -259,19 +259,39 @@ def test_hba1c_marginal_is_not_shifted_by_a_treatment_effect():
     because the marginal was fitted to a population defined by it (build doc Section 18),
     which is a different and weaker justification.
 
-    So this test guards the double-count, not the clinical claim. Lowering the bound is
-    legitimate future work — it needs an age-matched target, since this project
-    calibrates to NHANES ages 45-65 while published tail figures are all-adult.
+    So this test guards the double-count by pinning the *centre* of the distribution
+    against its NHANES target. Subtracting a drug effect would drag the median down and
+    fail here, which is the thing worth catching.
+
+    It deliberately does **not** assert a 6.5 floor. The marginal is now calibrated to
+    the diagnosed stratum (DIQ010 == 1), in which 25.5% of patients sit below 6.5
+    because their treatment works.
+
+    Note the seed varies per draw. `generate_draw` is deterministic in (seed, profile),
+    so a loop that holds the seed fixed and varies only age and sex yields one value per
+    sex however many times it runs — 400 such calls produce 2 distinct results. An
+    earlier version of this test did exactly that and passed by sampling nothing.
     """
+    import statistics
+
     from carebundle.generate import generate_draw
 
-    for index in range(200):
-        drawn = generate_draw(
-            profile="type2_diabetes", seed=4242, sex="F" if index % 2 else "M",
-            age_years=45.0 + index % 40,
+    drawn = [
+        float(
+            generate_draw(
+                profile="type2_diabetes",
+                seed=4242 + index,
+                sex="F" if index % 2 else "M",
+                age_years=45.0 + index % 40,
+            ).raw["hba1c"]
         )
-        assert float(drawn.raw["hba1c"]) >= 6.5, (
-            "a diagnosed diabetic below the diagnostic threshold contradicts its own "
-            "diagnosis; if a treatment effect was added to HbA1c, the marginal must be "
-            "re-derived as pre-treatment rather than reused as observed"
-        )
+        for index in range(400)
+    ]
+
+    assert len(set(drawn)) > 300, "the seed must vary or this samples one point per sex"
+    # NHANES 45-65 diagnosed: 7.1 (F) / 7.3 (M). Wide enough not to flake on 400 draws.
+    assert statistics.median(drawn) == pytest.approx(7.2, abs=0.4), (
+        "diabetic HbA1c has drifted from its NHANES target; if a treatment effect was "
+        "added, the marginal must be re-derived as pre-treatment rather than reused as "
+        "observed"
+    )

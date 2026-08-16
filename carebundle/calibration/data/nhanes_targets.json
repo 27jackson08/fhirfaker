@@ -565,6 +565,286 @@
       "robust_sd": 22.4796,
       "skew_ratio": 1.093
     },
+    "F/diagnosed/albumin": {
+      "median": 3.9,
+      "n": 272,
+      "p2_5": 2.9,
+      "p97_5": 4.545,
+      "q1": 3.7,
+      "q3": 4.1,
+      "robust_sd": 0.2965,
+      "skew_ratio": 1.361
+    },
+    "F/diagnosed/alkaline_phosphatase": {
+      "median": 86.0,
+      "n": 272,
+      "p2_5": 48.775,
+      "p97_5": 173.0,
+      "q1": 71.0,
+      "q3": 109.0,
+      "robust_sd": 28.169,
+      "skew_ratio": 1.468
+    },
+    "F/diagnosed/alt": {
+      "median": 18.0,
+      "n": 272,
+      "p2_5": 8.0,
+      "p97_5": 60.125,
+      "q1": 14.0,
+      "q3": 26.0,
+      "robust_sd": 8.8955,
+      "skew_ratio": 1.478
+    },
+    "F/diagnosed/ast": {
+      "median": 18.0,
+      "n": 272,
+      "p2_5": 10.0,
+      "p97_5": 50.45,
+      "q1": 14.0,
+      "q3": 24.0,
+      "robust_sd": 7.4129,
+      "skew_ratio": 1.334
+    },
+    "F/diagnosed/bilirubin_total": {
+      "median": 0.3,
+      "n": 272,
+      "p2_5": 0.1,
+      "p97_5": 0.9225,
+      "q1": 0.2,
+      "q3": 0.5,
+      "robust_sd": 0.2224,
+      "skew_ratio": 0.967
+    },
+    "F/diagnosed/bmi": {
+      "median": 32.9,
+      "n": 288,
+      "p2_5": 21.7175,
+      "p97_5": 52.565,
+      "q1": 28.25,
+      "q3": 37.625,
+      "robust_sd": 6.9496,
+      "skew_ratio": 1.16
+    },
+    "F/diagnosed/bun": {
+      "median": 14.0,
+      "n": 272,
+      "p2_5": 6.775,
+      "p97_5": 44.0,
+      "q1": 11.0,
+      "q3": 18.0,
+      "robust_sd": 5.189,
+      "skew_ratio": 1.719
+    },
+    "F/diagnosed/calcium": {
+      "median": 9.3,
+      "n": 272,
+      "p2_5": 8.4,
+      "p97_5": 10.1,
+      "q1": 9.0,
+      "q3": 9.5,
+      "robust_sd": 0.3706,
+      "skew_ratio": 1.154
+    },
+    "F/diagnosed/chloride": {
+      "median": 100.5,
+      "n": 272,
+      "p2_5": 93.775,
+      "p97_5": 107.0,
+      "q1": 98.0,
+      "q3": 103.0,
+      "robust_sd": 3.7064,
+      "skew_ratio": 0.907
+    },
+    "F/diagnosed/cholesterol_total": {
+      "median": 181.0,
+      "n": 273,
+      "p2_5": 119.0,
+      "p97_5": 284.0,
+      "q1": 156.0,
+      "q3": 211.0,
+      "robust_sd": 40.7709,
+      "skew_ratio": 1.107
+    },
+    "F/diagnosed/co2": {
+      "median": 25.0,
+      "n": 272,
+      "p2_5": 20.0,
+      "p97_5": 30.0,
+      "q1": 24.0,
+      "q3": 27.0,
+      "robust_sd": 2.2239,
+      "skew_ratio": 1.164
+    },
+    "F/diagnosed/creatinine": {
+      "median": 0.71,
+      "n": 272,
+      "p2_5": 0.4378,
+      "p97_5": 2.6642,
+      "q1": 0.58,
+      "q3": 0.9,
+      "robust_sd": 0.2372,
+      "skew_ratio": 3.729
+    },
+    "F/diagnosed/diastolic": {
+      "median": 75.0,
+      "n": 267,
+      "p2_5": 55.65,
+      "p97_5": 97.35,
+      "q1": 67.0,
+      "q3": 83.0,
+      "robust_sd": 11.8606,
+      "skew_ratio": 0.943
+    },
+    "F/diagnosed/glucose": {
+      "median": 125.0,
+      "n": 272,
+      "p2_5": 76.55,
+      "p97_5": 334.35,
+      "q1": 102.75,
+      "q3": 168.5,
+      "robust_sd": 48.7398,
+      "skew_ratio": 1.321
+    },
+    "F/diagnosed/hba1c": {
+      "median": 7.1,
+      "n": 281,
+      "p2_5": 5.4,
+      "p97_5": 12.5,
+      "q1": 6.4,
+      "q3": 8.3,
+      "robust_sd": 1.4085,
+      "skew_ratio": 1.377
+    },
+    "F/diagnosed/hdl": {
+      "median": 50.0,
+      "n": 273,
+      "p2_5": 30.8,
+      "p97_5": 92.4,
+      "q1": 42.0,
+      "q3": 61.0,
+      "robust_sd": 14.0845,
+      "skew_ratio": 1.205
+    },
+    "F/diagnosed/height_cm": {
+      "median": 159.1,
+      "n": 289,
+      "p2_5": 144.6,
+      "p97_5": 171.08,
+      "q1": 154.8,
+      "q3": 163.6,
+      "robust_sd": 6.5234,
+      "skew_ratio": 1.014
+    },
+    "F/diagnosed/hematocrit": {
+      "median": 39.7,
+      "n": 283,
+      "p2_5": 32.015,
+      "p97_5": 46.88,
+      "q1": 37.1,
+      "q3": 42.05,
+      "robust_sd": 3.6694,
+      "skew_ratio": 1.033
+    },
+    "F/diagnosed/hemoglobin": {
+      "median": 13.2,
+      "n": 283,
+      "p2_5": 10.405,
+      "p97_5": 15.79,
+      "q1": 12.3,
+      "q3": 14.0,
+      "robust_sd": 1.2602,
+      "skew_ratio": 1.056
+    },
+    "F/diagnosed/ldl": {
+      "median": 98.0,
+      "n": 153,
+      "p2_5": 41.4,
+      "p97_5": 191.0,
+      "q1": 71.0,
+      "q3": 125.0,
+      "robust_sd": 40.0297,
+      "skew_ratio": 1.083
+    },
+    "F/diagnosed/platelets": {
+      "median": 257.0,
+      "n": 283,
+      "p2_5": 141.6,
+      "p97_5": 445.15,
+      "q1": 215.0,
+      "q3": 305.5,
+      "robust_sd": 67.0867,
+      "skew_ratio": 1.116
+    },
+    "F/diagnosed/potassium": {
+      "median": 4.1,
+      "n": 272,
+      "p2_5": 3.2,
+      "p97_5": 4.9,
+      "q1": 3.8,
+      "q3": 4.3,
+      "robust_sd": 0.3706,
+      "skew_ratio": 1.113
+    },
+    "F/diagnosed/rbc": {
+      "median": 4.55,
+      "n": 283,
+      "p2_5": 3.5815,
+      "p97_5": 5.469,
+      "q1": 4.26,
+      "q3": 4.85,
+      "robust_sd": 0.4374,
+      "skew_ratio": 1.106
+    },
+    "F/diagnosed/sodium": {
+      "median": 140.0,
+      "n": 272,
+      "p2_5": 135.0,
+      "p97_5": 146.0,
+      "q1": 138.0,
+      "q3": 142.0,
+      "robust_sd": 2.9652,
+      "skew_ratio": 1.012
+    },
+    "F/diagnosed/systolic": {
+      "median": 126.0,
+      "n": 267,
+      "p2_5": 95.0,
+      "p97_5": 177.7,
+      "q1": 115.0,
+      "q3": 139.5,
+      "robust_sd": 18.1616,
+      "skew_ratio": 1.178
+    },
+    "F/diagnosed/triglycerides": {
+      "median": 120.0,
+      "n": 157,
+      "p2_5": 40.0,
+      "p97_5": 358.9,
+      "q1": 82.0,
+      "q3": 160.0,
+      "robust_sd": 57.8206,
+      "skew_ratio": 1.619
+    },
+    "F/diagnosed/wbc": {
+      "median": 7.4,
+      "n": 283,
+      "p2_5": 4.2,
+      "p97_5": 13.775,
+      "q1": 6.1,
+      "q3": 9.35,
+      "robust_sd": 2.4092,
+      "skew_ratio": 1.018
+    },
+    "F/diagnosed/weight_kg": {
+      "median": 82.85,
+      "n": 288,
+      "p2_5": 51.1525,
+      "p97_5": 131.8,
+      "q1": 69.575,
+      "q3": 99.025,
+      "robust_sd": 21.831,
+      "skew_ratio": 1.033
+    },
     "F/nondiabetic/albumin": {
       "median": 4.0,
       "n": 1266,
@@ -1404,6 +1684,286 @@
       "q3": 107.7,
       "robust_sd": 22.4611,
       "skew_ratio": 1.005
+    },
+    "M/diagnosed/albumin": {
+      "median": 4.0,
+      "n": 303,
+      "p2_5": 3.2,
+      "p97_5": 4.645,
+      "q1": 3.8,
+      "q3": 4.2,
+      "robust_sd": 0.2965,
+      "skew_ratio": 1.182
+    },
+    "M/diagnosed/alkaline_phosphatase": {
+      "median": 82.0,
+      "n": 303,
+      "p2_5": 46.55,
+      "p97_5": 152.9,
+      "q1": 66.0,
+      "q3": 97.5,
+      "robust_sd": 23.3506,
+      "skew_ratio": 1.306
+    },
+    "M/diagnosed/alt": {
+      "median": 22.0,
+      "n": 303,
+      "p2_5": 9.55,
+      "p97_5": 70.5,
+      "q1": 17.0,
+      "q3": 31.0,
+      "robust_sd": 10.3781,
+      "skew_ratio": 1.781
+    },
+    "M/diagnosed/ast": {
+      "median": 20.0,
+      "n": 302,
+      "p2_5": 10.525,
+      "p97_5": 60.0,
+      "q1": 16.0,
+      "q3": 26.0,
+      "robust_sd": 7.4129,
+      "skew_ratio": 2.778
+    },
+    "M/diagnosed/bilirubin_total": {
+      "median": 0.4,
+      "n": 303,
+      "p2_5": 0.2,
+      "p97_5": 1.2,
+      "q1": 0.3,
+      "q3": 0.6,
+      "robust_sd": 0.2224,
+      "skew_ratio": 1.287
+    },
+    "M/diagnosed/bmi": {
+      "median": 31.4,
+      "n": 323,
+      "p2_5": 21.9,
+      "p97_5": 49.98,
+      "q1": 27.25,
+      "q3": 36.7,
+      "robust_sd": 7.0052,
+      "skew_ratio": 1.04
+    },
+    "M/diagnosed/bun": {
+      "median": 15.0,
+      "n": 303,
+      "p2_5": 8.0,
+      "p97_5": 33.45,
+      "q1": 13.0,
+      "q3": 19.0,
+      "robust_sd": 4.4477,
+      "skew_ratio": 1.646
+    },
+    "M/diagnosed/calcium": {
+      "median": 9.3,
+      "n": 303,
+      "p2_5": 8.4,
+      "p97_5": 10.0,
+      "q1": 9.1,
+      "q3": 9.5,
+      "robust_sd": 0.2965,
+      "skew_ratio": 1.558
+    },
+    "M/diagnosed/chloride": {
+      "median": 100.0,
+      "n": 303,
+      "p2_5": 93.0,
+      "p97_5": 107.0,
+      "q1": 98.0,
+      "q3": 102.0,
+      "robust_sd": 2.9652,
+      "skew_ratio": 1.232
+    },
+    "M/diagnosed/cholesterol_total": {
+      "median": 166.5,
+      "n": 306,
+      "p2_5": 97.625,
+      "p97_5": 277.0,
+      "q1": 137.25,
+      "q3": 200.5,
+      "robust_sd": 46.8866,
+      "skew_ratio": 1.026
+    },
+    "M/diagnosed/co2": {
+      "median": 26.0,
+      "n": 303,
+      "p2_5": 20.55,
+      "p97_5": 30.45,
+      "q1": 24.0,
+      "q3": 27.0,
+      "robust_sd": 2.2239,
+      "skew_ratio": 1.151
+    },
+    "M/diagnosed/creatinine": {
+      "median": 0.89,
+      "n": 303,
+      "p2_5": 0.5965,
+      "p97_5": 2.4445,
+      "q1": 0.79,
+      "q3": 1.1,
+      "robust_sd": 0.2298,
+      "skew_ratio": 3.262
+    },
+    "M/diagnosed/diastolic": {
+      "median": 76.0,
+      "n": 303,
+      "p2_5": 52.55,
+      "p97_5": 100.45,
+      "q1": 70.0,
+      "q3": 85.0,
+      "robust_sd": 11.1193,
+      "skew_ratio": 1.072
+    },
+    "M/diagnosed/glucose": {
+      "median": 139.0,
+      "n": 303,
+      "p2_5": 69.3,
+      "p97_5": 352.9,
+      "q1": 105.0,
+      "q3": 195.5,
+      "robust_sd": 67.0867,
+      "skew_ratio": 1.161
+    },
+    "M/diagnosed/hba1c": {
+      "median": 7.3,
+      "n": 314,
+      "p2_5": 5.3,
+      "p97_5": 12.47,
+      "q1": 6.4,
+      "q3": 8.7,
+      "robust_sd": 1.705,
+      "skew_ratio": 1.119
+    },
+    "M/diagnosed/hdl": {
+      "median": 41.5,
+      "n": 306,
+      "p2_5": 27.0,
+      "p97_5": 69.375,
+      "q1": 37.0,
+      "q3": 49.0,
+      "robust_sd": 8.8955,
+      "skew_ratio": 1.299
+    },
+    "M/diagnosed/height_cm": {
+      "median": 172.45,
+      "n": 324,
+      "p2_5": 158.615,
+      "p97_5": 188.2925,
+      "q1": 167.4,
+      "q3": 178.3,
+      "robust_sd": 8.0801,
+      "skew_ratio": 0.936
+    },
+    "M/diagnosed/hematocrit": {
+      "median": 43.7,
+      "n": 314,
+      "p2_5": 33.1825,
+      "p97_5": 51.47,
+      "q1": 41.025,
+      "q3": 45.775,
+      "robust_sd": 3.5211,
+      "skew_ratio": 1.278
+    },
+    "M/diagnosed/hemoglobin": {
+      "median": 14.8,
+      "n": 314,
+      "p2_5": 10.8775,
+      "p97_5": 17.3175,
+      "q1": 13.8,
+      "q3": 15.6,
+      "robust_sd": 1.3343,
+      "skew_ratio": 1.19
+    },
+    "M/diagnosed/ldl": {
+      "median": 92.0,
+      "n": 147,
+      "p2_5": 32.65,
+      "p97_5": 183.35,
+      "q1": 67.5,
+      "q3": 118.5,
+      "robust_sd": 37.8058,
+      "skew_ratio": 0.993
+    },
+    "M/diagnosed/platelets": {
+      "median": 219.0,
+      "n": 314,
+      "p2_5": 112.475,
+      "p97_5": 366.875,
+      "q1": 186.0,
+      "q3": 262.0,
+      "robust_sd": 56.338,
+      "skew_ratio": 1.101
+    },
+    "M/diagnosed/potassium": {
+      "median": 4.2,
+      "n": 302,
+      "p2_5": 3.4525,
+      "p97_5": 5.0,
+      "q1": 3.9,
+      "q3": 4.4,
+      "robust_sd": 0.3706,
+      "skew_ratio": 1.04
+    },
+    "M/diagnosed/rbc": {
+      "median": 4.94,
+      "n": 314,
+      "p2_5": 3.739,
+      "p97_5": 6.0753,
+      "q1": 4.63,
+      "q3": 5.21,
+      "robust_sd": 0.4299,
+      "skew_ratio": 1.332
+    },
+    "M/diagnosed/sodium": {
+      "median": 140.0,
+      "n": 303,
+      "p2_5": 133.0,
+      "p97_5": 145.0,
+      "q1": 138.0,
+      "q3": 142.0,
+      "robust_sd": 2.9652,
+      "skew_ratio": 1.043
+    },
+    "M/diagnosed/systolic": {
+      "median": 128.0,
+      "n": 303,
+      "p2_5": 98.55,
+      "p97_5": 170.45,
+      "q1": 116.0,
+      "q3": 142.0,
+      "robust_sd": 19.2735,
+      "skew_ratio": 1.016
+    },
+    "M/diagnosed/triglycerides": {
+      "median": 125.0,
+      "n": 149,
+      "p2_5": 34.7,
+      "p97_5": 341.3,
+      "q1": 83.0,
+      "q3": 190.0,
+      "robust_sd": 79.318,
+      "skew_ratio": 1.899
+    },
+    "M/diagnosed/wbc": {
+      "median": 7.3,
+      "n": 314,
+      "p2_5": 4.1825,
+      "p97_5": 13.435,
+      "q1": 6.0,
+      "q3": 8.775,
+      "robust_sd": 2.0571,
+      "skew_ratio": 1.18
+    },
+    "M/diagnosed/weight_kg": {
+      "median": 93.4,
+      "n": 323,
+      "p2_5": 61.7,
+      "p97_5": 157.375,
+      "q1": 76.7,
+      "q3": 111.45,
+      "robust_sd": 25.7598,
+      "skew_ratio": 0.959
     },
     "M/nondiabetic/albumin": {
       "median": 4.1,

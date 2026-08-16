@@ -26,6 +26,19 @@ Seeded output therefore changes: golden files were regenerated and `ckd_stage3` 
 emits 52 entries rather than 51. **Under the stability policy this is a major bump**,
 and it is landing pre-1.0 and pre-publication precisely so that it costs nothing.
 
+- **The type 2 diabetes profile is calibrated to *diagnosed* diabetics**, not to
+  everyone with `HbA1c >= 6.5`. The profile emits `E11.9`, a diagnosed code, and 25.5%
+  of diagnosed diabetics aged 45-65 sit below 6.5 because their treatment works — the
+  old lab-defined stratum excluded every one of them. Diabetic HbA1c median moves from
+  7.4 to 7.1 (F) / 7.3 (M), the lower bound from 6.5 to ~5.35, and the fraction above
+  9.0% from 9.1% to 12.9% against a published 12.9%. Anthropometrics moved to the same
+  stratum for consistency.
+
+  The NHANES calibration now emits a `diagnosed` stratum (from the DIQ010 diagnosis
+  question) alongside the existing lab-defined ones. The `healthy` profile deliberately
+  keeps the lab-defined `nondiabetic` stratum, since "has not been told they have
+  diabetes" carries a tail of undiagnosed hyperglycaemia a healthy baseline should not
+  have. All 168 previously committed strata are unchanged; 56 were added.
 - **Recorded pressure reflects a titrated regimen**, not a starting one. These bundles
   depict an established patient at a routine visit, and a clinician who saw 150/95
   escalated the dose rather than recording it again unchanged. Doses double while the

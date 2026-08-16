@@ -61,7 +61,23 @@ HYPERTENSIVE = (
     Marginal("systolic", mean=146.0, sd=12.0, low=125.0, high=200.0),
     Marginal("diastolic", mean=90.0, sd=8.0, low=70.0, high=120.0),
 )
-# NHANES, nondiabetic 45-65, by sex.
+# NHANES 45-65, stratum `diagnosed` (DIQ010 == 1) — people a doctor has told they have
+# diabetes, which is the population an `E11.9` code denotes. Distinct from the
+# lab-defined `hba1c >= 6.5` stratum, which excludes the quarter of diagnosed diabetics
+# whose treatment has brought them under the diagnostic threshold.
+DIAGNOSED_DIABETIC_HBA1C_BY_SEX = {
+    "F": lognormal_from_quartiles(
+        "hba1c", median=7.1, q1=6.4, q3=8.3, low=5.4, high=12.5
+    ),
+    "M": lognormal_from_quartiles(
+        "hba1c", median=7.3, q1=6.4, q3=8.7, low=5.3, high=12.47
+    ),
+}
+
+# NHANES, nondiabetic 45-65, by sex. Lab-defined (`hba1c < 6.5`) rather than
+# diagnosis-defined on purpose: undiagnosed diabetes is common, so "has not been told
+# they have diabetes" carries a long tail of undiagnosed hyperglycaemia that a healthy
+# baseline should not have.
 NORMOGLYCAEMIC_BY_SEX = {
     "F": (
         Marginal("hba1c", mean=5.6, sd=0.2965, low=4.9, high=6.3),
@@ -149,9 +165,12 @@ ANTHROPOMETRICS_RAISED_BMI = {
         _HEIGHT_BY_SEX[sex],
         Marginal("weight_kg", mean=weight, sd=sd, low=low, high=high),
     )
+    # NHANES 45-65, stratum `diagnosed` — the same population the profile's HbA1c now
+    # comes from. Previously taken from the lab-defined `diabetic` stratum; the two
+    # differ by under 1% on weight, so this is for consistency rather than accuracy.
     for sex, weight, sd, low, high in (
-        ("F", 83.15, 22.48, 51.17, 138.8),
-        ("M", 95.6, 21.5, 58.0, 152.0),
+        ("F", 82.85, 21.83, 51.15, 131.8),
+        ("M", 93.4, 25.76, 61.7, 157.4),
     )
 }
 
@@ -449,15 +468,19 @@ def _diabetes_conditions(raw: dict[str, float]) -> tuple:
 
 
 def type2_diabetes(sex: str) -> ClinicalProfile:
-    """Diagnosed, moderately controlled type 2 diabetes."""
-    # NHANES, diabetic 45-65. Log-normal, not normal: the mode sits at the lower
-    # bound with a long upper tail, and `fit_truncated_normal` refuses these targets
-    # outright rather than returning a bad fit. The estimate this replaced had
-    # sd=0.90 — barely half the real spread — so every generated diabetic looked
-    # alike.
-    hba1c = lognormal_from_quartiles(
-        "hba1c", median=7.4, q1=6.8, q3=8.8, low=6.5, high=12.64
-    )
+    """Diagnosed type 2 diabetes, across the range of control seen in practice."""
+    # NHANES 45-65, stratum **diagnosed** (DIQ010 == 1), not the lab-defined
+    # `hba1c >= 6.5` stratum this used to draw from. The profile emits `E11.9`, a
+    # diagnosed code, and a quarter of diagnosed diabetics in this age band sit below
+    # 6.5 because their treatment works. Calibrating to the lab threshold excluded all
+    # of them and made the bound look empirically supported when it was really the
+    # selection criterion reflected back.
+    #
+    # Log-normal, not normal: a long upper tail with the mass low, and
+    # `fit_truncated_normal` refuses these targets outright rather than returning a bad
+    # fit. The hand estimate this originally replaced had sd=0.90, barely half the real
+    # spread, so every generated diabetic looked alike.
+    hba1c = DIAGNOSED_DIABETIC_HBA1C_BY_SEX[sex]
     glucose, rho = _adag_calibrated_glucose(hba1c)
     cholesterol, triglycerides = DYSLIPIDAEMIC_BY_SEX[sex]
     height, weight = ANTHROPOMETRICS_RAISED_BMI[sex]
