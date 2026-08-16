@@ -530,6 +530,15 @@ documentation, and each would otherwise be rediscovered the hard way.
   marginal left diabetic patients with the same BMI as the general population — contradicting
   the strongest association in type 2 diabetes. Individually every value looked fine; only a
   cross-profile comparison exposed it.
+- **Pooling strata manufactures correlation.** The height/weight correlation was set to
+  0.45, which is close to the figure you get from the whole 45-65 band (0.41) and far
+  from the within-sex one for women (0.30). Men are both taller and heavier, so pooling
+  the sexes adds a between-group component that a sex-stratified generator can never
+  reproduce and should not try to. The same check found systolic/diastolic set to 0.60
+  against a measured 0.68-0.74 and triglycerides/HDL at -0.40 against -0.30 to -0.43.
+  All three were estimates that had never been compared to the data they described,
+  and they were the checks the fidelity report graded weakest — sourced from "profile
+  config", which is the sampler being verified against its own settings.
 - **A fixed-seed loop that varies only demographics samples one patient, not hundreds.**
   A guard test drew 400 times with `seed=4242`, varying age and sex, and asserted a
   property of every draw. `generate_draw` is deterministic in (seed, profile), so those

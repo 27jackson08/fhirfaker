@@ -2107,7 +2107,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Body weight: 111.0 kg (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Body weight: 116.8 kg (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -2145,7 +2145,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 111.0,
+          "value": 116.8,
           "unit": "kg",
           "system": "http://unitsofmeasure.org",
           "code": "kg"
@@ -2174,7 +2174,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Body mass index (BMI) [Ratio]: 47.5 kg/m2 (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Body mass index (BMI) [Ratio]: 50.0 kg/m2 (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -2212,7 +2212,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 47.5,
+          "value": 50.0,
           "unit": "kg/m2",
           "system": "http://unitsofmeasure.org",
           "code": "kg/m2"

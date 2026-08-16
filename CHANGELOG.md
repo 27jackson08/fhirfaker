@@ -39,6 +39,14 @@ and it is landing pre-1.0 and pre-publication precisely so that it costs nothing
   keeps the lab-defined `nondiabetic` stratum, since "has not been told they have
   diabetes" carries a tail of undiagnosed hyperglycaemia a healthy baseline should not
   have. All 168 previously committed strata are unchanged; 56 were added.
+- **The copula's correlations are measured, not estimated.** Systolic/diastolic,
+  triglycerides/HDL and height/weight were hand-set at 0.60, -0.40 and 0.45; measured
+  against NHANES 45-65 they are 0.68/0.74, -0.43/-0.30 and 0.30/0.45, and all three
+  differ by sex. Height/weight is the instructive one: 0.45 is close to the *pooled*
+  figure and far from the within-sex value for women, because men are both taller and
+  heavier so pooling manufactures correlation a sex-stratified model cannot reproduce.
+  The calibration now emits correlations alongside the marginals, and a test pins the
+  constants to that extraction.
 - **Recorded pressure reflects a titrated regimen**, not a starting one. These bundles
   depict an established patient at a routine visit, and a clinician who saw 150/95
   escalated the dose rather than recording it again unchanged. Doses double while the

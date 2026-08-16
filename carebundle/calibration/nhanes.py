@@ -201,6 +201,51 @@ def moments(records: list[dict], analyte: str, stratum: str) -> Moments | None:
 NON_ANALYTES = frozenset({"diagnosed_diabetes"})
 
 
+# Analyte pairs whose dependence the copula needs. Emitted alongside the marginals so
+# the correlation matrix is derived from the same extraction rather than hand-set:
+# every one of these was originally an estimate, and every one of them was wrong —
+# systolic/diastolic by 0.11, triglycerides/HDL by 0.07, and height/weight in women by
+# 0.15 because a pooled-looking figure was used in a model that is stratified by sex.
+CORRELATION_PAIRS = (
+    ("systolic", "diastolic"),
+    ("triglycerides", "hdl"),
+    ("height_cm", "weight_kg"),
+    ("hba1c", "glucose"),
+    ("weight_kg", "bmi"),
+)
+
+
+def correlations(people: dict[float, dict]) -> dict[str, dict]:
+    """Pearson correlation per pair, per sex and stratum.
+
+    Computed **within sex**, which is the only figure a sex-stratified generator can
+    use. Pooling the sexes inflates any pair where the sexes differ in level — men are
+    both taller and heavier, so pooled height/weight reads 0.41 against a within-sex
+    0.30 for women.
+    """
+    out: dict[str, dict] = {}
+    for sex in ("F", "M"):
+        for stratum in STRATA:
+            records = in_band(people, sex, stratum)
+            for first, second in CORRELATION_PAIRS:
+                pairs = [
+                    (r[first], r[second])
+                    for r in records
+                    if first in r and second in r
+                ]
+                if len(pairs) < 30:
+                    continue
+                xs = np.array([p[0] for p in pairs], dtype=float)
+                ys = np.array([p[1] for p in pairs], dtype=float)
+                if xs.std() == 0.0 or ys.std() == 0.0:
+                    continue
+                out[f"{sex}/{stratum}/{first}~{second}"] = {
+                    "n": len(pairs),
+                    "pearson": round(float(np.corrcoef(xs, ys)[0, 1]), 4),
+                }
+    return out
+
+
 def report(people: dict[float, dict]) -> list[Moments]:
     analytes = sorted(
         {a for mapping in VARIABLES.values() for a in mapping.values()} - NON_ANALYTES
@@ -250,9 +295,13 @@ def main() -> int:
                 }
                 for r in rows
             },
+            "correlations": correlations(people),
         }
         args.emit_targets.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
-        print(f"wrote {len(payload['strata'])} strata to {args.emit_targets}")
+        print(
+            f"wrote {len(payload['strata'])} strata and "
+            f"{len(payload['correlations'])} correlations to {args.emit_targets}"
+        )
         return 0
 
     if args.emit_marginals:

@@ -3,6 +3,168 @@
     45,
     65
   ],
+  "correlations": {
+    "F/all/hba1c~glucose": {
+      "n": 1545,
+      "pearson": 0.8174
+    },
+    "F/all/height_cm~weight_kg": {
+      "n": 1639,
+      "pearson": 0.3036
+    },
+    "F/all/systolic~diastolic": {
+      "n": 1497,
+      "pearson": 0.6771
+    },
+    "F/all/triglycerides~hdl": {
+      "n": 800,
+      "pearson": -0.4332
+    },
+    "F/all/weight_kg~bmi": {
+      "n": 1639,
+      "pearson": 0.9503
+    },
+    "F/diabetic/hba1c~glucose": {
+      "n": 280,
+      "pearson": 0.7373
+    },
+    "F/diabetic/height_cm~weight_kg": {
+      "n": 290,
+      "pearson": 0.3952
+    },
+    "F/diabetic/systolic~diastolic": {
+      "n": 263,
+      "pearson": 0.6079
+    },
+    "F/diabetic/triglycerides~hdl": {
+      "n": 155,
+      "pearson": -0.3389
+    },
+    "F/diabetic/weight_kg~bmi": {
+      "n": 290,
+      "pearson": 0.9524
+    },
+    "F/diagnosed/hba1c~glucose": {
+      "n": 272,
+      "pearson": 0.7407
+    },
+    "F/diagnosed/height_cm~weight_kg": {
+      "n": 288,
+      "pearson": 0.4158
+    },
+    "F/diagnosed/systolic~diastolic": {
+      "n": 267,
+      "pearson": 0.5724
+    },
+    "F/diagnosed/triglycerides~hdl": {
+      "n": 157,
+      "pearson": -0.3461
+    },
+    "F/diagnosed/weight_kg~bmi": {
+      "n": 288,
+      "pearson": 0.9512
+    },
+    "F/nondiabetic/hba1c~glucose": {
+      "n": 1265,
+      "pearson": 0.3453
+    },
+    "F/nondiabetic/height_cm~weight_kg": {
+      "n": 1288,
+      "pearson": 0.3056
+    },
+    "F/nondiabetic/systolic~diastolic": {
+      "n": 1182,
+      "pearson": 0.7048
+    },
+    "F/nondiabetic/triglycerides~hdl": {
+      "n": 643,
+      "pearson": -0.4457
+    },
+    "F/nondiabetic/weight_kg~bmi": {
+      "n": 1288,
+      "pearson": 0.9478
+    },
+    "M/all/hba1c~glucose": {
+      "n": 1457,
+      "pearson": 0.8216
+    },
+    "M/all/height_cm~weight_kg": {
+      "n": 1550,
+      "pearson": 0.446
+    },
+    "M/all/systolic~diastolic": {
+      "n": 1458,
+      "pearson": 0.743
+    },
+    "M/all/triglycerides~hdl": {
+      "n": 722,
+      "pearson": -0.2969
+    },
+    "M/all/weight_kg~bmi": {
+      "n": 1550,
+      "pearson": 0.9256
+    },
+    "M/diabetic/hba1c~glucose": {
+      "n": 287,
+      "pearson": 0.7711
+    },
+    "M/diabetic/height_cm~weight_kg": {
+      "n": 293,
+      "pearson": 0.4987
+    },
+    "M/diabetic/systolic~diastolic": {
+      "n": 278,
+      "pearson": 0.6924
+    },
+    "M/diabetic/triglycerides~hdl": {
+      "n": 131,
+      "pearson": -0.401
+    },
+    "M/diabetic/weight_kg~bmi": {
+      "n": 293,
+      "pearson": 0.9378
+    },
+    "M/diagnosed/hba1c~glucose": {
+      "n": 303,
+      "pearson": 0.7751
+    },
+    "M/diagnosed/height_cm~weight_kg": {
+      "n": 323,
+      "pearson": 0.48
+    },
+    "M/diagnosed/systolic~diastolic": {
+      "n": 303,
+      "pearson": 0.6952
+    },
+    "M/diagnosed/triglycerides~hdl": {
+      "n": 149,
+      "pearson": -0.357
+    },
+    "M/diagnosed/weight_kg~bmi": {
+      "n": 323,
+      "pearson": 0.9362
+    },
+    "M/nondiabetic/hba1c~glucose": {
+      "n": 1170,
+      "pearson": 0.2501
+    },
+    "M/nondiabetic/height_cm~weight_kg": {
+      "n": 1190,
+      "pearson": 0.4522
+    },
+    "M/nondiabetic/systolic~diastolic": {
+      "n": 1117,
+      "pearson": 0.7444
+    },
+    "M/nondiabetic/triglycerides~hdl": {
+      "n": 590,
+      "pearson": -0.2604
+    },
+    "M/nondiabetic/weight_kg~bmi": {
+      "n": 1190,
+      "pearson": 0.9163
+    }
+  },
   "source": "NHANES 2017-March 2020 pre-pandemic public files",
   "strata": {
     "F/all/albumin": {

@@ -182,3 +182,42 @@ def test_mixed_marginal_families_work_inside_one_joint_model():
     observed = float(np.corrcoef(drawn["normal"], drawn["skewed"])[0, 1])
     assert observed == pytest.approx(0.5, abs=0.04)
     assert float(np.median(drawn["skewed"])) == pytest.approx(100.0, rel=0.05)
+
+
+# --- correlations must match the extraction, not drift from it ---------------------
+
+def test_configured_correlations_match_the_committed_nhanes_extraction():
+    """The dependence structure is measured, so it must keep matching the measurement.
+
+    These three were hand-estimated until they were checked, and all three were wrong.
+    Height/weight was the instructive one: 0.45 is close to the *pooled* figure and far
+    from the within-sex one for women (0.30), because men are both taller and heavier so
+    pooling manufactures correlation. A sex-stratified generator can only use the
+    within-sex value.
+
+    This test exists so the constants in `library.py` cannot silently diverge from the
+    targets file they were taken from — the same drift that put wrong code counts in the
+    README (build doc Section 18).
+    """
+    import json
+    from pathlib import Path
+
+    from carebundle.profiles import library
+
+    targets = json.loads(
+        (Path(library.__file__).parents[1] / "calibration/data/nhanes_targets.json")
+        .read_text()
+    )["correlations"]
+
+    expected = {
+        "systolic~diastolic": library.BP_CORRELATION_BY_SEX,
+        "triglycerides~hdl": library.TG_HDL_CORRELATION_BY_SEX,
+        "height_cm~weight_kg": library.HEIGHT_WEIGHT_CORRELATION_BY_SEX,
+    }
+    for pair, configured in expected.items():
+        for sex, value in configured.items():
+            key = f"{sex}/all/{pair}"
+            assert key in targets, f"{key} missing from the committed extraction"
+            assert value == pytest.approx(targets[key]["pearson"], abs=1e-4), (
+                f"{key}: library says {value}, extraction says {targets[key]['pearson']}"
+            )

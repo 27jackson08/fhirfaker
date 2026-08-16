@@ -170,8 +170,8 @@ them rather than reporting a flat total:
 | Grade | Checks | What a pass proves |
 |---|---:|---|
 | **out-of-sample** | **1** | A published relationship the model was *not* fitted to. The only category that evidences fidelity in the sense the word implies. |
-| calibration | 29 | A marginal fitted to NHANES survived truncation and the copula. Meaningful, but in-sample by construction. |
-| round-trip | 4 | The sampler reproduces a value it was configured with. Proves the engine works, not that the value is right. |
+| calibration | 31 | A marginal or correlation measured from NHANES survived truncation and the copula. Meaningful, but in-sample by construction. |
+| round-trip | 2 | The sampler reproduces a value it was configured with. Proves the engine works, not that the value is right. |
 | identity | 4 | Computed from its own inputs (eGFR, Friedewald LDL, BMI). Cannot fail unless the code is broken. |
 
 Stating that only one check is genuinely out-of-sample is not a weakness being

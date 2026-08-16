@@ -89,15 +89,26 @@ NORMOGLYCAEMIC_BY_SEX = {
     ),
 }
 
-# Systolic and diastolic move together; drawing them independently produces
-# physiologically absurd pairs like 170/55.
-BP_CORRELATION = 0.60
+# Dependence structure, measured from NHANES 45-65 rather than estimated.
+#
+# These were hand-set until they were checked against the data, and all three were
+# wrong: 0.60/-0.40/0.45 against measured values that also differ by sex. Height and
+# weight was the instructive one — 0.45 is close to the *pooled* figure (0.41) and far
+# from the within-sex one for women (0.30), because men are both taller and heavier so
+# pooling the sexes manufactures correlation. These profiles are sex-stratified, so the
+# within-sex figure is the only one they can legitimately use.
+#
+# Taken from the `all` stratum, which has the largest samples and spans the
+# normotensive and hypertensive populations that different profiles draw from. Per-
+# stratum values are in the committed targets file if a profile ever needs to refine
+# this. A test asserts these match that file, so they cannot drift from the extraction.
+BP_CORRELATION_BY_SEX = {"F": 0.6771, "M": 0.743}
 
 # Triglycerides and HDL are inversely related — the classic dyslipidaemia pattern.
 # Drawing them independently would produce high-TG/high-HDL patients that essentially
-# do not exist.
-TG_HDL_CORRELATION = -0.40
-HEIGHT_WEIGHT_CORRELATION = 0.45
+# do not exist. The sexes genuinely differ here (-0.43 against -0.30).
+TG_HDL_CORRELATION_BY_SEX = {"F": -0.4332, "M": -0.2969}
+HEIGHT_WEIGHT_CORRELATION_BY_SEX = {"F": 0.3036, "M": 0.446}
 
 # Upper bound sits below Friedewald's validity threshold (400 mg/dL), so the
 # calculated LDL is always one a laboratory would actually report.
@@ -339,10 +350,10 @@ ALBUMINURIA_NORMAL = (
 )
 
 
-def _lipid_and_body_correlations() -> list[tuple[str, str, float]]:
+def _lipid_and_body_correlations(sex: str) -> list[tuple[str, str, float]]:
     return [
-        ("triglycerides", "hdl", TG_HDL_CORRELATION),
-        ("height_cm", "weight_kg", HEIGHT_WEIGHT_CORRELATION),
+        ("triglycerides", "hdl", TG_HDL_CORRELATION_BY_SEX[sex]),
+        ("height_cm", "weight_kg", HEIGHT_WEIGHT_CORRELATION_BY_SEX[sex]),
     ]
 
 
@@ -411,8 +422,8 @@ def healthy(sex: str) -> ClinicalProfile:
             *ALBUMINURIA_NORMAL, *_routine_marginals(sex),
             correlations=[
                 ("hba1c", "glucose", 0.55),
-                ("systolic", "diastolic", BP_CORRELATION),
-                *_lipid_and_body_correlations(),
+                ("systolic", "diastolic", BP_CORRELATION_BY_SEX[sex]),
+                *_lipid_and_body_correlations(sex),
                 *_routine_correlations(),
             ],
         ),
@@ -494,8 +505,8 @@ def type2_diabetes(sex: str) -> ClinicalProfile:
             *ALBUMINURIA, *_routine_marginals(sex),
             correlations=[
                 ("hba1c", "glucose", rho),
-                ("systolic", "diastolic", BP_CORRELATION),
-                *_lipid_and_body_correlations(),
+                ("systolic", "diastolic", BP_CORRELATION_BY_SEX[sex]),
+                *_lipid_and_body_correlations(sex),
                 *_routine_correlations(),
             ],
         ),
@@ -552,8 +563,8 @@ def hypertension(sex: str) -> ClinicalProfile:
             *ALBUMINURIA_NORMAL, *_routine_marginals(sex),
             correlations=[
                 ("hba1c", "glucose", 0.55),
-                ("systolic", "diastolic", BP_CORRELATION),
-                *_lipid_and_body_correlations(),
+                ("systolic", "diastolic", BP_CORRELATION_BY_SEX[sex]),
+                *_lipid_and_body_correlations(sex),
                 *_routine_correlations(),
             ],
         ),
@@ -598,8 +609,8 @@ def ckd_stage3(sex: str) -> ClinicalProfile:
             cholesterol, triglycerides, HDL_BY_SEX[sex], height, weight,
             *ALBUMINURIA, *_routine_marginals(sex),
             correlations=[
-                ("systolic", "diastolic", BP_CORRELATION),
-                *_lipid_and_body_correlations(),
+                ("systolic", "diastolic", BP_CORRELATION_BY_SEX[sex]),
+                *_lipid_and_body_correlations(sex),
                 *_routine_correlations(has_creatinine=False),
             ],
         ),

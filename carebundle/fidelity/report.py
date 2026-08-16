@@ -15,6 +15,7 @@ from pathlib import Path
 import numpy as np
 
 from carebundle.correlation import relations
+from carebundle.profiles import library
 from carebundle.profiles.base import draw
 from carebundle.profiles.library import get_profile
 
@@ -173,8 +174,9 @@ def vitals_checks(size: int, seed: int) -> list[Check]:
     sample = get_profile("hypertension", "M").joint.sample(rng, size=size)
     observed = float(np.corrcoef(sample["systolic"], sample["diastolic"])[0, 1])
     return [
-        Check("systolic/diastolic correlation", observed, 0.60, 0.05, "",
-              "profile config", evidence="round_trip")
+        Check("systolic/diastolic correlation", observed,
+              library.BP_CORRELATION_BY_SEX["M"], 0.06, "",
+              "NHANES 2017-2020", evidence="calibration")
     ]
 
 
@@ -200,8 +202,9 @@ def lipid_checks(size: int, seed: int) -> list[Check]:
         Check("LDL consistent with panel (Friedewald)", worst_error, 0.0, 1e-9,
               "mg/dL", "Friedewald 1972", evidence="identity"),
         # Inverse by construction: high-triglyceride/high-HDL patients barely exist.
-        Check("triglyceride/HDL correlation", tg_hdl, -0.40, 0.05, "",
-              "profile config", evidence="round_trip"),
+        Check("triglyceride/HDL correlation", tg_hdl,
+              library.TG_HDL_CORRELATION_BY_SEX["M"], 0.06, "",
+              "NHANES 2017-2020", evidence="calibration"),
     ]
 
 
