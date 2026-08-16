@@ -74,6 +74,16 @@ kept them apart.
   reported as such rather than omitted, and the record of a published prediction that
   was subsequently tested: the first measurement was 64.1% with the shortfall
   attributed to dose titration, and modelling titration closed it.
+- `calibrate_profile` / `Quartiles` — **calibrate a profile to your own population.**
+  Supply medians and quartiles, which disclose no individual and a site can usually
+  share, and get a profile reproducing them while inheriting the correlation structure,
+  the computed identities, the prescribing rules and US Core conformance. The one
+  capability here a population simulator structurally cannot offer.
+
+  Warns when you override an analyte another marginal was derived from — replacing
+  HbA1c alone breaks the ADAG glucose relationship — rather than failing silently. A
+  test asserts the relationship genuinely does break, so the warning cannot become
+  stale and misleading. Validation happens at registration rather than on first use.
 - `carebundle.history` / `generate_history` — **one patient across several visits**,
   with blood pressure falling as therapy is escalated toward goal. The mechanism the
   single-visit bundle hides behind an equilibrium value, and the thing a care-pathway

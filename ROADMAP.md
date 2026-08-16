@@ -1,7 +1,7 @@
 # Roadmap: competing with Synthea
 
-**Status:** in progress. Phases 0–5 (the build document) shipped; **6 and 9 complete**,
-**7 and 8 partly**, 10–11 not started. Each phase section records what was actually
+**Status:** in progress. Phases 0–5 (the build document) shipped; **6, 9 and 11 complete**,
+**7 and 8 partly**, 10 not started. Each phase section records what was actually
 measured, including the parts that failed.
 **Written:** August 15, 2026 · **Last updated:** August 16, 2026
 
@@ -201,7 +201,7 @@ or it is not a phase.
 | **8. Evaluation as product** *(part done)* | Adopt the three-dimension framework; publish it | **FIDELITY.md restructured** — every check graded by evidential strength, out-of-sample count pinned by test. Preprint still open |
 | ~~**9. Realistic imperfection**~~ **done** | Opt-in messiness with labelled defects | **Met.** `carebundle.imperfection`, five defect kinds, all enumerable; CI asserts conformance holds when off and genuinely breaks when on |
 | **10. Breadth that pays** | More profiles, more US Core profiles | Each new profile ships with fidelity assertions, not just code |
-| **11. Calibrate to your population** | Fit marginals from user-supplied aggregates | A user's summary stats reproduce their distributions |
+| ~~**11. Calibrate to your population**~~ **done** | Fit marginals from user-supplied aggregates | **Met.** `calibrate_profile` takes medians and quartiles and reproduces them, inheriting correlations, computed identities and conformance |
 
 ### Phase 6 — The benchmark — **complete**
 

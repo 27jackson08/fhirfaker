@@ -114,6 +114,36 @@ It is bounded on purpose — no birth, no death, no disease-progression modules.
 is Synthea's, and competing there loses. `generate_bundle` is untouched, so adding this
 changed no existing seeded output.
 
+### Calibrate it to your own population
+
+The shipped marginals are NHANES: US adults aged 45–65. Your patients are not that
+population. Supply the summary statistics you *can* share — medians and quartiles
+disclose no individual — and get a profile that reproduces them:
+
+```python
+from carebundle import calibrate_profile, Quartiles, generate_bundle
+
+calibrate_profile(
+    "our_clinic",
+    base="type2_diabetes",
+    marginals={"hba1c": Quartiles(median=8.4, q1=7.5, q3=9.8, low=6.0, high=13.5)},
+)
+bundle = generate_bundle(profile="our_clinic", seed=42)
+```
+
+Everything you do not override is inherited — the correlation structure, the computed
+identities (eGFR, Friedewald LDL, BMI), the conditions and prescribing, and US Core
+conformance. Only the numbers change.
+
+It will **warn** if you override an analyte another marginal was derived from. Replacing
+HbA1c alone breaks the ADAG glucose relationship, because the glucose marginal is
+calibrated against HbA1c's — a warning rather than an error, since it is your population
+and your relationship may genuinely differ, but not something to discover silently.
+There is a test in the suite that fails if that stops being true.
+
+This is the one capability here that a population simulator structurally cannot offer:
+Synthea's distributions come from its modules, and there is nowhere to put yours.
+
 ### Deliberately imperfect data
 
 Nothing else in this space generates data that is *wrong on purpose*, and for testing
