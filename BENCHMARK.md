@@ -169,6 +169,59 @@ sophisticated — and the reason it is excluded is that it contradicts the data 
 points, which is model falsification rather than parameter fitting. If adherence is
 modelled later it needs a dose-response formulation and a denominator-matched source.
 
+## Why there is no second measure: CMS122, and what it taught
+
+The obvious candidate for a second measure was **CMS122, Diabetes: HbA1c Poor Control
+(>9%)**. It needs only a diagnosis and a lab result, both of which this project codes
+with ICD-10-CM and LOINC, so unlike the colonoscopy measures it is not blocked by
+licensing. It is blocked by something more interesting.
+
+**The measure has no single national rate.** CMS's own
+[2024 quality benchmarks](https://www.cms.gov/files/document/2024-quality-benchmarks.csv)
+publish three, for the same measure in the same year:
+
+| Collection type | Average performance rate |
+|---|---:|
+| Medicare Part B Claims | 11.70% |
+| MIPS CQM | 27.30% |
+| eCQM (CMS122v12) | 43.53% |
+
+A four-fold spread is not measurement noise, and the numerator definition explains it:
+
+> "Patients whose most recent HbA1c level (performed during the measurement period) is
+> >9.0% **or is missing, or was not performed** during the measurement period"
+
+CMS122 does not measure glycaemic control. It measures glycaemic control **plus
+testing completeness**, summed into one number. The more a collection method depends on
+complete EHR capture, the more untested patients inflate the rate — which is exactly the
+ordering above.
+
+**A generator with perfect data capture cannot reproduce that.** Every diabetic here has
+an HbA1c, so this project would always score at the "everyone was tested" floor. Our
+generated rate above 9.0% is 12.9%, which sits near the claims figure and near NHANES's
+measured 12.9% — and that agreement would be *misleading* to publish as reproducing
+CMS122, because the measure it would claim to reproduce is counting something else.
+
+Two things follow, and both are worth more than the row would have been.
+
+**The blocker generalises.** Any quality measure whose numerator includes "or is
+missing" is partly a data-completeness measure, and synthetic data with complete capture
+can only ever reproduce the clinical half. That is a structural limit on benchmarking
+synthetic generators against real quality measures, and it applies to Synthea equally.
+
+**It is also a use for the imperfection module.** `carebundle.imperfection` exists to
+omit fields on purpose. A future version could model the missing-result component
+explicitly and reproduce the full measure — the only route to CMS122 that would not be
+quietly comparing two different quantities.
+
+**A caveat this exposed in the CBP measure above.** HEDIS CBP has the same shape: a
+member with no blood-pressure reading counts as not controlled. This implementation
+instead requires a reading to enter the denominator. It makes no difference to the
+number, because every generated patient has one — but it means the 71.5% figure is a
+*clinical* control rate compared against real-world rates that blend control with
+capture. The real-world comparators are therefore, if anything, slightly pessimistic
+relative to what is being measured here.
+
 ## Remaining caveats
 
 - The comparators are from 2019 and reflect the plans and years measured then. The

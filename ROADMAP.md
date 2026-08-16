@@ -166,10 +166,28 @@ and the reachable class is genuinely narrow.
 
 **The reachable class** is quality measures defined over labs, vitals and diagnoses,
 which this project codes with LOINC and ICD-10-CM and can therefore emit realistically.
-`Controlling High Blood Pressure` is one. `CMS122 Diabetes: HbA1c Poor Control (>9%)` is
-another and is *coding*-reachable today — it was attempted and the blocker was different
-and possibly solvable: NCQA's national rates sit behind registration, and a benchmark
-needs a citable denominator-matched target, not a plausible one.
+`Controlling High Blood Pressure` is one. `CMS122 Diabetes: HbA1c Poor Control (>9%)`
+looked like another and was attempted — it is coding-reachable and still not usable.
+
+**CMS122 was investigated and rejected, with evidence.** CMS publishes three national
+rates for it in the same year — 11.70% (Medicare Part B claims), 27.30% (MIPS CQM),
+43.53% (eCQM) — because the numerator is "…is >9.0% **or is missing, or was not
+performed**". The measure sums glycaemic control with testing completeness, and a
+generator where every diabetic has an HbA1c can only ever reproduce the first half.
+Publishing a match would compare two different quantities. Full write-up in
+`BENCHMARK.md`.
+
+**So the second branch of criterion 2 is now satisfied**: `BENCHMARK.md` states
+explicitly which further measures are reachable and why the two strongest candidates are
+not. That is the honest outcome, and it is worth more than a row would have been — the
+finding generalises to any measure whose numerator counts missing data, which is a
+structural limit on benchmarking synthetic generators at all, and it applies to Synthea
+equally.
+
+**The one route that would work** is modelling the missing-data component deliberately
+with `carebundle.imperfection`, which already omits fields on purpose. That would let a
+measure like CMS122 be reproduced as specified rather than as reinterpreted. It is the
+most promising remaining benchmark work and is not currently scheduled.
 
 ## 4. Phases
 

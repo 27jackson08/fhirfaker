@@ -530,6 +530,17 @@ documentation, and each would otherwise be rediscovered the hard way.
   marginal left diabetic patients with the same BMI as the general population — contradicting
   the strongest association in type 2 diabetes. Individually every value looked fine; only a
   cross-profile comparison exposed it.
+- **A quality measure that counts missing data is not measuring what its name says.**
+  CMS122 is "Diabetes: HbA1c Poor Control (>9%)", and its numerator is "…is >9.0% *or is
+  missing, or was not performed*". So it sums glycaemic control with testing
+  completeness. CMS publishes three national rates for it in the same year — 11.70%,
+  27.30% and 43.53% — ordered exactly by how much each collection method depends on
+  complete EHR capture. A four-fold spread in an official benchmark is a warning that
+  the measure is not the quantity its title implies. Synthetic data with perfect capture
+  can only reproduce the clinical half, so matching the number would mean comparing two
+  different things. The general rule: before benchmarking against a quality measure,
+  read its numerator for "missing" — and if it is there, the measure is partly about
+  data quality and partly about care.
 - **"Conformant" and "realistic" can come apart, and the licensing position is where.**
   Three of the four CMS benchmark measures need `Procedure` resources. CPT and SNOMED
   are both licensed, but **ICD-10-PCS is public domain and US Core accepts it** for
