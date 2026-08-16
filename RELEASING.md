@@ -10,10 +10,10 @@ irreversible step is the *last* one and the cheapest to get right.
    CI is green across Python 3.10–3.14, plus conformance, packaging, fidelity and
    terminology.
 2. ~~Add `[project.urls]` to `pyproject.toml`.~~ Done.
-3. **Register the Trusted Publisher** at <https://pypi.org/manage/account/publishing/>.
-   **This is the only remaining blocker, and it can only be done by the account owner
-   through the PyPI web UI.** Until it exists, the `publish` job will fail — the
-   `build` job before it will still have succeeded, so nothing is lost but a re-run.
+3. ~~**Register the Trusted Publisher.**~~ Done, and converted from "pending" to a
+   normal publisher automatically on first use at 0.1.0. Nothing further is required.
+   A pending publisher stays pending until it is *used* — there is no review queue, and
+   it never reserved the name; only the first upload did. Recorded for reference:
 
    | Field | Value |
    |---|---|
@@ -44,9 +44,8 @@ Run the sweep first — it is the only item here whose answer changes on its own
    about today. Check PyPI, GitHub topics and awesome-lists; if something closer has
    landed, update the README's positioning **before** publishing, not after a commenter
    finds it.
-2. **Confirm the name is still free** if this is the first upload:
-   `curl -s -o /dev/null -w "%{http_code}" https://pypi.org/pypi/carebundle/json`
-   → `404` means available.
+2. ~~Confirm the name is still free.~~ Claimed at 0.1.0. PyPI never lets a version
+   number be reused, so a mistaken upload is spent, not fixable.
 3. **Update `CHANGELOG.md`**: move `[Unreleased]` content under the new version and
    date it. The release workflow fails if there is no `## [<version>]` section.
 4. **Bump `version` in `pyproject.toml`.** Remember what the number means here: seeded
@@ -55,8 +54,8 @@ Run the sweep first — it is the only item here whose answer changes on its own
 
    ```bash
    ruff check carebundle tests
-   pytest -q -m "not conformance and not fidelity" --cov    # 234 tests, >=80% coverage
-   pytest -q -m "fidelity or conformance"                   # 12 tests, needs a JVM
+   pytest -q -m "not conformance and not fidelity" --cov    # >=80% coverage
+   pytest -q -m "fidelity or conformance"                   # slow, needs a JVM
    python -m build && twine check --strict dist/*
    ```
 
@@ -106,9 +105,8 @@ before the version number is spent.
 
 - Verify the install from a clean environment, from outside the repository:
   `pip install carebundle && python -c "import carebundle; print(carebundle.__version__)"`
-- Set the repository homepage to the PyPI page, which only exists once the first
-  upload lands — it is deliberately blank until then rather than a 404 on the repo's
-  public landing card:
-  `gh api -X PATCH repos/27jackson08/fhirfaker -f homepage="https://pypi.org/project/carebundle/"`
+- ~~Set the repository homepage to the PyPI page.~~ Done at 0.1.0.
+- Cut a GitHub Release for the tag so the version is discoverable from the repo, not
+  only from PyPI: `gh release create vX.Y.Z --notes-from-tag`.
 - Distribution is a separate problem from quality (build doc Section 14). A
   differentiated tool that nobody hears about does not get adopted.

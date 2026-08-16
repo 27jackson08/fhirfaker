@@ -1,5 +1,6 @@
 # carebundle — clinically coherent synthetic FHIR® test data for Python
 
+[![PyPI](https://img.shields.io/pypi/v/carebundle)](https://pypi.org/project/carebundle/)
 [![CI](https://github.com/27jackson08/fhirfaker/actions/workflows/ci.yml/badge.svg)](https://github.com/27jackson08/fhirfaker/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13%20%7C%203.14-blue)](https://github.com/27jackson08/fhirfaker/actions/workflows/ci.yml)
 [![US Core](https://img.shields.io/badge/US%20Core-6.1.0%20validated-brightgreen)](CONFORMANCE.md)
