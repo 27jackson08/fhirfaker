@@ -83,6 +83,20 @@ Epic, Cerner and essentially every US production FHIR API are 4.0.1. It is also 
 reason this project generates its own models from the R4 StructureDefinitions instead of
 taking `fhir.resources` as a dependency.
 
+**What this is explicitly not:** a population health simulator, a replacement for
+Synthea's or PySynthea's disease-module depth, or a terminology server.
+
+Where this is heading — and the peer-reviewed evidence behind the direction — is in
+[ROADMAP.md](ROADMAP.md).
+
+---
+
+## Three things Synthea cannot do
+
+Not "does better" — cannot, for structural reasons rather than effort. Each is a
+consequence of modelling clinical state instead of care pathways, or of being a library
+rather than a population simulator.
+
 ### Treatment response over time
 
 The single-visit bundle records the pressure a titrated patient *ends up at*. This shows
@@ -174,13 +188,6 @@ Two rules make it usable rather than merely messy:
   these three records"* instead of eyeballing output. Injection is seeded and never
   mutates its input.
 
-**What this is explicitly not:** a population health simulator, a replacement for
-Synthea's or PySynthea's disease-module depth, or a terminology server.
-
-Where this is heading — and the peer-reviewed evidence behind the direction — is in
-[ROADMAP.md](ROADMAP.md).
-
----
 
 ## What makes the data defensible
 

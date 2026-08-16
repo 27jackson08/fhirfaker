@@ -86,10 +86,30 @@ jobs:
         run: |
           /tmp/probe/bin/python -c "
           import json, pathlib, carebundle
-          bundle = json.loads(carebundle.to_json(
-              carebundle.generate_bundle(profile='type2_diabetes', seed=42, sex='F')))
+          from carebundle import (generate_bundle, generate_history, generate_cohort,
+                                  to_json, Imperfection, inject_defects,
+                                  calibrate_profile, Quartiles)
+
+          bundle = json.loads(to_json(generate_bundle(profile='type2_diabetes', seed=42, sex='F')))
           assert bundle['resourceType'] == 'Bundle', bundle['resourceType']
           assert bundle['entry'], 'installed package generated an empty bundle'
+
+          # Every public entry point, because the source-tree job cannot catch a
+          # packaging fault and each of these is a separate import surface.
+          history = json.loads(to_json(generate_history(profile='hypertension', seed=42, visits=4)))
+          encounters = [e for e in history['entry'] if e['resource']['resourceType'] == 'Encounter']
+          assert len(encounters) == 4, encounters
+
+          _, defects = inject_defects(bundle, Imperfection(missing_field=0.3), seed=5)
+          assert defects, 'imperfection injected nothing'
+
+          calibrate_profile('ci_probe', base='type2_diabetes',
+                            marginals={'hba1c': Quartiles(median=8.4, q1=7.5, q3=9.8, low=6.0, high=13.5),
+                                       'glucose': Quartiles(median=190, q1=155, q3=240, low=90, high=420)})
+          assert json.loads(to_json(generate_bundle(profile='ci_probe', seed=42)))['entry']
+
+          assert len(list(generate_cohort(count=3, seed=1))) == 3
+
           marker = pathlib.Path(carebundle.__file__).parent / 'py.typed'
           assert marker.exists(), 'py.typed missing from the wheel'
           data = pathlib.Path(carebundle.__file__).parent / 'calibration/data/nhanes_targets.json'
