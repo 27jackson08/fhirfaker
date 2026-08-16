@@ -10,107 +10,14 @@ what you are relying on, and this file is where it is recorded.
 
 ## [Unreleased]
 
-### Changed — **breaking, seeded output**
+Nothing yet.
 
-- **Blood pressure now reflects the treatment in the bundle.** The copula draws a
-  pre-treatment pressure; the recorded pressure is computed from the antihypertensive
-  classes the patient was actually prescribed, using the effect sizes in Law MR et al.,
-  *BMJ* 2003;326:1427. Previously the recorded pressure was drawn independently of the
-  drug list, so a bundle could prescribe three antihypertensives beside an
-  untreated-looking 168/102.
-- **Antihypertensive prescribing probabilities are solved, not written.** They are
-  scaled so the treated fraction reproduces NHANES (86.5% of *diagnosed* hypertensives
-  are on medication), preserving the relative ordering between classes.
+## [0.1.0] — 2026-08-16
 
-Seeded output therefore changes: golden files were regenerated and `ckd_stage3` now
-emits 52 entries rather than 51. **Under the stability policy this is a major bump**,
-and it is landing pre-1.0 and pre-publication precisely so that it costs nothing.
-
-- **The type 2 diabetes profile is calibrated to *diagnosed* diabetics**, not to
-  everyone with `HbA1c >= 6.5`. The profile emits `E11.9`, a diagnosed code, and 25.5%
-  of diagnosed diabetics aged 45-65 sit below 6.5 because their treatment works — the
-  old lab-defined stratum excluded every one of them. Diabetic HbA1c median moves from
-  7.4 to 7.1 (F) / 7.3 (M), the lower bound from 6.5 to ~5.35, and the fraction above
-  9.0% from 9.1% to 12.9% against a published 12.9%. Anthropometrics moved to the same
-  stratum for consistency.
-
-  The NHANES calibration now emits a `diagnosed` stratum (from the DIQ010 diagnosis
-  question) alongside the existing lab-defined ones. The `healthy` profile deliberately
-  keeps the lab-defined `nondiabetic` stratum, since "has not been told they have
-  diabetes" carries a tail of undiagnosed hyperglycaemia a healthy baseline should not
-  have. All 168 previously committed strata are unchanged; 56 were added.
-- **The copula's correlations are measured, not estimated.** Systolic/diastolic,
-  triglycerides/HDL and height/weight were hand-set at 0.60, -0.40 and 0.45; measured
-  against NHANES 45-65 they are 0.68/0.74, -0.43/-0.30 and 0.30/0.45, and all three
-  differ by sex. Height/weight is the instructive one: 0.45 is close to the *pooled*
-  figure and far from the within-sex value for women, because men are both taller and
-  heavier so pooling manufactures correlation a sex-stratified model cannot reproduce.
-  The calibration now emits correlations alongside the marginals, and a test pins the
-  constants to that extraction.
-- **The diabetes/hypertension comorbidity rate is measured too.** NHANES puts it at
-  0.6997 (F) / 0.6939 (M) among diagnosed diabetics against a hand-set 0.70 — this one
-  was right. Recorded because it is the counterexample: the three correlations checked
-  at the same time were all wrong, and it would be easy to conclude every estimate was.
-
-Together these take the fidelity report's weakest grade, `round_trip`, from 4 checks to
-1. Nothing is now checked against "profile config" except the CKD stage band, which is
-structural. The out-of-sample count is unchanged at 1 — better evidence and
-out-of-sample evidence are different claims, and the test pinning that count is what
-kept them apart.
-- **Recorded pressure reflects a titrated regimen**, not a starting one. These bundles
-  depict an established patient at a routine visit, and a clinician who saw 150/95
-  escalated the dose rather than recording it again unchanged. Doses double while the
-  patient is above 140/90, to a ceiling of two doublings, at 1.5 mmHg systolic per
-  doubling ([*Lancet* 2025](https://pubmed.ncbi.nlm.nih.gov/40885583/), 484 trials).
-  Patients already at goal are never escalated.
-
-### Added
-
-- `carebundle.benchmark` — CMS/HEDIS clinical quality measures computed from emitted
-  FHIR, with `Controlling High Blood Pressure` implemented to the NCQA definition.
-- [BENCHMARK.md](BENCHMARK.md) — measured **71.5%** on that measure against Synthea's
-  published **0%**, between the US (69.7%) and MA (74.5%) comparators, from
-  independently cited inputs. Includes the three measures this does *not* model,
-  reported as such rather than omitted, and the record of a published prediction that
-  was subsequently tested: the first measurement was 64.1% with the shortfall
-  attributed to dose titration, and modelling titration closed it.
-- `calibrate_profile` / `Quartiles` — **calibrate a profile to your own population.**
-  Supply medians and quartiles, which disclose no individual and a site can usually
-  share, and get a profile reproducing them while inheriting the correlation structure,
-  the computed identities, the prescribing rules and US Core conformance. The one
-  capability here a population simulator structurally cannot offer.
-
-  Warns when you override an analyte another marginal was derived from — replacing
-  HbA1c alone breaks the ADAG glucose relationship — rather than failing silently. A
-  test asserts the relationship genuinely does break, so the warning cannot become
-  stale and misleading. Validation happens at registration rather than on first use.
-- `carebundle.history` / `generate_history` — **one patient across several visits**,
-  with blood pressure falling as therapy is escalated toward goal. The mechanism the
-  single-visit bundle hides behind an equilibrium value, and the thing a care-pathway
-  simulator structurally cannot produce. Reuses the Law 2003 and Lancet 2025 effect
-  sizes, so it makes no new evidence claims. A separate entry point on a separate RNG
-  stream, so **no existing seeded output changed** — verified by a test that regenerates
-  a single-visit bundle before and after.
-- `carebundle.imperfection` — **deliberately imperfect FHIR**, for testing the code
-  paths clean data never reaches. Five defect kinds (`missing_field`,
-  `duplicate_entry`, `out_of_order_timestamp`, `unparseable_value`,
-  `unknown_code_system`), seeded, non-mutating, and every injected flaw returned so a
-  test can assert against it. Off by default: `Imperfection()` is a no-op, US Core
-  conformance stays provable, and CI asserts both that clean output validates with
-  zero errors and that dirtied output genuinely fails the HL7 validator.
-- `generate_cohort`, `Imperfection`, `Defect` and `inject_defects` are now exported
-  from the package root.
-- **Fidelity checks are graded by evidential strength** — `out_of_sample`,
-  `calibration`, `round_trip`, `identity` — and [FIDELITY.md](FIDELITY.md) is grouped
-  by grade rather than reported as a flat pass count. Of 38 checks, 1 is out-of-sample;
-  a test pins that count so it cannot grow by relabelling. The CMS blood-pressure
-  measure is now a fidelity check as well as a benchmark.
-- [ROADMAP.md](ROADMAP.md) — the plan this came from.
-
-## [0.1.0] — unreleased
-
-First release. Everything below is new, so this entry describes the surface rather
-than a diff.
+First release. Everything here is new, so this entry describes the surface rather than a
+diff. Output changed several times during development; none of it is recorded as a
+breaking change, because nothing was published and so nothing depended on it. The
+determinism contract described above starts now.
 
 ### Added
 
@@ -126,15 +33,39 @@ than a diff.
   with a reason in `CONFORMANCE.md`, and a new warning fails the build.
 - **Correlation engine** — Gaussian copula for jointly sampled analytes, with derived
   values computed rather than sampled (CKD-EPI 2021 eGFR, Friedewald LDL, BMI) so a
-  bundle cannot contradict itself.
-- **Verified fidelity** — generated distributions reproduce published clinical
-  relationships including their residual scatter, not just their trend. Regenerated and
-  asserted in CI; report in `FIDELITY.md`.
-- **NHANES-calibrated marginals**, with log-normal marginals where a truncated normal
-  cannot represent a distribution whose mode sits at its lower bound.
+  bundle cannot contradict itself. Blood pressure is computed from the regimen actually
+  prescribed, using the effect sizes in Law MR et al., *BMJ* 2003;326:1427 and a further
+  1.5 mmHg per dose doubling ([*Lancet* 2025](https://pubmed.ncbi.nlm.nih.gov/40885583/)),
+  so a bundle cannot prescribe three antihypertensives beside an untreated-looking
+  168/102.
+- **NHANES-calibrated marginals and dependence structure.** Marginals, correlations and
+  comorbidity prevalence are all derived from the NHANES 2017–March 2020 files rather
+  than estimated, with log-normal marginals where a truncated normal cannot represent a
+  distribution whose mode sits at its lower bound. The type 2 diabetes profile is
+  calibrated to *diagnosed* diabetics (DIQ010), not to everyone above an HbA1c
+  threshold — a quarter of diagnosed diabetics sit below 6.5 because their treatment
+  works, and a lab-defined stratum excludes all of them.
+- **`carebundle.benchmark`** — CMS/HEDIS clinical quality measures computed from emitted
+  FHIR. `Controlling High Blood Pressure` scores **71.5%** against Synthea's published
+  **0%**, between the US (69.7%) and Massachusetts (74.5%) comparators, from
+  independently cited inputs. See [BENCHMARK.md](BENCHMARK.md), which also publishes the
+  three measures this does *not* model and why.
+- **`carebundle.history` / `generate_history`** — one patient across several visits,
+  with blood pressure falling as therapy is escalated toward goal.
+- **`calibrate_profile` / `Quartiles`** — calibrate a profile to your own population from
+  medians and quartiles, inheriting the correlation structure, computed identities,
+  prescribing rules and conformance.
+- **`carebundle.imperfection`** — deliberately imperfect FHIR for testing the code paths
+  clean data never reaches. Five defect kinds, seeded, non-mutating, every injected flaw
+  returned. Off by default; CI asserts clean output validates and dirtied output does
+  not.
+- **Verified fidelity, graded by evidential strength.** 38 checks across
+  `out_of_sample`, `calibration`, `round_trip` and `identity`; [FIDELITY.md](FIDELITY.md)
+  is grouped by grade rather than reported as a flat pass count, and a test pins the
+  out-of-sample count so it cannot grow by relabelling.
 - **Determinism contract** — `seed=42` produces byte-identical output, enforced by
-  golden-file tests. Verified byte-identical across CPython 3.10 through 3.14 and
-  across numpy versions.
+  golden-file tests. Verified byte-identical across CPython 3.10 through 3.14, across
+  numpy versions, and on Linux, macOS and Windows.
 - **85 terminology codes** (LOINC, RxNorm, ICD-10-CM) with per-code provenance and
   licence metadata, re-verified nightly against the source vocabularies.
 - **Safety by construction** — every resource carries the `HTEST` security label, a
@@ -151,5 +82,5 @@ than a diff.
   draws on CPT-4 (AMA-licensed) and SNOMED CT, so warning-free US Core Encounter
   conformance is not reachable without licensed terminology. See `CONFORMANCE.md`.
 
-[Unreleased]: https://keepachangelog.com/
-[0.1.0]: https://keepachangelog.com/
+[Unreleased]: https://github.com/27jackson08/fhirfaker/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/27jackson08/fhirfaker/releases/tag/v0.1.0
