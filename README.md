@@ -28,13 +28,22 @@ carebundle generate --profile type2_diabetes --count 20 --seed 42 --out ./fixtur
 
 ## Why not Synthea?
 
-You probably should use [Synthea](https://github.com/synthetichealth/synthea). It is
-excellent, mature, peer-reviewed, and does far more than this: full birth-to-death
-population simulation, 100+ disease modules, C-CDA and bulk ndjson output, and its own
-US Core-conformant FHIR export.
+[Synthea](https://github.com/synthetichealth/synthea) is excellent, mature and
+peer-reviewed, and does far more than this: full birth-to-death population simulation,
+100+ disease modules, C-CDA and bulk ndjson output, and its own US Core-conformant FHIR
+export. **For most people it is still the right answer**, and this is not a replacement
+for it.
 
-This project is not "better than Synthea". It is what you reach for when Synthea is
-overkill:
+There is one specific thing it measurably does not do. Synthea's
+[published validation](https://pmc.ncbi.nlm.nih.gov/articles/PMC6416981/) tested it
+against four CMS quality measures: it tracks reality on the *process* measure and scores
+**0%** on every *outcome* measure, because a simulator of care pathways has no
+representation of what the blood pressure did after treatment started. Modelling
+clinical state directly is what makes an outcome measure reachable at all.
+
+That is the gap this fills. It is narrow, and the table below is honest about how
+narrow — one of four benchmark measures, with the other three marked *not modelled*
+rather than quietly dropped.
 
 | | Synthea | this |
 |---|---|---|
@@ -44,16 +53,12 @@ overkill:
 | Reproducible fixtures | not a contract | **byte-identical for a given seed** |
 | CMS *Controlling High Blood Pressure* | **0%** (published) | **71.5%** (real-world 69.7–74.5%) |
 
-If you want a realistic population to analyse, use Synthea. If you want five diabetic
-patients with coherent lab panels inside a pytest fixture, this is smaller.
+**If you want a realistic population to analyse, use Synthea.** Breadth is not close:
+231 disease modules against four clinical profiles, and a lifetime per patient against a
+single visit. If you want five diabetic patients with coherent lab panels inside a
+pytest fixture, this is smaller and the numbers are checked.
 
-That last row is the one worth explaining. Synthea's
-[published validation](https://pmc.ncbi.nlm.nih.gov/articles/PMC6416981/) tested it
-against four CMS quality measures: it tracks reality on the *process* measure and
-scores ~0% on every *outcome* measure, because a simulator of care pathways has no
-representation of what the blood pressure did after treatment started. Modelling
-clinical state directly is what makes an outcome measure reachable at all. The full
-comparison, including the three measures this does **not** model, is in
+The full comparison, including the three measures this does **not** model, is in
 [BENCHMARK.md](BENCHMARK.md).
 
 ### Why not PySynthea?
@@ -325,6 +330,16 @@ Stated here rather than left for you to discover.
 - **Blood pressure marginals are clinical definitions**, not population fits —
   "normotensive" and "hypertensive" are the populations the profiles mean. Everything
   else is calibrated against NHANES (see below).
+- **Well-controlled diabetes is under-represented.** The NHANES calibration defines its
+  diabetic stratum *by* `HbA1c >= 6.5`, so the generated population is "people with
+  HbA1c at or above 6.5", which is not the same set as "people diagnosed with type 2
+  diabetes" — the latter includes patients whose treatment has brought them below 6.5,
+  and that is a large group. Concretely, 30% of generated diabetics fall under 7.0%
+  against a published all-adult figure of 52.7%. Much of that gap is population
+  mismatch rather than error (this calibrates to ages 45-65, the published figure is
+  all-adult), but the definitional part is real: a diagnosed, well-controlled diabetic
+  at 6.1% is a patient this cannot currently produce. Fixing it means re-running the
+  calibration with the stratum defined by diagnosis rather than by threshold.
 - **One encounter per bundle.** No longitudinal history — that is Synthea's territory.
 - **Terminology is a curated subset** — 102 codes (42 LOINC, 29 RxNorm, 21 ICD-10-CM),
   not full coverage. Every code *and display* is verified against its source vocabulary

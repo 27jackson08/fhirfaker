@@ -530,6 +530,18 @@ documentation, and each would otherwise be rediscovered the hard way.
   marginal left diabetic patients with the same BMI as the general population — contradicting
   the strongest association in type 2 diabetes. Individually every value looked fine; only a
   cross-profile comparison exposed it.
+- **A stratum defined by a threshold cannot then validate that threshold.** The NHANES
+  calibration selects its diabetic stratum with `hba1c >= 6.5`, so the extracted 2.5th
+  percentile for that stratum is 6.5 — which looks like empirical support for the
+  marginal's lower bound and is in fact the selection criterion reflected back. The
+  same applies to the upper bound: median, both quartiles and both 2.5/97.5 percentiles
+  are all consumed by the fit, so this targets file contains *no* free moment against
+  which the fitted shape could be independently checked. Worth knowing before trying to
+  build a tail check out of it, which is how this was found.
+  The substantive consequence is a real limitation rather than a bug: the profile emits
+  `E11.x`, a *diagnosed* type 2 diabetes code, for a population defined as "HbA1c at or
+  above 6.5". Diagnosed diabetics include well-controlled patients below 6.5, and this
+  generator cannot produce them.
 - **Four population-mismatch traps in one sitting; assume the denominators differ until
   shown otherwise.** Every one of these looked like a straightforward comparison and was
   not: NHANES reports blood-pressure control over *all* hypertensives at **<130/80**
