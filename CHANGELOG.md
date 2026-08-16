@@ -12,6 +12,22 @@ what you are relying on, and this file is where it is recorded.
 
 Nothing yet.
 
+## [0.1.2] — 2026-08-16
+
+### Fixed
+
+- **`carebundle.__version__` reported the wrong version.** 0.1.1 shipped with
+  distribution metadata saying `0.1.1` and the runtime attribute still saying `0.1.0`,
+  because the version was written in two places and only one was bumped. The existing
+  test asserted the string contained two dots, so it could never have caught it.
+
+  The version is now single-sourced: `carebundle/__init__.py` defines it and
+  `pyproject.toml` declares it dynamic and reads it from there, which makes the two
+  impossible to disagree. Tests assert both that configuration and, when installed,
+  that the distribution metadata matches the module attribute.
+
+Generated output is unchanged.
+
 ## [0.1.1] — 2026-08-16
 
 ### Fixed
@@ -96,6 +112,7 @@ determinism contract described above starts now.
   draws on CPT-4 (AMA-licensed) and SNOMED CT, so warning-free US Core Encounter
   conformance is not reachable without licensed terminology. See `CONFORMANCE.md`.
 
-[Unreleased]: https://github.com/27jackson08/fhirfaker/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/27jackson08/fhirfaker/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/27jackson08/fhirfaker/releases/tag/v0.1.2
 [0.1.1]: https://github.com/27jackson08/fhirfaker/releases/tag/v0.1.1
 [0.1.0]: https://github.com/27jackson08/fhirfaker/releases/tag/v0.1.0

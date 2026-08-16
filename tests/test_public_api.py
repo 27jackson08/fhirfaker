@@ -52,6 +52,42 @@ def test_version_is_exposed():
     assert carebundle.__version__.count(".") == 2
 
 
+def test_version_is_single_sourced_and_cannot_drift():
+    """0.1.1 shipped with metadata saying 0.1.1 and `__version__` saying 0.1.0.
+
+    The old test only checked the string had two dots, so it could not have caught that.
+    `pyproject.toml` now declares the version dynamic and reads it from
+    `carebundle/__init__.py`, which makes the two impossible to disagree — this asserts
+    the configuration that guarantees it, since a future edit could reintroduce a
+    literal and silently restore the failure mode.
+    """
+    pyproject = (README.parent / "pyproject.toml").read_text()
+    assert 'dynamic = ["version"]' in pyproject, (
+        "pyproject must derive the version rather than duplicate it"
+    )
+    assert 'path = "carebundle/__init__.py"' in pyproject, (
+        "the dynamic version must be sourced from the module that defines __version__"
+    )
+    assert not re.search(r'^version\s*=', pyproject, re.MULTILINE), (
+        "a literal version in pyproject can drift from __version__; that is the bug"
+    )
+
+
+def test_installed_metadata_matches_the_module_version():
+    """When installed, the distribution version and `__version__` must agree.
+
+    Skipped in a bare source checkout, where there is no installed distribution to
+    compare against.
+    """
+    from importlib.metadata import PackageNotFoundError, version
+
+    try:
+        installed = version("carebundle")
+    except PackageNotFoundError:
+        pytest.skip("carebundle is not installed in this environment")
+    assert installed == carebundle.__version__
+
+
 @pytest.mark.parametrize("profile", ["healthy", "hypertension", "type2_diabetes", "ckd_stage3"])
 def test_every_documented_profile_is_generable(profile):
     assert profile in carebundle.PROFILES

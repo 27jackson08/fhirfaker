@@ -23,7 +23,7 @@ permissions:
   contents: read
 
 jobs:
-  # A tag that disagrees with pyproject is the classic release footgun: it publishes
+  # A tag that disagrees with the version is the classic release footgun: it publishes
   # the wrong version under the right name, and PyPI will not let you reuse the number.
   # Fail here rather than after upload.
   verify:
@@ -33,20 +33,27 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Tag must match the version in pyproject.toml
+      - name: Tag must match __version__ and CHANGELOG
         # Only meaningful on a tag; on a dispatch rehearsal GITHUB_REF_NAME is a branch.
         if: github.ref_type == 'tag'
         run: |
           python - <<'PY'
-          import os, pathlib, re, sys, tomllib
+          import os, pathlib, re, sys
           tag = os.environ["GITHUB_REF_NAME"]
-          version = tomllib.loads(pathlib.Path("pyproject.toml").read_text())["project"]["version"]
+          # Read the version from the module, which is the single source of truth:
+          # pyproject declares it dynamic, so `project.version` does not exist there.
+          # Parsed rather than imported so this step needs no dependencies installed.
+          source = pathlib.Path("carebundle/__init__.py").read_text()
+          match = re.search(r'^__version__ = "([^"]+)"', source, re.M)
+          if not match:
+              sys.exit("::error::could not find __version__ in carebundle/__init__.py")
+          version = match.group(1)
           if tag != f"v{version}":
-              sys.exit(f"::error::tag {tag} does not match pyproject version {version} (expected v{version})")
+              sys.exit(f"::error::tag {tag} does not match __version__ {version} (expected v{version})")
           changelog = pathlib.Path("CHANGELOG.md").read_text()
           if not re.search(rf"^## \[{re.escape(version)}\]", changelog, re.M):
               sys.exit(f"::error::CHANGELOG.md has no '## [{version}]' section")
-          print(f"tag {tag} matches pyproject and CHANGELOG")
+          print(f"tag {tag} matches __version__ and CHANGELOG")
           PY
 
   # Do not publish something the gates have not passed. This duplicates ci.yml
@@ -102,10 +109,14 @@ jobs:
           /tmp/probe/bin/pip install --quiet dist/*.whl
           cd /tmp && /tmp/probe/bin/python -c "
           import json, carebundle
+          from importlib.metadata import version
           b = json.loads(carebundle.to_json(
               carebundle.generate_bundle(profile='type2_diabetes', seed=42, sex='F')))
           assert b['resourceType'] == 'Bundle' and b['entry']
-          print('wheel OK:', len(b['entry']), 'entries')
+          # 0.1.1 shipped with metadata 0.1.1 and __version__ 0.1.0. Never again.
+          assert version('carebundle') == carebundle.__version__, (
+              version('carebundle'), carebundle.__version__)
+          print('wheel OK:', carebundle.__version__, len(b['entry']), 'entries')
           "
       - uses: actions/upload-artifact@v4
         with:

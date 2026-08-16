@@ -2,7 +2,7 @@
 # The FHIR trademark policy forbids combining the mark with other words, which ruled
 # out `fhirforge`/`synthfhir`; `carebundle` carries no mark (build doc Section 15).
 name = "carebundle"
-version = "0.1.1"
+dynamic = ["version"]
 description = "Clinically coherent synthetic FHIR(R) R4 test data for Python"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -51,6 +51,11 @@ dev = [
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.version]
+# Read from the module rather than duplicated here. Bumping one and forgetting the
+# other shipped a wrong `carebundle.__version__` in 0.1.1.
+path = "carebundle/__init__.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["carebundle"]
