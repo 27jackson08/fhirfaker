@@ -3,8 +3,8 @@
 [![PyPI](https://img.shields.io/pypi/v/carebundle)](https://pypi.org/project/carebundle/)
 [![CI](https://github.com/27jackson08/fhirfaker/actions/workflows/ci.yml/badge.svg)](https://github.com/27jackson08/fhirfaker/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13%20%7C%203.14-blue)](https://github.com/27jackson08/fhirfaker/actions/workflows/ci.yml)
-[![US Core](https://img.shields.io/badge/US%20Core-6.1.0%20validated-brightgreen)](CONFORMANCE.md)
-[![Licence](https://img.shields.io/badge/licence-Apache--2.0-blue)](LICENSE)
+[![US Core](https://img.shields.io/badge/US%20Core-6.1.0%20validated-brightgreen)](https://github.com/27jackson08/fhirfaker/blob/main/CONFORMANCE.md)
+[![Licence](https://img.shields.io/badge/licence-Apache--2.0-blue)](https://github.com/27jackson08/fhirfaker/blob/main/LICENSE)
 
 `pip install`, import, and get a **US Core-conformant FHIR R4 Bundle** back as a Python
 object. No JVM, no config file, no output directory to manage.
@@ -60,7 +60,7 @@ single visit. If you want five diabetic patients with coherent lab panels inside
 pytest fixture, this is smaller and the numbers are checked.
 
 The full comparison, including the three measures this does **not** model, is in
-[BENCHMARK.md](BENCHMARK.md).
+[BENCHMARK.md](https://github.com/27jackson08/fhirfaker/blob/main/BENCHMARK.md).
 
 ### Why not PySynthea?
 
@@ -88,7 +88,7 @@ taking `fhir.resources` as a dependency.
 Synthea's or PySynthea's disease-module depth, or a terminology server.
 
 Where this is heading — and the peer-reviewed evidence behind the direction — is in
-[ROADMAP.md](ROADMAP.md).
+[ROADMAP.md](https://github.com/27jackson08/fhirfaker/blob/main/ROADMAP.md).
 
 ---
 
@@ -197,7 +197,7 @@ Three layers, weakest to strongest.
 ### 1. Conformance — proven, not claimed
 
 Output is validated by the **official HL7 FHIR validator** against US Core 6.1.0 on
-every release. The full matrix is published in [CONFORMANCE.md](CONFORMANCE.md).
+every release. The full matrix is published in [CONFORMANCE.md](https://github.com/27jackson08/fhirfaker/blob/main/CONFORMANCE.md).
 
 | Profile | Entries | Errors | Warnings |
 |---|---:|---:|---:|
@@ -218,7 +218,7 @@ end up with a diabetes diagnosis next to an HbA1c of 5.2%. Here, analytes are dr
 formulas rather than sampled.
 
 The claim is checked statistically on every run and published as a
-[fidelity report](FIDELITY.md):
+[fidelity report](https://github.com/27jackson08/fhirfaker/blob/main/FIDELITY.md):
 
 | Check | Observed | Expected | Source |
 |---|---:|---:|---|
@@ -248,7 +248,7 @@ confessed; it is the distinction most synthetic-data validation omits, and omitt
 is the specific criticism in
 [arXiv:2606.08903](https://arxiv.org/abs/2606.08903) — that evaluation is dominated by
 statistical similarity which does not establish clinical validity. The out-of-sample
-check is the CMS blood-pressure control measure in [BENCHMARK.md](BENCHMARK.md), and a
+check is the CMS blood-pressure control measure in [BENCHMARK.md](https://github.com/27jackson08/fhirfaker/blob/main/BENCHMARK.md), and a
 test pins the count so it cannot grow by relabelling.
 
 Marginals are calibrated against the **NHANES 2017-March 2020** public files,
@@ -272,7 +272,7 @@ diagnosis cannot contradict the lab result in the same bundle.
 ### 3. Determinism — a contract, not a nice-to-have
 
 `seed=42` produces **byte-identical** output. Not "statistically similar" — the same
-bytes, enforced by committed [golden files](tests/golden/).
+bytes, enforced by committed [golden files](https://github.com/27jackson08/fhirfaker/tree/main/tests/golden/).
 
 - No `uuid4()`: ids are UUIDv5 derived from `(seed, role, index)`.
 - No `datetime.now()`: the reference date is injected.
@@ -393,7 +393,7 @@ Stated here rather than left for you to discover.
   (AMA-licensed) and SNOMED CT (affiliate-licensed). Neither can be redistributed here,
   so we assert `text` only and accept one warning. Warning-free US Core Encounter
   conformance is not reachable under this licensing position.
-- **No SNOMED CT.** Deliberate — see [CONFORMANCE.md](CONFORMANCE.md). Conditions use
+- **No SNOMED CT.** Deliberate — see [CONFORMANCE.md](https://github.com/27jackson08/fhirfaker/blob/main/CONFORMANCE.md). Conditions use
   ICD-10-CM, which US Core's Condition binding accepts with zero errors *and* zero
   warnings.
 - **Blood pressure marginals are clinical definitions**, not population fits —
@@ -442,8 +442,8 @@ pytest tests/test_golden.py --update-golden   # then review the diff
 ```
 
 Changing seeded output at all is a **major** version bump, not a minor one — users pin
-test fixtures to a seed. See [CHANGELOG.md](CHANGELOG.md) for the versioned determinism
-contract and [RELEASING.md](RELEASING.md) for the release process.
+test fixtures to a seed. See [CHANGELOG.md](https://github.com/27jackson08/fhirfaker/blob/main/CHANGELOG.md) for the versioned determinism
+contract and [RELEASING.md](https://github.com/27jackson08/fhirfaker/blob/main/RELEASING.md) for the release process.
 
 ---
 
@@ -461,7 +461,7 @@ what `pip install` resolves and what appears on PyPI, is `carebundle`.
 
 ## Licence
 
-Licensed under the **Apache License 2.0** — see [LICENSE](LICENSE). Apache 2.0 over MIT
+Licensed under the **Apache License 2.0** — see [LICENSE](https://github.com/27jackson08/fhirfaker/blob/main/LICENSE). Apache 2.0 over MIT
 for the express patent grant, which matters more than usual for a library that
 implements published clinical algorithms.
 

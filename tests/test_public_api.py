@@ -172,3 +172,24 @@ def test_readme_and_conformance_doc_agree_with_each_other():
             f"{profile}: README says {readme[profile]}, "
             f"CONFORMANCE.md says {conformance[profile]}"
         )
+
+
+def test_readme_has_no_relative_links_because_it_is_the_pypi_page():
+    """Relative links resolve against pypi.org there, not against the repository.
+
+    Found live on the 0.1.0 page: every evidence document — BENCHMARK.md,
+    CONFORMANCE.md, FIDELITY.md, ROADMAP.md, LICENSE — was a dead link on the page
+    where "go and check the evidence" is the entire pitch. `twine check` does not catch
+    this, because the markup is valid; only the destinations are wrong.
+    """
+    import re
+
+    targets = re.findall(r"\]\(([^)]+)\)", README.read_text())
+    relative = [
+        t for t in targets
+        if not t.startswith(("http://", "https://", "#", "mailto:"))
+    ]
+    assert not relative, (
+        f"README is published as the PyPI long description, so these would 404 there: "
+        f"{relative}. Use absolute https://github.com/... URLs."
+    )

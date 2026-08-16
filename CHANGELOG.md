@@ -12,6 +12,20 @@ what you are relying on, and this file is where it is recorded.
 
 Nothing yet.
 
+## [0.1.1] — 2026-08-16
+
+### Fixed
+
+- **Every documentation link on the PyPI page was dead.** The README is published as
+  the long description, where relative links resolve against `pypi.org` rather than the
+  repository — so `BENCHMARK.md`, `CONFORMANCE.md`, `FIDELITY.md`, `ROADMAP.md` and
+  `LICENSE` all 404'd on the page where "check the evidence yourself" is the whole
+  pitch. Now absolute GitHub URLs, which work in both places. `twine check` does not
+  catch this: the markup is valid, only the destinations are wrong. A test now asserts
+  the README contains no relative links.
+
+Generated output is unchanged, so seeded fixtures pinned to 0.1.0 are unaffected.
+
 ## [0.1.0] — 2026-08-16
 
 First release. Everything here is new, so this entry describes the surface rather than a
@@ -82,5 +96,6 @@ determinism contract described above starts now.
   draws on CPT-4 (AMA-licensed) and SNOMED CT, so warning-free US Core Encounter
   conformance is not reachable without licensed terminology. See `CONFORMANCE.md`.
 
-[Unreleased]: https://github.com/27jackson08/fhirfaker/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/27jackson08/fhirfaker/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/27jackson08/fhirfaker/releases/tag/v0.1.1
 [0.1.0]: https://github.com/27jackson08/fhirfaker/releases/tag/v0.1.0

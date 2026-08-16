@@ -2,7 +2,7 @@
 # The FHIR trademark policy forbids combining the mark with other words, which ruled
 # out `fhirforge`/`synthfhir`; `carebundle` carries no mark (build doc Section 15).
 name = "carebundle"
-version = "0.1.0"
+version = "0.1.1"
 description = "Clinically coherent synthetic FHIR(R) R4 test data for Python"
 readme = "README.md"
 requires-python = ">=3.10"
