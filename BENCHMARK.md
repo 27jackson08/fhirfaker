@@ -35,11 +35,27 @@ measure needs.
 | COPD 30-day mortality | 0.7% | *not modelled* | 8.0% | 7.0% |
 | Complications after hip/knee replacement | 0% | *not modelled* | 2.8% | 2.9% |
 
-**The three "not modelled" rows are published deliberately.** They need procedures,
-mortality and longitudinal follow-up that this library does not generate, and a
-benchmark that quietly dropped the measures it loses would be worthless as evidence.
-*Not modelled* is a different claim from 0%, and the measure engine keeps them
-distinguishable: a zero denominator is reported as a zero denominator, never as a rate.
+**The three "not modelled" rows are published deliberately.** A benchmark that quietly
+dropped the measures it loses would be worthless as evidence. *Not modelled* is a
+different claim from 0%, and the measure engine keeps them distinguishable: a zero
+denominator is reported as a zero denominator, never as a rate.
+
+**They are also not going to be modelled**, and the reason is licensing rather than
+effort. All three need `Procedure` resources, and the procedures in question have no
+realistic public-domain coding:
+
+- Screening colonoscopy is **CPT 45378** in the ambulatory setting where screening
+  happens; CPT is AMA-licensed. Hip and knee replacement likewise.
+- SNOMED CT needs an affiliate licence and bars redistribution.
+- ICD-10-PCS *is* public domain and US Core accepts it, so `0DJD8ZZ` would validate —
+  but PCS is inpatient facility coding, and no real US ambulatory system emits it for a
+  screening colonoscopy. Conformant and wrong. Checked and rejected rather than used,
+  because winning a benchmark row with a code no real system emits would forfeit the
+  realism claim the row is meant to evidence.
+
+The measures this project can reach are those defined over labs, vitals and diagnoses —
+which it codes with LOINC and ICD-10-CM. That is a real and narrow boundary, and it is
+better stated than discovered.
 
 ### Controlling high blood pressure, in detail
 

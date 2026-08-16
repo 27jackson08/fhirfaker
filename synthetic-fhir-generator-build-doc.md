@@ -530,6 +530,16 @@ documentation, and each would otherwise be rediscovered the hard way.
   marginal left diabetic patients with the same BMI as the general population — contradicting
   the strongest association in type 2 diabetes. Individually every value looked fine; only a
   cross-profile comparison exposed it.
+- **"Conformant" and "realistic" can come apart, and the licensing position is where.**
+  Three of the four CMS benchmark measures need `Procedure` resources. CPT and SNOMED
+  are both licensed, but **ICD-10-PCS is public domain and US Core accepts it** for
+  `Procedure.code` under an extensible binding — so a screening colonoscopy coded
+  `0DJD8ZZ` would pass the validator cleanly. It is still wrong: PCS is inpatient
+  facility coding and screening colonoscopies are ambulatory, where US systems emit CPT
+  45378. The validator cannot detect that, because it is a realism failure rather than a
+  conformance one. Worth recording as a rejected shortcut, since the temptation to take
+  it grows with every benchmark row it would unlock — and taking it would forfeit
+  exactly the claim the row is meant to support.
 - **Pooling strata manufactures correlation.** The height/weight correlation was set to
   0.45, which is close to the figure you get from the whole 45-65 band (0.41) and far
   from the within-sex one for women (0.30). Men are both taller and heavier, so pooling

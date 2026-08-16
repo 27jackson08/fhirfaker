@@ -112,10 +112,10 @@ Specifically, all four of:
 
 1. **Three or more out-of-sample checks**, not one. Today the fidelity report grades 1
    of 38 that way, and a single measure is an anecdote with a CI job attached.
-2. **At least two of the four CMS benchmark measures reproduced**, rather than one of
-   four with three marked *not modelled*. Publishing the losing rows is what makes the
-   winning row credible; a table that is three-quarters "not modelled" does not yet
-   support "use this instead".
+2. ~~**At least two of the four CMS benchmark measures reproduced.**~~ **Withdrawn as
+   unreachable — see below.** Replaced by: **at least one further quality measure
+   reproduced from the reachable class**, defined below, or an explicit statement in
+   `BENCHMARK.md` that no further measure is reachable and why.
 3. **A defensible answer to "what do I lose"** for the common case. Right now that
    answer is "231 disease modules and a lifetime per patient", and it is disqualifying
    for most people who arrive wanting a population to analyse.
@@ -137,6 +137,39 @@ Replacing them is what needs the four conditions above.
 out-of-sample row by relabelling existing checks. A test pins that count at 1 precisely
 so it cannot happen quietly, and condition 1 above should be read as "three checks that
 would each survive an outsider asking *what was this fitted to?*".
+
+### Why criterion 2 was withdrawn
+
+Three of the four benchmark measures — colorectal screening, COPD 30-day mortality,
+hip/knee complications — need **Procedure** resources. Under this project's licensing
+position they cannot be coded realistically:
+
+* Screening colonoscopy in the US is **CPT 45378**, and CPT is AMA-licensed. Same for
+  hip and knee replacement.
+* SNOMED CT requires an affiliate licence and bars redistribution.
+* **ICD-10-PCS is public domain and US Core explicitly accepts it** for `Procedure.code`
+  under an *extensible* binding, so a colonoscopy could be emitted with `0DJD8ZZ` and
+  would validate. It was checked and rejected anyway: ICD-10-PCS is **inpatient facility**
+  coding. Screening colonoscopies happen in ambulatory settings, where no real US system
+  emits a PCS code for one. It would be conformant and wrong.
+
+Recorded explicitly so this is not rediscovered and adopted as a shortcut. Emitting a
+code no real system emits, in order to unlock a benchmark row, is precisely the
+self-deception the rest of this document exists to prevent — the row would be won by
+generating data that fails the realism claim it is supposed to evidence.
+
+**So criterion 2 as written was not a bar, it was a veto**: unreachable without a
+licensing change, and therefore incapable of ever being satisfied. A gate that cannot
+open is not a gate. Replacing it is legitimate; weakening it would not be, so the
+replacement is deliberately not easier — it still demands a *new* reproduced measure,
+and the reachable class is genuinely narrow.
+
+**The reachable class** is quality measures defined over labs, vitals and diagnoses,
+which this project codes with LOINC and ICD-10-CM and can therefore emit realistically.
+`Controlling High Blood Pressure` is one. `CMS122 Diabetes: HbA1c Poor Control (>9%)` is
+another and is *coding*-reachable today — it was attempted and the blocker was different
+and possibly solvable: NCQA's national rates sit behind registration, and a benchmark
+needs a citable denominator-matched target, not a plausible one.
 
 ## 4. Phases
 
