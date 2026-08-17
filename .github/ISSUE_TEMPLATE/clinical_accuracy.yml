@@ -1,0 +1,58 @@
+name: Clinically wrong output
+description: The generated data is valid FHIR but not clinically plausible.
+labels: ["fidelity"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This is the most valuable kind of report this project can get, and the hardest to
+        act on without a source.
+
+        Every distribution and relationship here is calibrated against something citable
+        — NHANES for marginals and correlations, published trials for treatment effects,
+        published formulas for derived values — and the fidelity report records what each
+        check actually proves. A report saying "that HbA1c looks high" cannot be acted on
+        without changing a number away from its source. A report with a citation can.
+
+        So: what does the literature say it should be, and where?
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      placeholder: "0.1.2"
+    validations:
+      required: true
+
+  - type: textarea
+    id: observed
+    attributes:
+      label: What the generator produces
+      description: Include the seed and profile so the values can be reproduced exactly.
+      render: python
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What it should produce, and the source
+      description: >
+        A citation, ideally with the population it describes. Denominators matter more
+        than they look: NHANES reports blood-pressure control over all hypertensives at
+        <130/80, while HEDIS reports diagnosed in-care patients at <140/90 — 20.7% versus
+        roughly 70% for the same underlying reality. A figure without its population is
+        not a target.
+      placeholder: |
+        NHANES 2017-March 2020, adults 45-65, diagnosed diabetes: median HbA1c 7.1% (F).
+        https://...
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checked
+    attributes:
+      label: Before submitting
+      options:
+        - label: I have checked FIDELITY.md to see whether this relationship is already asserted, and what grade of evidence it carries.
+        - label: My source describes the same population the profile claims to model.

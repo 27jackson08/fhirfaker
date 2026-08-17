@@ -447,6 +447,22 @@ contract and [RELEASING.md](https://github.com/27jackson08/fhirfaker/blob/main/R
 
 ---
 
+## Contributing
+
+Issues and pull requests are welcome — see
+[CONTRIBUTING.md](https://github.com/27jackson08/fhirfaker/blob/main/CONTRIBUTING.md).
+
+One thing is worth knowing before you file: **numbers here come from sources, not from
+judgement.** If the generated data looks clinically wrong, that is the most valuable
+report this project can get, and the issue template asks what the literature says it
+should be and where. Three hand-set correlations survived in this codebase looking
+entirely reasonable until they were checked against the data, and all three were wrong.
+
+If you hit a bug, include the **seed and profile**. Output is byte-identical for a given
+seed and version, so those three facts reproduce exactly what you saw.
+
+---
+
 ## Naming
 
 The published package is **`carebundle`**, and it carries no HL7 mark deliberately. HL7's

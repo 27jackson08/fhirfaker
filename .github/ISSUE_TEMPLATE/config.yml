@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Conformance question
+    url: https://github.com/27jackson08/fhirfaker/blob/main/CONFORMANCE.md
+    about: Every US Core warning this emits is documented there with a reason, including the ones that cannot be fixed without licensed terminology.
+  - name: Is this relationship actually checked?
+    url: https://github.com/27jackson08/fhirfaker/blob/main/FIDELITY.md
+    about: The fidelity report lists every check and grades what a pass proves — most are self-consistency, not external validation.
