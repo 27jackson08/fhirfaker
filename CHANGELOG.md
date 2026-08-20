@@ -19,7 +19,17 @@ Practically, for anyone pinning: **pin the patch version.** `carebundle==0.1.2` 
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- **`carebundle.fidelity.transfer`** — clinical-utility evidence by
+  Train-on-Synthetic-Test-on-Real. A logistic model fitted entirely on generated
+  patients scores AUC 0.621 on 1,330 real NHANES individuals against 0.677 for the same
+  model trained on real data: **92% retention**. Offline tooling like the calibration,
+  since it needs the NHANES individual records.
+
+  Graded `calibration` rather than `out_of_sample` — the test individuals were never
+  seen and no fitting targeted an AUC, but the marginals came from the same survey, so
+  it is not independent evidence. The pinned out-of-sample count stays at 1.
 
 ## [0.2.0] — 2026-08-20
 

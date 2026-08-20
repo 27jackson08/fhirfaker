@@ -244,6 +244,12 @@ them rather than reporting a flat total:
 | round-trip | 1 | The sampler reproduces a value it was configured with. Proves the engine works, not that the value is right. |
 | identity | 4 | Computed from its own inputs (eGFR, Friedewald LDL, BMI). Cannot fail unless the code is broken. |
 
+**Clinical utility, measured.** A logistic model trained *entirely on generated
+patients* scores **AUC 0.621** on 1,330 real NHANES individuals, against **0.677** for
+the same model trained on real data — **92% retention**. The task deliberately excludes
+HbA1c, which would restate the diagnostic criterion rather than predict anything. Full
+method in [FIDELITY.md](https://github.com/27jackson08/fhirfaker/blob/main/FIDELITY.md).
+
 Stating that only one check is genuinely out-of-sample is not a weakness being
 confessed; it is the distinction most synthetic-data validation omits, and omitting it
 is the specific criticism in

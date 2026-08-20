@@ -345,9 +345,13 @@ existing distributional model given a time axis.
 > out-of-sample claim has to be argued for rather than arrived at by relabelling —
 > which is the failure mode grading would otherwise invite.
 >
-> **Still open:** clinical-utility evidence (does a model trained on generated data
-> transfer?), and the preprint. The grading makes both easier to write honestly:
-> the obvious next move is to grow the out-of-sample row, not the total.
+> **Clinical utility: done.** Train-on-Synthetic-Test-on-Real gives AUC 0.621 against
+> a real-data ceiling of 0.677 — 92% retention — predicting diagnosed diabetes from
+> non-glycaemic features on 1,330 real NHANES individuals. Graded `calibration`
+> rather than `out_of_sample`, because the marginals came from the same survey; the
+> pinned out-of-sample count stays at 1. `carebundle/fidelity/transfer.py`.
+>
+> **Still open:** the preprint.
 
 ### Phase 8 — original plan (retained for the record)
 

@@ -84,6 +84,24 @@ Checks are **graded by evidential strength**, because they are not equivalent an
 
 **46/46 passed.**
 
+## Clinical utility: does a model trained on this transfer?
+
+Regenerate with `python -m carebundle.fidelity.transfer --data-dir <dir>`. Offline — it needs the NHANES individual records, which are not vendored, so it is not part of the CI suite and these figures are refreshed by hand when the calibration changes.
+
+Train-on-Synthetic-Test-on-Real. A logistic model is fitted **entirely on generated patients**, then scored on 1,330 real NHANES individuals aged 45-65, and compared against the same model trained on real data with five-fold cross-validation.
+
+| Model | AUC |
+|---|---:|
+| Train on **synthetic**, test on **real** | **0.621** |
+| Train on real, test on real (5-fold) | 0.677 |
+| **Retention** | **91.7%** |
+
+Task: predict diagnosed diabetes from BMI, triglycerides, HDL and systolic pressure. Prevalence 21.0%; chance is 0.500.
+
+**HbA1c is deliberately excluded.** Predicting diabetes from HbA1c is not a prediction, it is the diagnostic criterion restated, and any generator would score near 1.0. These features are the metabolic signal *around* the diagnosis — a genuinely hard task, which is why the real-data ceiling is only 0.677. A low ceiling leaves room to fail.
+
+**This is graded `calibration`, not `out_of_sample`.** The individuals in the test set were never seen by the generator and no fitting targeted an AUC, which makes it a far stronger check than comparing a fitted median to its target. But the marginals and correlations came from the same survey, so it is not evidence from an independent source. Calling it out-of-sample would inflate the one category this report exists to keep honest.
+
 ## Why R^2 is the load-bearing number
 
 The ADAG relationship is `eAG = 28.7 x HbA1c - 46.7` with **R^2 = 0.84**. A
