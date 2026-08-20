@@ -1453,7 +1453,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Hematocrit [Volume Fraction] of Blood by Automated count: 39.0 % (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Hematocrit [Volume Fraction] of Blood by Automated count: 39.1 % (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -1491,7 +1491,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 39.0,
+          "value": 39.1,
           "unit": "%",
           "system": "http://unitsofmeasure.org",
           "code": "%"
@@ -1520,7 +1520,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Erythrocytes [#/volume] in Blood by Automated count: 4.35 10*6/uL (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Erythrocytes [#/volume] in Blood by Automated count: 4.31 10*6/uL (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -1558,7 +1558,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 4.35,
+          "value": 4.31,
           "unit": "10*6/uL",
           "system": "http://unitsofmeasure.org",
           "code": "10*6/uL"

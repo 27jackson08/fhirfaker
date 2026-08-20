@@ -10,6 +10,22 @@ what you are relying on, and this file is where it is recorded.
 
 ## [Unreleased]
 
+### Changed — **breaking, seeded output** (awaiting a 1.0.0 release)
+
+- **The red cell correlations are measured rather than estimated.** Haemoglobin,
+  haematocrit and red cell count were hand-set at 0.93 / 0.86 / 0.87. Measured against
+  NHANES 45-65 they are 0.964 / 0.538 / 0.648 in women and 0.960 / 0.649 / 0.752 in men.
+  Haemoglobin against red cell count was badly wrong — 0.86 against a measured 0.54 —
+  and all three differ by sex, so a single constant could not have been right for both.
+
+  This is the same failure as the three correlations corrected before publication: a
+  plausible number nobody had compared to data. It was found while calibrating the
+  anaemia profile, which needed the same trio measured within its own stratum.
+
+  **This changes seeded output for every profile, so it is a major version bump under
+  the stability policy above.** It is recorded here and deliberately not released on its
+  own — anyone pinning fixtures to a seed on 0.1.x is unaffected until 1.0.0 is cut.
+
 ### Added
 
 - **`anaemia` profile** — anaemia by WHO haemoglobin criteria (<13 g/dL in men, <12 in

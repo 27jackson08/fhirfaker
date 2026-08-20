@@ -551,6 +551,16 @@ documentation, and each would otherwise be rediscovered the hard way.
   conformance one. Worth recording as a rejected shortcut, since the temptation to take
   it grows with every benchmark row it would unlock — and taking it would forfeit
   exactly the claim the row is meant to support.
+- **Hand-set correlations were wrong four times out of four, and the fourth was found by
+  accident.** The blood-pressure, triglyceride/HDL and height/weight figures were checked
+  and corrected before publication. The red cell trio — haemoglobin, haematocrit, red
+  cell count — was not, because nothing had prompted anyone to look at it; it surfaced
+  only while calibrating an anaemia profile that needed the same three measured within
+  its own stratum. Haemoglobin against red cell count had been set to 0.86 against a
+  measured 0.54. The general lesson is not that estimates are unreliable, which the
+  comorbidity rate disproves by having been right. It is that nobody can tell which are
+  sound without checking, and the ones nobody has had a reason to check are exactly the
+  ones still wrong.
 - **Pooling strata manufactures correlation.** The height/weight correlation was set to
   0.45, which is close to the figure you get from the whole 45-65 band (0.41) and far
   from the within-sex one for women (0.30). Men are both taller and heavier, so pooling

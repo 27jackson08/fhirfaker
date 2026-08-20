@@ -214,6 +214,10 @@ def test_configured_correlations_match_the_committed_nhanes_extraction():
         "triglycerides~hdl": library.TG_HDL_CORRELATION_BY_SEX,
         "height_cm~weight_kg": library.HEIGHT_WEIGHT_CORRELATION_BY_SEX,
     }
+    # The red cell trio arrives as tuples of (a, b, rho) rather than a bare mapping.
+    for sex, pairs in library.RED_CELL_CORRELATIONS_BY_SEX.items():
+        for first, second, rho in pairs:
+            expected.setdefault(f"{first}~{second}", {})[sex] = rho
     for pair, configured in expected.items():
         for sex, value in configured.items():
             key = f"{sex}/all/{pair}"

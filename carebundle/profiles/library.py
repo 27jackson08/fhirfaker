@@ -280,11 +280,26 @@ ANAEMIC_RED_CELL_CORRELATIONS_BY_SEX = {
         ("hematocrit", "rbc", 0.571),
     ),
 }
-RED_CELL_CORRELATIONS = (
-    ("hemoglobin", "hematocrit", 0.93),
-    ("hemoglobin", "rbc", 0.86),
-    ("hematocrit", "rbc", 0.87),
-)
+# Measured from NHANES 45-65 rather than estimated, and sex-specific because they are.
+# The hand-set values were 0.93 / 0.86 / 0.87; haemoglobin against red cell count was the
+# badly wrong one, at 0.86 against a measured 0.54 (F) / 0.65 (M). Same failure as the
+# three correlations corrected earlier — a plausible number nobody had compared to data.
+# Measured from NHANES 45-65 rather than estimated, and sex-specific because they are.
+# The hand-set values were 0.93 / 0.86 / 0.87; haemoglobin against red cell count was the
+# badly wrong one, at 0.86 against a measured 0.54 (F) / 0.65 (M). Same failure as the
+# three correlations corrected earlier — a plausible number nobody had compared to data.
+RED_CELL_CORRELATIONS_BY_SEX = {
+    "F": (
+        ("hemoglobin", "hematocrit", 0.9635),
+        ("hemoglobin", "rbc", 0.5381),
+        ("hematocrit", "rbc", 0.6484),
+    ),
+    "M": (
+        ("hemoglobin", "hematocrit", 0.9598),
+        ("hemoglobin", "rbc", 0.6479),
+        ("hematocrit", "rbc", 0.7521),
+    ),
+}
 # Urea nitrogen tracks renal function, so it must move with creatinine.
 BUN_CREATININE_CORRELATION = 0.55
 # Sodium and chloride move together; the aminotransferases share a liver signal.
@@ -298,10 +313,10 @@ def _routine_marginals(sex: str) -> tuple:
     return (*COMPREHENSIVE_METABOLIC, *CBC_BY_SEX[sex], *CBC_SHARED, *ROUTINE_VITALS)
 
 
-def _routine_correlations(*, has_creatinine: bool = True) -> list[tuple[str, str, float]]:
+def _routine_correlations(sex: str, *, has_creatinine: bool = True) -> list[tuple[str, str, float]]:
     """The CKD profile derives creatinine from a target eGFR rather than sampling it,
     so the BUN/creatinine correlation has nothing to attach to there."""
-    pairs = [*RED_CELL_CORRELATIONS, *ELECTROLYTE_CORRELATIONS]
+    pairs = [*RED_CELL_CORRELATIONS_BY_SEX[sex], *ELECTROLYTE_CORRELATIONS]
     if has_creatinine:
         pairs.append(("bun", "creatinine", BUN_CREATININE_CORRELATION))
     return pairs
@@ -462,7 +477,7 @@ def healthy(sex: str) -> ClinicalProfile:
                 ("hba1c", "glucose", 0.55),
                 ("systolic", "diastolic", BP_CORRELATION_BY_SEX[sex]),
                 *_lipid_and_body_correlations(sex),
-                *_routine_correlations(),
+                *_routine_correlations(sex),
             ],
         ),
         derived_conditions=_metabolic_conditions,
@@ -545,7 +560,7 @@ def type2_diabetes(sex: str) -> ClinicalProfile:
                 ("hba1c", "glucose", rho),
                 ("systolic", "diastolic", BP_CORRELATION_BY_SEX[sex]),
                 *_lipid_and_body_correlations(sex),
-                *_routine_correlations(),
+                *_routine_correlations(sex),
             ],
         ),
         # No fixed primary condition: the diabetes code depends on the draw.
@@ -609,7 +624,7 @@ def hypertension(sex: str) -> ClinicalProfile:
                 ("hba1c", "glucose", 0.55),
                 ("systolic", "diastolic", BP_CORRELATION_BY_SEX[sex]),
                 *_lipid_and_body_correlations(sex),
-                *_routine_correlations(),
+                *_routine_correlations(sex),
             ],
         ),
         primary_conditions=(codes.ESSENTIAL_HYPERTENSION,),
@@ -655,7 +670,7 @@ def ckd_stage3(sex: str) -> ClinicalProfile:
             correlations=[
                 ("systolic", "diastolic", BP_CORRELATION_BY_SEX[sex]),
                 *_lipid_and_body_correlations(sex),
-                *_routine_correlations(has_creatinine=False),
+                *_routine_correlations(sex, has_creatinine=False),
             ],
         ),
         derived_conditions=_ckd_conditions,
@@ -712,7 +727,7 @@ def anaemia(sex: str) -> ClinicalProfile:
         if m.name not in {"hemoglobin", "hematocrit", "rbc"}
     )
     routine_pairs = [
-        pair for pair in _routine_correlations()
+        pair for pair in _routine_correlations(sex)
         if not {pair[0], pair[1]} & {"hemoglobin", "hematocrit", "rbc"}
     ]
 
