@@ -145,7 +145,7 @@ determinism contract described above starts now.
   clean data never reaches. Five defect kinds, seeded, non-mutating, every injected flaw
   returned. Off by default; CI asserts clean output validates and dirtied output does
   not.
-- **Verified fidelity, graded by evidential strength.** 38 checks across
+- **Verified fidelity, graded by evidential strength.** 46 checks across
   `out_of_sample`, `calibration`, `round_trip` and `identity`; [FIDELITY.md](FIDELITY.md)
   is grouped by grade rather than reported as a flat pass count, and a test pins the
   out-of-sample count so it cannot grow by relabelling.

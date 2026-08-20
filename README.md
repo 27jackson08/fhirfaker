@@ -234,14 +234,14 @@ The claim is checked statistically on every run and published as a
 | triglycerides median (healthy) | 89.3 | 88.0 mg/dL | NHANES 2017-2020 |
 | diabetic obesity rate | 0.657 | 0.612 | NHANES 2017-2020 |
 
-All 38 checks pass — but they are **not equally strong evidence**, and the report grades
+All 46 checks pass — but they are **not equally strong evidence**, and the report grades
 them rather than reporting a flat total:
 
 | Grade | Checks | What a pass proves |
 |---|---:|---|
 | **out-of-sample** | **1** | A published relationship the model was *not* fitted to. The only category that evidences fidelity in the sense the word implies. |
-| calibration | 32 | A marginal, correlation or prevalence measured from NHANES survived truncation and the copula. Meaningful, but in-sample by construction. |
-| round-trip | 1 | The sampler reproduces a value it was configured with. Proves the engine works, not that the value is right. |
+| calibration | 38 | A marginal, correlation or prevalence measured from NHANES survived truncation and the copula. Meaningful, but in-sample by construction. |
+| round-trip | 3 | The sampler reproduces a value it was configured with. Proves the engine works, not that the value is right. |
 | identity | 4 | Computed from its own inputs (eGFR, Friedewald LDL, BMI). Cannot fail unless the code is broken. |
 
 **Clinical utility, measured.** A logistic model trained *entirely on generated

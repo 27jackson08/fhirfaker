@@ -111,7 +111,7 @@ being honest about them is still free.
 Specifically, all four of:
 
 1. **Three or more out-of-sample checks**, not one. Today the fidelity report grades 1
-   of 38 that way, and a single measure is an anecdote with a CI job attached.
+   of 46 that way, and a single measure is an anecdote with a CI job attached.
 2. ~~**At least two of the four CMS benchmark measures reproduced.**~~ **Withdrawn as
    unreachable — see below.** Replaced by: **at least one further quality measure
    reproduced from the reachable class**, defined below, or an explicit statement in
@@ -332,7 +332,7 @@ existing distributional model given a time axis.
 
 > **The report was over-claiming, and grading it was the fix.** "37/37 checks passed"
 > reads as strong external validation. Grading them by what a pass actually proves
-> shows the real position: of 38 checks, **1** is out-of-sample, 29 are calibration
+> shows the real position: of 46 checks, **1** is out-of-sample, 38 are calibration
 > round-trips against marginals fitted to NHANES, 4 verify the sampler reproduces its
 > own configuration, and 4 are identities that cannot fail unless the code is broken.
 >
