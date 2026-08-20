@@ -205,6 +205,13 @@ LOSARTAN_50 = Code(systems.RXNORM, "979492", "losartan potassium 50 MG Oral Tabl
 CARVEDILOL_12_5 = Code(systems.RXNORM, "200032", "carvedilol 12.5 MG Oral Tablet")
 FUROSEMIDE_40 = Code(systems.RXNORM, "313988", "furosemide 40 MG Oral Tablet")
 
+# Haematinics. Names resolved through RxNav /Prescribe/, like every other RxNorm code.
+# Only iron: folate-deficiency anaemia is not modelled, and prescribing folic acid at a
+# flat probability with no folate status behind it would be decoration.
+FERROUS_SULFATE_325 = Code(
+    systems.RXNORM, "310325", "ferrous sulfate 325 MG Oral Tablet"
+)
+
 # Pharmacological class per antihypertensive, keyed by RXCUI.
 #
 # Needed because the blood-pressure response is additive *across classes* (Law 2003),
@@ -329,6 +336,18 @@ CKD_STAGE_3B = Code(systems.ICD10CM, "N18.32", "Chronic kidney disease, stage 3b
 CKD_STAGE_4 = Code(systems.ICD10CM, "N18.4", "Chronic kidney disease, stage 4 (severe)")
 CKD_STAGE_5 = Code(systems.ICD10CM, "N18.5", "Chronic kidney disease, stage 5")
 CKD_UNSPECIFIED = Code(systems.ICD10CM, "N18.9", "Chronic kidney disease, unspecified")
+
+# Anaemia. Displays taken verbatim from the NLM ICD-10-CM tables, like every other code
+# here — `python -m carebundle.terminology.verify` re-checks them nightly.
+#
+# D63.1 is the clinically interesting one: anaemia of chronic kidney disease is the
+# textbook complication of the CKD this library already models, so the two profiles
+# couple rather than sitting side by side.
+ANEMIA_UNSPECIFIED = Code(systems.ICD10CM, "D64.9", "Anemia, unspecified")
+IRON_DEFICIENCY_ANEMIA = Code(
+    systems.ICD10CM, "D50.9", "Iron deficiency anemia, unspecified"
+)
+ANEMIA_OF_CKD = Code(systems.ICD10CM, "D63.1", "Anemia in chronic kidney disease")
 
 # =================================================================================
 # HL7 workflow and category codes

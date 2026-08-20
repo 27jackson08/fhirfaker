@@ -276,6 +276,12 @@ NHANES_CHECKS = (
     ("type2_diabetes", "diabetic", "triglycerides", 0.12),
     ("type2_diabetes", "diabetic", "hdl", 0.08),
     ("type2_diabetes", "diabetic", "weight_kg", 0.08),
+    # The anaemia profile draws its red cell panel from the `anaemic` stratum, so it is
+    # checked against that stratum rather than the general population it would otherwise
+    # be compared to.
+    ("anaemia", "anaemic", "hemoglobin", 0.05),
+    ("anaemia", "anaemic", "hematocrit", 0.05),
+    ("anaemia", "anaemic", "rbc", 0.06),
 )
 
 
@@ -325,6 +331,35 @@ def hash_free_index(analyte: str, sex: str) -> int:
     return stable_digest(f"{analyte}:{sex}", bits=16)
 
 
+def anaemia_checks(size: int, seed: int) -> list[Check]:
+    """Every patient in the anaemia profile must be anaemic by the criterion it names.
+
+    A profile is a claim about a population. `healthy` producing an occasional high
+    reading is realism; `anaemia` producing a normal haemoglobin is a profile that does
+    not mean what its key says, and a user filtering on the profile name would get
+    patients who are not anaemic at all.
+    """
+    from carebundle.calibration.nhanes import ANAEMIA_HAEMOGLOBIN
+
+    checks = []
+    for sex in ("F", "M"):
+        rng = np.random.default_rng([seed, 11, 0 if sex == "F" else 1])
+        sample = get_profile("anaemia", sex).joint.sample(rng, size=size)
+        below = float((sample["hemoglobin"] < ANAEMIA_HAEMOGLOBIN[sex]).mean())
+        checks.append(
+            Check(
+                f"anaemia profile is anaemic ({sex})",
+                below,
+                1.0,
+                0.0,
+                "fraction",
+                "WHO haemoglobin criteria",
+                evidence="round_trip",
+            )
+        )
+    return checks
+
+
 def quality_measure_checks(size: int, seed: int) -> list[Check]:
     """CMS/HEDIS Controlling High Blood Pressure — the one out-of-sample check.
 
@@ -372,6 +407,7 @@ def run_all(size: int = DEFAULT_SAMPLE_SIZE, seed: int = DEFAULT_SEED) -> list[C
         *anthropometric_checks(min(size, 2_000), seed),
         *nhanes_checks(min(size, 1_500), seed),
         *quality_measure_checks(min(size, 3_000), seed),
+        *anaemia_checks(min(size, 5_000), seed),
     ]
 
 

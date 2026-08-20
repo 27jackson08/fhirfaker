@@ -55,7 +55,7 @@ rather than quietly dropped.
 | CMS *Controlling High Blood Pressure* | **0%** (published) | **71.5%** (real-world 69.7–74.5%) |
 
 **If you want a realistic population to analyse, use Synthea.** Breadth is not close:
-231 disease modules against four clinical profiles, and a lifetime per patient against a
+231 disease modules against five clinical profiles, and a lifetime per patient against a
 single visit. If you want five diabetic patients with coherent lab panels inside a
 pytest fixture, this is smaller and the numbers are checked.
 
@@ -205,6 +205,7 @@ every release. The full matrix is published in [CONFORMANCE.md](https://github.c
 | hypertension | 45 | **0** | 4 |
 | type2_diabetes | 50 | **0** | 10 |
 | ckd_stage3 | 52 | **0** | 12 |
+| anaemia | 44 | **0** | 2 |
 
 Every remaining warning is examined and documented with a reason; a *new* warning
 fails the build. Counts scale with medication count — each RxNorm-coded prescription
@@ -330,8 +331,9 @@ open("fixture.json", "w").write(to_json(bundle))
 |---|---|
 | `healthy` | No chronic disease. Incidental raised LDL and obesity still occur at typical adult rates — suppressing them would make the data less realistic, not more |
 | `hypertension` | Essential hypertension on lisinopril |
-| `type2_diabetes` | Diagnosed, moderately controlled; ~70% hypertension comorbidity, diabetic dyslipidaemia, ~60% obesity |
+| `type2_diabetes` | Diagnosed type 2 diabetes across the range of control seen in practice, including the quarter whose treatment has brought them below 6.5%; ~70% hypertension comorbidity, diabetic dyslipidaemia, ~60% obesity |
 | `ckd_stage3` | CKD stage 3, eGFR sampled in band and creatinine inverted from it |
+| `anaemia` | Anaemia by WHO haemoglobin criteria (<13 g/dL men, <12 women), calibrated to the NHANES anaemic stratum. The diagnosis code follows the values: `D63.1` when eGFR is below 60, `D50.9` when the red cell count is low too, `D64.9` otherwise |
 
 ### Mixed cohorts
 
@@ -406,7 +408,7 @@ Stated here rather than left for you to discover.
   target. Within the fidelity tolerance, checked every run, and stated here rather than
   rounded away.
 - **One encounter per bundle.** No longitudinal history — that is Synthea's territory.
-- **Terminology is a curated subset** — 102 codes (42 LOINC, 29 RxNorm, 21 ICD-10-CM),
+- **Terminology is a curated subset** — 106 codes (42 LOINC, 30 RxNorm, 24 ICD-10-CM),
   not full coverage. Every code *and display* is verified against its source vocabulary
   by `python -m carebundle.terminology.verify`, which runs nightly in CI.
 

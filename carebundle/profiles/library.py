@@ -247,6 +247,39 @@ ROUTINE_VITALS = (
 # Haemoglobin, haematocrit and red cell count measure the same underlying red cell
 # mass — the clinical rule of thumb is Hct ~ 3 x Hgb. Sampling them independently
 # produces a CBC no haematology analyser could ever emit.
+# NHANES 45-65, stratum `anaemic` (WHO: haemoglobin <13.0 g/dL in men, <12.0 in women).
+# Threshold-defined and correct here: `D64.9` *means* the haemoglobin is low, unlike a
+# diabetes code which persists after treatment normalises the lab value.
+ANAEMIC_CBC_BY_SEX = {
+    "F": (
+        Marginal("hemoglobin", mean=11.3, sd=0.7413, low=7.8, high=11.9),
+        Marginal("hematocrit", mean=34.8, sd=2.224, low=26.5, high=37.23),
+        Marginal("rbc", mean=4.17, sd=0.4077, low=3.285, high=5.162),
+    ),
+    "M": (
+        Marginal("hemoglobin", mean=12.1, sd=0.8895, low=8.55, high=12.9),
+        Marginal("hematocrit", mean=36.8, sd=2.298, low=26.48, high=40.2),
+        Marginal("rbc", mean=4.22, sd=0.5078, low=3.038, high=5.342),
+    ),
+}
+# Measured *within the anaemic stratum*, which differs strikingly from the general
+# population: haemoglobin and red cell count correlate at 0.54-0.65 across everyone but
+# only 0.04 (F) / 0.35 (M) among anaemics. They decouple because iron deficiency lowers
+# the haemoglobin in each cell while leaving the cell count comparatively intact — the
+# microcytic picture. Reusing the general-population figure here would erase the one
+# thing that makes an anaemic red cell panel look anaemic.
+ANAEMIC_RED_CELL_CORRELATIONS_BY_SEX = {
+    "F": (
+        ("hemoglobin", "hematocrit", 0.939),
+        ("hemoglobin", "rbc", 0.040),
+        ("hematocrit", "rbc", 0.268),
+    ),
+    "M": (
+        ("hemoglobin", "hematocrit", 0.940),
+        ("hemoglobin", "rbc", 0.353),
+        ("hematocrit", "rbc", 0.571),
+    ),
+}
 RED_CELL_CORRELATIONS = (
     ("hemoglobin", "hematocrit", 0.93),
     ("hemoglobin", "rbc", 0.86),
@@ -643,11 +676,83 @@ def ckd_stage3(sex: str) -> ClinicalProfile:
     )
 
 
+
+def _anaemia_conditions(raw: dict[str, float]) -> tuple:
+    """Pick the anaemia code from the values drawn, never a fixed one.
+
+    Same discipline as the CKD staging codes: emitting `D64.9` beside an eGFR of 32
+    would let the coded diagnosis contradict the labs in its own bundle. `D63.1`
+    (anaemia in chronic kidney disease) is the correct code when renal function is
+    impaired, and it is the textbook complication of the CKD this library already
+    models — so the two profiles couple rather than sitting side by side.
+    """
+    egfr = raw.get("egfr")
+    if egfr is not None and egfr < 60.0:
+        found = [codes.ANEMIA_OF_CKD]
+    elif raw.get("rbc", 0.0) < 4.2:
+        # Low count alongside low haemoglobin: the iron-deficiency picture.
+        found = [codes.IRON_DEFICIENCY_ANEMIA]
+    else:
+        found = [codes.ANEMIA_UNSPECIFIED]
+    return (*found, *_metabolic_conditions(raw))
+
+
+def anaemia(sex: str) -> ClinicalProfile:
+    """Anaemia by WHO haemoglobin criteria, calibrated to the NHANES anaemic stratum."""
+    hba1c, glucose = NORMOGLYCAEMIC_BY_SEX[sex]
+    cholesterol, triglycerides = NORMOLIPIDAEMIC_BY_SEX[sex]
+    height, weight = ANTHROPOMETRICS_TYPICAL[sex]
+    haemoglobin, haematocrit, rbc = ANAEMIC_CBC_BY_SEX[sex]
+
+    # The routine panel supplies a *normal* red cell picture, so those three marginals
+    # are replaced rather than added — a joint model cannot carry two marginals for the
+    # same analyte, and the anaemic ones are the point of this profile.
+    routine = tuple(
+        m for m in _routine_marginals(sex)
+        if m.name not in {"hemoglobin", "hematocrit", "rbc"}
+    )
+    routine_pairs = [
+        pair for pair in _routine_correlations()
+        if not {pair[0], pair[1]} & {"hemoglobin", "hematocrit", "rbc"}
+    ]
+
+    return ClinicalProfile(
+        key="anaemia",
+        display="Anaemia (WHO haemoglobin criteria)",
+        joint=_joint(
+            hba1c, glucose, CREATININE_BY_SEX[sex], *NORMOTENSIVE,
+            cholesterol, triglycerides, HDL_BY_SEX[sex], height, weight,
+            haemoglobin, haematocrit, rbc,
+            *ALBUMINURIA_NORMAL, *routine,
+            correlations=[
+                ("hba1c", "glucose", 0.55),
+                ("systolic", "diastolic", BP_CORRELATION_BY_SEX[sex]),
+                *ANAEMIC_RED_CELL_CORRELATIONS_BY_SEX[sex],
+                *_lipid_and_body_correlations(sex),
+                *routine_pairs,
+            ],
+        ),
+        derived_conditions=_anaemia_conditions,
+        medications=(
+            # Iron replacement is the mainstay where the picture is iron deficiency.
+            MedicationRule(
+                codes.FERROUS_SULFATE_325, 0.62,
+                requires=lambda a: a.get("rbc", 0.0) < 4.2,
+            ),
+            *BACKGROUND_MEDICATIONS,
+        ),
+        comorbidities=BACKGROUND_COMORBIDITIES,
+        allergies=COMMON_DRUG_ALLERGIES,
+        egfr_mode=EGFR_FROM_CREATININE,
+    )
+
+
 PROFILES = {
     "healthy": healthy,
     "type2_diabetes": type2_diabetes,
     "hypertension": hypertension,
     "ckd_stage3": ckd_stage3,
+    "anaemia": anaemia,
 }
 
 

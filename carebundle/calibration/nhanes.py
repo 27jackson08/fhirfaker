@@ -144,7 +144,19 @@ def load(data_dir: Path) -> dict[float, dict[str, float]]:
 # `hba1c >= 6.5` makes the extracted 2.5th percentile come out at exactly 6.5, which
 # reads as empirical support for the marginal's lower bound and is the selection
 # criterion reflected back.
-STRATA = ("all", "nondiabetic", "diabetic", "diagnosed")
+# WHO haemoglobin thresholds for anaemia in non-pregnant adults: <13.0 g/dL in men,
+# <12.0 g/dL in women.
+#
+# Threshold-defined, and correct here in a way it was not for diabetes. That distinction
+# is the whole lesson: "diabetic" must be diagnosis-defined because the diagnosis
+# persists once treatment brings HbA1c down, so a lab cut-off excludes a quarter of the
+# real population. Anaemia is the opposite — `D64.9` *means* the haemoglobin is low, and
+# a patient whose iron deficiency was corrected no longer has anaemia, they have a
+# history of it. Match the stratum to what the code means, not to a rule about
+# thresholds.
+ANAEMIA_HAEMOGLOBIN = {"M": 13.0, "F": 12.0}
+
+STRATA = ("all", "nondiabetic", "diabetic", "diagnosed", "anaemic")
 
 
 def in_band(people: dict[float, dict], sex: str, stratum: str) -> list[dict]:
@@ -170,6 +182,10 @@ def in_band(people: dict[float, dict], sex: str, stratum: str) -> list[dict]:
                 continue
         elif stratum == "diagnosed":
             if record.get("diagnosed_diabetes") != DIQ_YES:
+                continue
+        elif stratum == "anaemic":
+            haemoglobin = record.get("hemoglobin")
+            if haemoglobin is None or haemoglobin >= ANAEMIA_HAEMOGLOBIN[sex]:
                 continue
 
         selected.append(record)
@@ -215,6 +231,12 @@ CORRELATION_PAIRS = (
     ("height_cm", "weight_kg"),
     ("hba1c", "glucose"),
     ("weight_kg", "bmi"),
+    # Haemoglobin, haematocrit and red cell count all measure red cell mass, so they
+    # move together tightly. Drawing them independently produces a haemoglobin of 9
+    # beside a normal haematocrit, which no laboratory would ever report.
+    ("hemoglobin", "hematocrit"),
+    ("hemoglobin", "rbc"),
+    ("hematocrit", "rbc"),
 )
 
 

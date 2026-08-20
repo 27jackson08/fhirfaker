@@ -10,7 +10,25 @@ what you are relying on, and this file is where it is recorded.
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- **`anaemia` profile** — anaemia by WHO haemoglobin criteria (<13 g/dL in men, <12 in
+  women), calibrated to a new NHANES `anaemic` stratum. The diagnosis code is derived
+  from the values rather than fixed: `D63.1` (anaemia in chronic kidney disease) when
+  eGFR is below 60, `D50.9` (iron deficiency) when the red cell count is low too,
+  `D64.9` otherwise — so the coded diagnosis cannot contradict the labs beside it.
+
+  Its red cell correlations are measured *within* the anaemic stratum, which differs
+  strikingly from the general population: haemoglobin and red cell count correlate at
+  0.54–0.65 across everyone but only 0.04 (F) / 0.35 (M) among anaemics, because iron
+  deficiency lowers the haemoglobin per cell while leaving the count comparatively
+  intact. Reusing the general-population figure would erase the thing that makes an
+  anaemic panel look anaemic.
+
+  Ships with eight fidelity assertions and zero US Core errors. Adds four terminology
+  codes, all verified against their source vocabularies.
+
+Generated output for existing profiles is unchanged; this is additive.
 
 ## [0.1.2] — 2026-08-16
 

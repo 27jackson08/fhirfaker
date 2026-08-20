@@ -19,6 +19,7 @@ resolved.
 | hypertension | 45 | **0** | 4 |
 | type2_diabetes | 50 | **0** | 10 |
 | ckd_stage3 | 52 | **0** | 12 |
+| anaemia | 44 | **0** | 2 |
 
 Warning counts scale with the number of medications, because each RxNorm-coded
 MedicationRequest raises the same two version/value-set warnings described below.

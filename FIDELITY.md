@@ -10,11 +10,11 @@ Checks are **graded by evidential strength**, because they are not equivalent an
 | Grade | Checks | What a pass means |
 |---|---:|---|
 | **out_of_sample** | 1 | A published relationship the model was NOT fitted to. This is the only category that is evidence of fidelity in the sense the word implies. |
-| **calibration** | 32 | Verifies a marginal fitted to a published source survived truncation and the copula. Meaningful — this is where truncation attenuation was caught — but in-sample by construction. |
-| **round_trip** | 1 | Verifies the sampler reproduces a value it was configured with. Proves the engine works; proves nothing about whether the configured value is right. |
+| **calibration** | 38 | Verifies a marginal fitted to a published source survived truncation and the copula. Meaningful — this is where truncation attenuation was caught — but in-sample by construction. |
+| **round_trip** | 3 | Verifies the sampler reproduces a value it was configured with. Proves the engine works; proves nothing about whether the configured value is right. |
 | **identity** | 4 | Computed from its own inputs. Cannot fail unless the code is broken, so it is a regression test, not evidence of fidelity. |
 
-**Read the top row first.** Only 1 of 38 checks is genuinely out-of-sample. The rest establish self-consistency, which is necessary but is a weaker claim than the phrase 'fidelity report' suggests on its own.
+**Read the top row first.** Only 1 of 46 checks is genuinely out-of-sample. The rest establish self-consistency, which is necessary but is a weaker claim than the phrase 'fidelity report' suggests on its own.
 
 ### out_of_sample (1)
 
@@ -22,7 +22,7 @@ Checks are **graded by evidential strength**, because they are not equivalent an
 |---|---:|---:|---:|---:|---|:--:|
 | CMS Controlling High Blood Pressure | 0.75 | 0.72 | +0.03 | ±0.09 | Chen 2019 (CMS/HEDIS) | PASS |
 
-### calibration (32)
+### calibration (38)
 
 | Check | Observed | Expected | Delta | Tolerance | Source | |
 |---|---:|---:|---:|---:|---|:--:|
@@ -58,12 +58,20 @@ Checks are **graded by evidential strength**, because they are not equivalent an
 | hdl median (type2_diabetes/M) | 43.56 | 42 | +1.56 | ±3.36 | NHANES 2017-2020 | PASS |
 | weight_kg median (type2_diabetes/F) | 85.18 | 83.15 | +2.03 | ±6.65 | NHANES 2017-2020 | PASS |
 | weight_kg median (type2_diabetes/M) | 95.78 | 92.6 | +3.18 | ±7.41 | NHANES 2017-2020 | PASS |
+| hemoglobin median (anaemia/F) | 11.12 | 11.3 | -0.183 | ±0.565 | NHANES 2017-2020 | PASS |
+| hemoglobin median (anaemia/M) | 11.88 | 12.1 | -0.221 | ±0.605 | NHANES 2017-2020 | PASS |
+| hematocrit median (anaemia/F) | 34.46 | 34.8 | -0.339 | ±1.74 | NHANES 2017-2020 | PASS |
+| hematocrit median (anaemia/M) | 36.49 | 36.8 | -0.306 | ±1.84 | NHANES 2017-2020 | PASS |
+| rbc median (anaemia/F) | 4.162 | 4.17 | -0.00838 | ±0.25 | NHANES 2017-2020 | PASS |
+| rbc median (anaemia/M) | 4.212 | 4.22 | -0.00832 | ±0.253 | NHANES 2017-2020 | PASS |
 
-### round_trip (1)
+### round_trip (3)
 
 | Check | Observed | Expected | Delta | Tolerance | Source | |
 |---|---:|---:|---:|---:|---|:--:|
 | CKD stage-3 eGFR within band | 1 | 1 | +0 | ±0 | KDIGO 2012 | PASS |
+| anaemia profile is anaemic (F) | 1 | 1 | +0 | ±0 | WHO haemoglobin criteria | PASS |
+| anaemia profile is anaemic (M) | 1 | 1 | +0 | ±0 | WHO haemoglobin criteria | PASS |
 
 ### identity (4)
 
@@ -74,7 +82,7 @@ Checks are **graded by evidential strength**, because they are not equivalent an
 | LDL consistent with panel (Friedewald) | 0 | 0 | +0 | ±1e-09 | Friedewald 1972 | PASS |
 | BMI consistent with height and weight | 0 | 0 | +0 | ±1e-09 | WHO | PASS |
 
-**38/38 passed.**
+**46/46 passed.**
 
 ## Why R^2 is the load-bearing number
 
