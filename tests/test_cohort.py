@@ -211,10 +211,14 @@ def test_every_profile_is_either_weighted_or_explicitly_excluded():
     profiles and no indication. Being absent is a legitimate choice; being absent by
     accident is not, so it has to be stated.
     """
-    from carebundle import PROFILES
+    from carebundle.calibration.custom import BUILT_IN_PROFILES
     from carebundle.generate import COHORT_EXCLUDED, DEFAULT_COHORT_PREVALENCE
 
-    unaccounted = set(PROFILES) - set(DEFAULT_COHORT_PREVALENCE) - set(COHORT_EXCLUDED)
+    # BUILT_IN_PROFILES, not the live PROFILES registry: `calibrate_profile` adds to that
+    # global, so iterating it would make this test fail whenever some *other* test forgot
+    # to clean up — reporting the problem in the wrong file. The claim being made is
+    # about the profiles this project ships.
+    unaccounted = set(BUILT_IN_PROFILES) - set(DEFAULT_COHORT_PREVALENCE) - set(COHORT_EXCLUDED)
     assert not unaccounted, (
         f"these profiles are neither weighted in DEFAULT_COHORT_PREVALENCE nor listed "
         f"in COHORT_EXCLUDED: {sorted(unaccounted)}"
@@ -222,10 +226,10 @@ def test_every_profile_is_either_weighted_or_explicitly_excluded():
 
 
 def test_cohort_exclusions_name_real_profiles():
-    from carebundle import PROFILES
+    from carebundle.calibration.custom import BUILT_IN_PROFILES
     from carebundle.generate import COHORT_EXCLUDED
 
-    unknown = set(COHORT_EXCLUDED) - set(PROFILES)
+    unknown = set(COHORT_EXCLUDED) - set(BUILT_IN_PROFILES)
     assert not unknown, f"COHORT_EXCLUDED names profiles that do not exist: {sorted(unknown)}"
     for profile, reason in COHORT_EXCLUDED.items():
         assert len(reason) > 40, f"{profile} is excluded without a real reason"
