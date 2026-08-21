@@ -163,6 +163,32 @@ There is a test in the suite that fails if that stops being true.
 This is the one capability here that a population simulator structurally cannot offer:
 Synthea's distributions come from its modules, and there is nowhere to put yours.
 
+### Bulk export (ndjson)
+
+For testing a FHIR Bulk Data `$export` importer, which wants one ndjson file per
+resource type rather than a transaction Bundle:
+
+```bash
+carebundle generate --profile mixed --count 100 --seed 42 --out ./bulk/ --format ndjson
+# wrote 4,612 resources across 8 ndjson file(s) to ./bulk/
+```
+
+```python
+from carebundle import generate_cohort, to_ndjson
+
+for resource_type, lines in to_ndjson(generate_cohort(count=100, seed=42)).items():
+    Path(f"{resource_type}.ndjson").write_text(lines)
+```
+
+The conversion is the point, not the file layout. A transaction Bundle deliberately has
+**no** `Resource.id` — the server assigns identity — and its references are
+`urn:uuid:`. A bulk export is the opposite: every resource has an `id` and references
+read `Patient/2f9a…`. Stripping the Bundle wrapper and writing the entries out gives you
+resources with no id and dangling references: parseable, and useless for exercising the
+importer you are testing. So ids are minted from the bundle's `fullUrl` and every
+reference is rewritten, with a test asserting no reference dangles across the whole
+export.
+
 ### Deliberately imperfect data
 
 Nothing else in this space generates data that is *wrong on purpose*, and for testing

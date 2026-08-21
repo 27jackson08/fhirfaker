@@ -16,6 +16,7 @@ import sys
 from datetime import date
 from pathlib import Path
 
+from carebundle.bulk import to_ndjson
 from carebundle.core.bundle import to_json
 from carebundle.generate import (
     ALL_PANELS,
@@ -107,6 +108,15 @@ def build_parser() -> argparse.ArgumentParser:
         "--out", type=Path,
         help="directory to write bundles into; omit to write JSON to stdout",
     )
+    generate.add_argument(
+        "--format", choices=("bundle", "ndjson"), default="bundle",
+        help=(
+            "bundle: one transaction Bundle per patient (default). "
+            "ndjson: FHIR Bulk Data — one file per resource type, ids minted and "
+            "references rewritten to ResourceType/id. Requires --out, since a bulk "
+            "export is a set of files rather than one document."
+        ),
+    )
 
     subparsers.add_parser("profiles", help="list available clinical profiles")
     return parser
@@ -174,6 +184,24 @@ def command_generate(args: argparse.Namespace) -> int:
             )
             for index in range(args.count)
         ]
+
+    if args.format == "ndjson":
+        # A bulk export is a set of files keyed by resource type, so it has no
+        # single-document form to write to stdout.
+        if args.out is None:
+            print("--format ndjson needs --out: a bulk export is a set of files",
+                  file=sys.stderr)
+            return EXIT_USAGE
+        args.out.mkdir(parents=True, exist_ok=True)
+        streams = to_ndjson(bundles)
+        for resource_type, lines in streams.items():
+            (args.out / f"{resource_type}.ndjson").write_text(lines)
+        total = sum(text.count("\n") for text in streams.values())
+        print(
+            f"wrote {total} resources across {len(streams)} ndjson file(s) to {args.out}",
+            file=sys.stderr,
+        )
+        return EXIT_OK
 
     for index, bundle in enumerate(bundles):
         rendered = to_json(bundle)

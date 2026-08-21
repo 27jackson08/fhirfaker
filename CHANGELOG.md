@@ -21,6 +21,12 @@ Practically, for anyone pinning: **pin the patch version.** `carebundle==0.1.2` 
 
 ### Added
 
+- **`carebundle.bulk` / `to_ndjson`, and `carebundle generate --format ndjson`** —
+  FHIR Bulk Data output, one ndjson file per resource type, for testing an `$export`
+  importer. Ids are minted from each entry's `fullUrl` and every `urn:uuid:` reference
+  is rewritten to `ResourceType/id`, because a transaction Bundle and a bulk export
+  differ in exactly the two ways that break importers. `identifier.system` keeps its
+  urn form, which is deliberate and separately tested.
 - **`carebundle.calibration.fetch`** — downloads the eleven NHANES files the offline
   tooling needs, so the claims in this repository can actually be checked. Knowing which
   files, under which of several CDC URL layouts, was the undocumented step between "not

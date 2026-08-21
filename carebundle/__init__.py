@@ -5,6 +5,7 @@ FHIR(R) is the registered trademark of HL7 and is used with the permission of HL
 
 from __future__ import annotations
 
+from carebundle.bulk import to_ndjson
 from carebundle.calibration.custom import Quartiles, calibrate_profile, forget_profile
 from carebundle.core.bundle import to_json
 from carebundle.generate import (
@@ -37,4 +38,5 @@ __all__ = [
     "generate_patient",
     "inject_defects",
     "to_json",
+    "to_ndjson",
 ]
