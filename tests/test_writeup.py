@@ -72,3 +72,23 @@ def test_writeup_links_are_absolute_or_repo_relative_but_not_broken():
         if target.startswith(("http://", "https://", "#")):
             continue
         assert (WRITEUP.parent / target).resolve().exists(), f"broken link: {target}"
+
+
+def test_every_shipped_document_is_reachable_from_the_readme():
+    """A document nobody can find does no work.
+
+    `docs/outcome-measures.md` sat in the repository unreferenced until this test was
+    written. The README is the only entry point most readers get — GitHub renders it on
+    the landing page and PyPI renders it as the project description — so anything not
+    linked from it is effectively unpublished.
+    """
+    readme = (ROOT / "README.md").read_text()
+    shipped = [
+        "BENCHMARK.md", "CONFORMANCE.md", "FIDELITY.md", "ROADMAP.md",
+        "CHANGELOG.md", "CONTRIBUTING.md", "RELEASING.md",
+        "docs/outcome-measures.md",
+    ]
+    unreachable = [name for name in shipped if name not in readme]
+    assert not unreachable, (
+        f"these documents ship but are not linked from the README: {unreachable}"
+    )

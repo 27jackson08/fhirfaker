@@ -60,7 +60,11 @@ single visit. If you want five diabetic patients with coherent lab panels inside
 pytest fixture, this is smaller and the numbers are checked.
 
 The full comparison, including the three measures this does **not** model, is in
-[BENCHMARK.md](https://github.com/27jackson08/fhirfaker/blob/main/BENCHMARK.md).
+[BENCHMARK.md](https://github.com/27jackson08/fhirfaker/blob/main/BENCHMARK.md). The
+longer argument — why a pathway simulator cannot produce an outcome measure, a prediction
+that was tested and held, one that was refuted, and the trap in benchmarking synthetic
+data at all — is in
+[docs/outcome-measures.md](https://github.com/27jackson08/fhirfaker/blob/main/docs/outcome-measures.md).
 
 ### Why not PySynthea?
 
