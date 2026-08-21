@@ -201,3 +201,32 @@ def test_library_validates_age_range_with_its_own_message(age_range, match):
 
     with pytest.raises(ValueError, match=match):
         generate_bundle(seed=1, age_range=age_range)
+
+
+def test_every_profile_is_either_weighted_or_explicitly_excluded():
+    """A profile missing from the cohort is a silent gap, like dead terminology.
+
+    `anaemia` was registered and absent from the prevalence mapping for a whole release
+    without anything noticing — a user asking for a mixed cohort got four of the five
+    profiles and no indication. Being absent is a legitimate choice; being absent by
+    accident is not, so it has to be stated.
+    """
+    from carebundle import PROFILES
+    from carebundle.generate import COHORT_EXCLUDED, DEFAULT_COHORT_PREVALENCE
+
+    unaccounted = set(PROFILES) - set(DEFAULT_COHORT_PREVALENCE) - set(COHORT_EXCLUDED)
+    assert not unaccounted, (
+        f"these profiles are neither weighted in DEFAULT_COHORT_PREVALENCE nor listed "
+        f"in COHORT_EXCLUDED: {sorted(unaccounted)}"
+    )
+
+
+def test_cohort_exclusions_name_real_profiles():
+    from carebundle import PROFILES
+    from carebundle.generate import COHORT_EXCLUDED
+
+    unknown = set(COHORT_EXCLUDED) - set(PROFILES)
+    assert not unknown, f"COHORT_EXCLUDED names profiles that do not exist: {sorted(unknown)}"
+    for profile, reason in COHORT_EXCLUDED.items():
+        assert len(reason) > 40, f"{profile} is excluded without a real reason"
+

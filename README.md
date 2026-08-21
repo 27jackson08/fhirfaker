@@ -358,6 +358,12 @@ Weights are normalised, so counts and ratios both work. The default mix is
 illustrative rather than an epidemiological claim — real prevalences overlap heavily
 and these profiles are mutually exclusive.
 
+`anaemia` is deliberately **not** in the default mix, for that same reason: it is a
+comorbidity rather than a presenting category, and weighting it here would model it as
+mutually exclusive with diabetes and CKD when in reality it accompanies them — `D63.1`
+*anaemia in chronic kidney disease* exists precisely because it does. Ask for it by
+name, or pass your own prevalence mapping including it.
+
 Each bundle carries a comprehensive metabolic panel, CBC, lipid panel, HbA1c,
 albuminuria, seven vital signs and the patient's medications and allergies — grouped
 into DiagnosticReports under the panel LOINC codes a laboratory actually reports.

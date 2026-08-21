@@ -213,6 +213,20 @@ DEFAULT_COHORT_PREVALENCE = {
     "ckd_stage3": 0.05,
 }
 
+# Profiles deliberately left out of the prevalence draw, with the reason. A cohort
+# silently missing a profile is the same defect as terminology defined and never
+# emitted, so it gets the same treatment: a test requires every profile to be either
+# weighted here or listed below.
+COHORT_EXCLUDED = {
+    "anaemia": (
+        "Anaemia is a comorbidity, not a presenting category. The cohort assigns each "
+        "patient exactly one profile, so including anaemia would model it as mutually "
+        "exclusive with diabetes and CKD — when in reality it accompanies them, and "
+        "`D63.1` (anaemia in chronic kidney disease) exists precisely because it "
+        "accompanies CKD. Ask for it by name, or pass your own prevalence mapping."
+    ),
+}
+
 
 def generate_cohort(
     *,
