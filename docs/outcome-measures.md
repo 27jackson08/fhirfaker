@@ -180,6 +180,25 @@ more meaningful one.
 
 ---
 
+## Reproducing this
+
+Everything above is checkable. The blood-pressure figures come out of the test suite:
+
+```bash
+pip install -e ".[dev]"
+pytest -m fidelity tests/test_benchmark.py     # the control rates
+```
+
+The transfer result needs the NHANES individual records, which are not vendored:
+
+```bash
+python -m carebundle.calibration.fetch    --data-dir nhanes/
+python -m carebundle.fidelity.transfer    --data-dir nhanes/
+```
+
+The calibration itself is deterministic — regenerating the targets from a fresh download
+reproduces the committed file byte for byte.
+
 The library is [carebundle](https://pypi.org/project/carebundle/) (`pip install
 carebundle`). The benchmark, including the three measures it does not model and why, is
 in [BENCHMARK.md](../BENCHMARK.md).

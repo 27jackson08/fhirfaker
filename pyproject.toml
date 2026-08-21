@@ -78,6 +78,7 @@ omit = [
     # through carebundle/calibration/xpt.py.
     "carebundle/spec/codegen.py",
     "carebundle/calibration/nhanes.py",
+    "carebundle/calibration/fetch.py",
     # TSTR needs the NHANES individual records, which are not vendored, so it cannot
     # run in CI for the same reason the calibration cannot.
     "carebundle/fidelity/transfer.py",

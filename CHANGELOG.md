@@ -21,6 +21,11 @@ Practically, for anyone pinning: **pin the patch version.** `carebundle==0.1.2` 
 
 ### Added
 
+- **`carebundle.calibration.fetch`** — downloads the eleven NHANES files the offline
+  tooling needs, so the claims in this repository can actually be checked. Knowing which
+  files, under which of several CDC URL layouts, was the undocumented step between "not
+  vendored" and "verify it yourself". Regenerating the calibration targets from a fresh
+  download reproduces the committed file byte for byte.
 - **`carebundle.fidelity.transfer`** — clinical-utility evidence by
   Train-on-Synthetic-Test-on-Real. A logistic model fitted entirely on generated
   patients scores AUC 0.621 on 1,330 real NHANES individuals against 0.677 for the same

@@ -89,12 +89,21 @@ If you only want different numbers rather than a new clinical picture, you proba
 python -m carebundle.fidelity.report      # FIDELITY.md
 python -m carebundle.spec.codegen         # models from the R4 StructureDefinitions
 python -m carebundle.terminology.verify   # re-check every code and display
-python -m carebundle.calibration.nhanes --data-dir <dir> --emit-targets carebundle/calibration/data/nhanes_targets.json
 ```
 
-The NHANES files are not vendored. Fetch them from
-<https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/> — the list the calibration
-module needs is in its docstring.
+The NHANES files are not vendored — they belong to NCHS, they are large, and a stale
+copy in the repository would be worse than none. Fetch them, then regenerate:
+
+```bash
+python -m carebundle.calibration.fetch    --data-dir nhanes/    # ~18 MB, a couple of minutes
+python -m carebundle.calibration.nhanes   --data-dir nhanes/ --emit-targets carebundle/calibration/data/nhanes_targets.json
+python -m carebundle.fidelity.transfer    --data-dir nhanes/    # the transfer result
+```
+
+The calibration is deterministic: regenerating the targets from a fresh download
+produces a file **byte-identical** to the committed one. If yours differs, either NCHS
+has republished the files or something in the extraction changed — both worth
+investigating rather than committing over.
 
 ## Releasing
 
