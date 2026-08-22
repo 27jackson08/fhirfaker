@@ -19,6 +19,11 @@ Practically, for anyone pinning: **pin the patch version.** `carebundle==0.1.2` 
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-08-22
+
+Additive throughout: no seeded output changed, so fixtures pinned to a seed under 0.2.0
+still reproduce byte for byte.
+
 ### Added
 
 - **`carebundle.bulk` / `to_ndjson`, and `carebundle generate --format ndjson`** —
@@ -41,6 +46,21 @@ Practically, for anyone pinning: **pin the patch version.** `carebundle==0.1.2` 
   Graded `calibration` rather than `out_of_sample` — the test individuals were never
   seen and no fitting targeted an AUC, but the marginals came from the same survey, so
   it is not independent evidence. The pinned out-of-sample count stays at 1.
+
+### Fixed
+
+- **The README denied a capability the package has.** It listed "no longitudinal
+  history" as a limitation three hundred lines below the section documenting
+  `generate_history`. Understating is the same class of defect as overstating, and a
+  test now fails if a stated limitation contradicts an exported name.
+- **A fifth documentation figure had drifted.** The diabetic obesity rate was typed as
+  64.8% against a measured 63.8%; it is now read out of the fidelity report rather than
+  retyped. Every figure appearing in both prose and an artefact is asserted against the
+  artefact — five for five is no longer coincidence.
+- **Scope claims in the design record that time had falsified** — longitudinal history,
+  the profile count, and a format exclusion that had been read as ruling out ndjson when
+  it does not. Annotated rather than rewritten, so both the original decision and the
+  reason it moved stay legible.
 
 ## [0.2.0] — 2026-08-20
 
@@ -179,7 +199,8 @@ determinism contract described above starts now.
   draws on CPT-4 (AMA-licensed) and SNOMED CT, so warning-free US Core Encounter
   conformance is not reachable without licensed terminology. See `CONFORMANCE.md`.
 
-[Unreleased]: https://github.com/27jackson08/fhirfaker/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/27jackson08/fhirfaker/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/27jackson08/fhirfaker/releases/tag/v0.3.0
 [0.2.0]: https://github.com/27jackson08/fhirfaker/releases/tag/v0.2.0
 [0.1.2]: https://github.com/27jackson08/fhirfaker/releases/tag/v0.1.2
 [0.1.1]: https://github.com/27jackson08/fhirfaker/releases/tag/v0.1.1

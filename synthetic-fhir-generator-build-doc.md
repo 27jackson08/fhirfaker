@@ -125,7 +125,7 @@ R4 4.0.1 is a frozen spec, so the generated models are not a moving maintenance 
 - **Terminology:** LOINC (labs/vitals), RxNorm (medications), ICD-10-CM (conditions) — see Section 6 for the licensing constraints that actually apply
 - **Correlation engine:** config-driven clinical profiles (type 2 diabetes, hypertension, CKD, healthy baseline) that jointly determine linked observation values, conditions, and medications
 - **Safety by construction:** see Section 7
-- **Output:** in-memory Bundle objects (primary), plus optional JSON file export
+- **Output:** in-memory Bundle objects (primary), plus optional JSON file export *(and, since 0.2.0, FHIR Bulk Data ndjson — see the scope note below)*
 - **Validation:** HL7 validator against US Core in CI, gating releases
 - **Fidelity report:** statistical evidence of clinical coherence, regenerated per release
 
@@ -134,6 +134,11 @@ R4 4.0.1 is a frozen spec, so the generated models are not a moving maintenance 
 - SNOMED CT codes (licensing complexity — see Section 6)
 - Non-US terminology/locale variants
 - C-CDA or any non-FHIR output format
+  > **Read carefully before citing this.** It excludes C-CDA and non-FHIR formats, and
+  > ndjson of FHIR resources is neither — so `--format ndjson` (FHIR Bulk Data) is in
+  > scope and shipped. The line had been read as excluding it, which is why bulk output
+  > sat in the competitive table as a Synthea capability for months. A scope exclusion
+  > phrased around a format family is easy to over-apply.
 - A hosted API or SaaS layer
 - Parsing/validating arbitrary externally-supplied FHIR (write-side only)
 
@@ -354,6 +359,14 @@ Two tiers, both in v1:
 reported prevalence), and `generate_cohort` draws mixed populations by prevalence.
 Longitudinal history remains out of scope by design.
 
+> **Partly revisited, August 2026.** `generate_history` now emits a bounded course of
+> visits with blood pressure responding to titration. That is not the lifecycle
+> simulation this line rules out — no birth, no death, no disease-progression modules —
+> and it exists because the CMS blood-pressure benchmark exposed the equilibrium
+> shortcut behind the single-visit model. The distinction the original decision was
+> protecting still holds: competing on lifetime breadth loses. Adding a time axis to a
+> value that already responds to treatment does not.
+
 This is a multi-week project at a realistic pace alongside everything else currently open. It is not a weekend project if Phase 3 is done properly rather than skipped.
 
 ---
@@ -432,6 +445,11 @@ CI, packaging and docs, and the console script is `carebundle`.
 ## 16. Open Questions
 
 - ~~How many clinical profiles for v1~~ → **Resolved:** 4 (diabetes, hypertension, CKD, healthy baseline). More dilutes correlation-engine quality.
+  > **Now 5.** `anaemia` was added in 0.2.0 against the bar this line implies rather than
+  > around it: marginals and correlations measured within a dedicated NHANES stratum,
+  > eight fidelity assertions, zero conformance errors, and a prescription cut during
+  > review because nothing in the model justified it. The concern was dilution, and the
+  > answer is that the bar holds — a profile that cannot meet it does not ship.
 - ~~Whether HL7 validator integration is in scope for v1~~ → **Resolved:** yes, and it gates releases. See Section 10.
 - ~~FHIR version and model layer~~ → **Resolved:** R4 4.0.1, self-owned pydantic v2 models. See Section 4.
 - ~~Whether US Core Condition conformance is achievable with ICD-10-CM alone~~ → **Resolved in Phase 1: yes**, zero errors and zero warnings. See Section 6.
