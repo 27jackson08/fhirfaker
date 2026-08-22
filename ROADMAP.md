@@ -111,7 +111,10 @@ being honest about them is still free.
 Specifically, all four of:
 
 1. **Three or more out-of-sample checks**, not one. Today the fidelity report grades 1
-   of 46 that way, and a single measure is an anecdote with a CI job attached.
+   of 58 that way, and a single measure is an anecdote with a CI job attached. Note
+   that the count has moved only in the denominator: the metabolic-cluster work added
+   twelve checks and none of them is out-of-sample, because they are fitted to the same
+   survey that supplies the marginals. Growing the report does not grow the evidence.
 2. ~~**At least two of the four CMS benchmark measures reproduced.**~~ **Withdrawn as
    unreachable — see below.** Replaced by: **at least one further quality measure
    reproduced from the reachable class**, defined below, or an explicit statement in
@@ -332,8 +335,8 @@ existing distributional model given a time axis.
 
 > **The report was over-claiming, and grading it was the fix.** "37/37 checks passed"
 > reads as strong external validation. Grading them by what a pass actually proves
-> shows the real position: of 46 checks, **1** is out-of-sample, 38 are calibration
-> round-trips against marginals fitted to NHANES, 4 verify the sampler reproduces its
+> shows the real position: of 58 checks, **1** is out-of-sample, 50 are calibration
+> round-trips against marginals fitted to NHANES, 3 verify the sampler reproduces its
 > own configuration, and 4 are identities that cannot fail unless the code is broken.
 >
 > None of that is new weakness — the checks are exactly as strong as they always were.

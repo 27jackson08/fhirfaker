@@ -489,6 +489,26 @@ documentation, and each would otherwise be rediscovered the hard way.
 
 ### Phase 3 findings — the correlation engine
 
+- **An unspecified correlation is a specified zero.** A Gaussian copula fills every pair
+  you do not name with 0, so omitting a pair does not leave it free to be implied by the
+  pairs you did name — it *asserts independence*. Predicted, before checking, that
+  specifying glucose/HDL at −0.18 would carry to HbA1c through the 0.82 HbA1c/glucose
+  correlation and land near −0.15. Measured: **−0.009**. Every pair that matters has to
+  be stated, and the argument that it will propagate is wrong in the specific way that
+  sounds most reasonable.
+- **Marginals being right is not evidence the joint distribution is.** Every analyte in
+  this model matched its NHANES target for months while adiposity, glycaemia and lipids
+  were mutually independent: weight against HDL was −0.26 in the survey and +0.01 in
+  generated output. Marginal checks cannot see this by construction, and it took
+  measuring correlations that nothing had asked about to find it. The generalisation:
+  **a fidelity suite made only of one-variable checks will pass on a model with no joint
+  structure at all.**
+- **Correlations must be measured in the stratum the profile draws from.** Weight against
+  glucose reads +0.10 pooled and −0.08 inside the diabetic stratum, because the pooled
+  figure is mostly "heavier people are more often diabetic" — a fact the profile split
+  already encodes. Fitting the pooled value counts it twice. This is the pooled/within
+  error from the height/weight correlation appearing in a second place, which suggests
+  it is the default failure of any correlation lifted from a summary table.
 - **Truncation attenuates both the moments and the correlation.** Bounding HbA1c at the 6.5%
   diagnostic threshold pulls its realized SD from 0.90 to 0.78. Calibrating the ADAG regression
   against the *nominal* SD inflated the generated slope from 28.7 to 33.0 — a 15% error that

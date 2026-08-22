@@ -130,3 +130,40 @@ def test_readme_does_not_deny_capabilities_the_library_has():
         assert "No longitudinal history —" not in readme, (
             "README denies longitudinal support while generate_history is exported"
         )
+
+
+def test_every_readme_evidence_row_matches_the_fidelity_report():
+    """The README's evidence table is hand-copied from FIDELITY.md, so it drifts.
+
+    Five of its ten rows were stale when this test was written: the ADAG slope, the
+    glucose value at HbA1c 8.0%, both medians, and the obesity rate — the last of which
+    contradicted the README's own prose about the same figure two sections away. It is
+    the most persuasive table in the project, and it was the least checked.
+
+    Matching is by exact row label, which is why the README now uses the report's
+    labels verbatim rather than friendlier paraphrases. A row that cannot be found is a
+    failure, not a skip: a renamed check must not silently drop out of the guard.
+    """
+    readme = (ROOT / "README.md").read_text()
+    fidelity = FIDELITY.read_text()
+
+    reported = {
+        m.group(1).strip(): m.group(2)
+        for m in re.finditer(r"^\| ([^|]+?) \| ([-0-9.e+]+) \|", fidelity, re.MULTILINE)
+    }
+    assert reported, "FIDELITY.md has no parseable check rows"
+
+    rows = re.findall(r"^\| (?:\*\*)?([^|*]+?)(?:\*\*)? \| (?:\*\*)?([-0-9.e+]+)(?:\*\*)? \|",
+                      readme, re.MULTILINE)
+    checked = 0
+    for label, observed in rows:
+        label = label.strip()
+        if label not in reported:
+            continue
+        assert float(observed) == pytest.approx(float(reported[label]), rel=1e-3), (
+            f"README row {label!r} says {observed}, FIDELITY.md says {reported[label]}"
+        )
+        checked += 1
+    # Guards the guard: if the README table were reformatted so no label matched, the
+    # loop above would pass vacuously.
+    assert checked >= 8, f"only matched {checked} README rows against the report"

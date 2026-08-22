@@ -20,11 +20,17 @@ from pathlib import Path
 
 import pytest
 
+from carebundle.calibration.custom import BUILT_IN_PROFILES
 from carebundle.core.bundle import to_json
 from carebundle.generate import generate_bundle, generate_patient
 
 GOLDEN_DIR = Path(__file__).parent / "golden"
-PROFILES = ("healthy", "hypertension", "type2_diabetes", "ckd_stage3")
+# Derived from the profile registry rather than listed here. When this was a hardcoded
+# tuple, `anaemia` shipped in 0.2.0 with no golden file at all — the determinism
+# contract covers every profile, but only the four somebody remembered to type were
+# actually pinned. Deriving it means a new profile cannot escape the contract by
+# omission; it fails until its golden exists.
+PROFILES = tuple(sorted(BUILT_IN_PROFILES))
 GOLDEN_SEED = 42
 
 

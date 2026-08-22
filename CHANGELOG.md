@@ -19,6 +19,59 @@ Practically, for anyone pinning: **pin the patch version.** `carebundle==0.1.2` 
 
 ## [Unreleased]
 
+### Changed — **seeded output changes; this is a breaking change (0.4.0)**
+
+- **The metabolic cluster is now modelled.** Adiposity, glycaemia and lipids were drawn
+  independently of one another: weight against HDL is −0.26 in NHANES and was **+0.01**
+  in generated output. Every marginal matched its target the whole time, so no marginal
+  check could see it — a heavy patient was no likelier than anyone else to have a low
+  HDL, and the metabolic phenotype that makes a diabetic patient look diabetic was
+  absent from the joint distribution.
+
+  Five pairs are now fitted per sex, from the stratum each profile draws from:
+  weight/HDL, glucose/triglycerides, glucose/HDL, HbA1c/HDL and HbA1c/triglycerides.
+  All ten reproduce within 0.02 of the survey. BMI/HDL moves from +0.015 to −0.27
+  against a measured −0.30 without being configured at all, since BMI is computed from
+  height and weight rather than sampled.
+
+  **Pooled correlations were deliberately not used.** Weight against glucose reads
+  +0.10 across everyone and −0.08 inside the diabetic stratum: the pooled figure is
+  mostly "heavier people are more often diabetic", which the profile split already
+  encodes, so fitting it would count the same fact twice. Pairs whose sign flips
+  between strata, and every pair involving blood pressure (between −0.02 and +0.11 with
+  no consistent sign across sexes), are excluded and the reasons are in the source.
+
+  **A prediction made here was wrong and is recorded rather than quietly fixed.** The
+  first attempt specified only glucose's lipid links, reasoning that HbA1c correlates
+  with glucose at 0.82 so the copula would carry the dependence across at about −0.15.
+  Measured: −0.009. A Gaussian copula fills every unspecified entry with zero, so an
+  unstated correlation is a *stated* zero — the model asserts independence it was never
+  asked to assert. HbA1c now carries its own pairs.
+
+### Added
+
+- **Twelve fidelity checks** covering the pairs above, including BMI/HDL, which is the
+  only check in the report that could fail while every configured value stayed correct.
+  All are graded `calibration`, not `out_of_sample`: they are fitted to the same survey
+  that supplies the marginals. **The out-of-sample count stays at 1** — the denominator
+  moved from 46 to 58 and the evidence did not.
+- **`anaemia` now has a golden file.** It shipped in 0.2.0 without one: the golden test
+  iterated a hardcoded tuple of four profile names instead of the profile registry, so
+  the determinism contract covered every profile but only pinned the four somebody had
+  typed. The list is now derived, and a new profile fails until its golden exists.
+
+### Fixed
+
+- **Five of the ten rows in the README's evidence table had drifted** — the ADAG slope,
+  the glucose value at HbA1c 8.0%, both medians and the obesity rate, the last of which
+  contradicted the README's own prose about the same figure two sections away. It is
+  the most persuasive table in the project and was the least checked. Rows now use the
+  report's exact labels and a test asserts every one of them.
+- **The fidelity report told readers its marginals were not fitted to a named cohort**
+  and that "calibrating marginals against NHANES is Phase 4". Phase 4 shipped in 0.2.0.
+  Stale prose inside a generated artefact is worse than stale prose in a document,
+  because it arrives stamped with the authority of the thing it is wrong about.
+
 ## [0.3.0] — 2026-08-22
 
 Additive throughout: no seeded output changed, so fixtures pinned to a seed under 0.2.0

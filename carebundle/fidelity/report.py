@@ -397,6 +397,70 @@ def quality_measure_checks(size: int, seed: int) -> list[Check]:
     ]
 
 
+def metabolic_cluster_checks(size: int, seed: int) -> list[Check]:
+    """Adiposity, glycaemia and lipids must co-vary, not float free of each other.
+
+    Until these correlations were measured the model drew them independently, so a
+    heavy patient was no likelier than anyone else to have a low HDL. The marginals
+    were right the whole time; the dependence between them was simply absent, which no
+    marginal check could see.
+
+    The BMI/HDL check is the one worth reading. BMI is computed from height and weight
+    and is never in the correlation matrix, so its relationship to HDL is not
+    configured anywhere — it emerges from the weight/HDL pair surviving the copula and
+    the division by height squared. It is graded `calibration` rather than
+    `out_of_sample` because the pair it emerges from was fitted to this same survey,
+    but it is the only check here that could fail while every configured value stayed
+    correct.
+    """
+    checks: list[Check] = []
+    # Same guard as nhanes_checks: the extraction is committed, but the report must
+    # still render if it is not.
+    measured = (
+        json.loads(NHANES_TARGETS.read_text())["correlations"]
+        if NHANES_TARGETS.exists() else {}
+    )
+    for profile_key, stratum, sex in (
+        ("healthy", "nondiabetic", "F"),
+        ("type2_diabetes", "diagnosed", "M"),
+    ):
+        profile = get_profile(profile_key, sex)
+        sample = profile.joint.sample(np.random.default_rng(seed + 9), size=size)
+        configured = {
+            (a, b): rho
+            for a, b, rho in library.METABOLIC_CORRELATIONS_BY_STRATUM[stratum][sex]
+        }
+        for (first, second), expected in configured.items():
+            observed = float(np.corrcoef(sample[first], sample[second])[0, 1])
+            checks.append(
+                Check(f"{first}/{second} correlation ({profile_key})", observed,
+                      expected, 0.06, "", "NHANES 2017-2020", evidence="calibration")
+            )
+
+        # BMI is derived, so it has to come from drawn patients rather than the joint
+        # sample: the copula never sees it.
+        rng = np.random.default_rng(seed + 10)
+        bmi, hdl = [], []
+        for _ in range(size):
+            drawn = draw(profile, rng=rng, age_years=55.0, sex=sex)
+            bmi.append(drawn.raw["bmi"])
+            hdl.append(drawn.raw["hdl"])
+        key = f"{sex}/{stratum}/bmi~hdl"
+        if key not in measured:
+            continue
+        observed = float(np.corrcoef(bmi, hdl)[0, 1])
+        checks.append(
+            Check(f"BMI/HDL correlation, emergent ({profile_key})", observed,
+                  measured[key]["pearson"],
+                  # Wider than the configured pairs: this one is attenuated by height,
+                  # which is drawn independently of HDL, so it lands consistently
+                  # nearer zero than the survey. Tight enough to catch a sign flip or
+                  # a collapse to independence, which is what it exists to detect.
+                  0.09, "", "NHANES 2017-2020", evidence="calibration")
+        )
+    return checks
+
+
 def run_all(size: int = DEFAULT_SAMPLE_SIZE, seed: int = DEFAULT_SEED) -> list[Check]:
     return [
         *adag_checks(size, seed),
@@ -408,6 +472,7 @@ def run_all(size: int = DEFAULT_SAMPLE_SIZE, seed: int = DEFAULT_SEED) -> list[C
         *nhanes_checks(min(size, 1_500), seed),
         *quality_measure_checks(min(size, 3_000), seed),
         *anaemia_checks(min(size, 5_000), seed),
+        *metabolic_cluster_checks(min(size, 4_000), seed),
     ]
 
 
@@ -524,13 +589,23 @@ def render_markdown(checks: list[Check], *, size: int, seed: int) -> str:
         "it. Reproducing the residual scatter is the actual claim, so that check is",
         "two-sided: too tight a correlation fails just as a too-loose one does.",
         "",
-        "## Marginals are estimates, dependence is cited",
+        "## Marginals and dependence both come from the survey",
         "",
-        "The marginal distributions are clinically-informed estimates for a 45-65",
-        "adult population, not fits to a named cohort. What comes from the literature",
-        "is the *dependence* structure: the HbA1c/glucose correlation is derived from",
-        "the published R^2, and eGFR is computed from creatinine by CKD-EPI 2021",
-        "rather than sampled. Calibrating marginals against NHANES is Phase 4.",
+        "Marginals are fitted to NHANES 2017-March 2020, aged 45-65, within sex and",
+        "within stratum; `python -m carebundle.calibration.nhanes` regenerates them",
+        "and reproduces the committed file byte for byte. Some relationships are",
+        "instead computed rather than sampled — eGFR from creatinine by CKD-EPI 2021,",
+        "LDL by Friedewald, BMI from height and weight — and those are graded",
+        "`identity` above, because they cannot fail unless the code is broken.",
+        "",
+        "**Marginals being right does not make the joint distribution right.** Every",
+        "analyte here matched its target while adiposity, glycaemia and lipids were",
+        "drawn independently of one another: the weight/HDL correlation was -0.26 in",
+        "the survey and +0.01 in generated output, and no marginal check could see it.",
+        "The metabolic-cluster rows above exist because that was measured. A Gaussian",
+        "copula fills any pair you do not specify with zero, so an unstated",
+        "correlation is a stated zero, and the model asserts independence it was never",
+        "asked to assert.",
     ]
     return "\n".join(lines) + "\n"
 

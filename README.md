@@ -253,18 +253,29 @@ The claim is checked statistically on every run and published as a
 
 | Check | Observed | Expected | Source |
 |---|---:|---:|---|
-| ADAG slope | 28.46 | 28.70 | Nathan 2008 |
-| **ADAG R²** | **0.845** | **0.840** | Nathan 2008 |
-| glucose at HbA1c 8.0% | 183.0 | 182.9 mg/dL | Nathan 2008 |
-| eGFR consistent with creatinine | exact | exact | CKD-EPI 2021 |
-| LDL consistent with panel | exact | exact | Friedewald 1972 |
-| BMI consistent with height/weight | exact | exact | WHO |
-| CKD stage-3 eGFR within band | 100% | 100% | KDIGO 2012 |
-| HbA1c median (diabetic) | 7.38 | 7.40 | NHANES 2017-2020 |
-| triglycerides median (healthy) | 89.3 | 88.0 mg/dL | NHANES 2017-2020 |
-| diabetic obesity rate | 0.657 | 0.612 | NHANES 2017-2020 |
+| ADAG slope | 27.96 | 28.7 | Nathan 2008 |
+| **ADAG R^2** | **0.8447** | **0.84** | Nathan 2008 |
+| glucose at HbA1c 8.0% | 183.1 | 182.9 | Nathan 2008 |
+| eGFR consistent with creatinine | 0 | 0 | CKD-EPI 2021 |
+| LDL consistent with panel (Friedewald) | 0 | 0 | Friedewald 1972 |
+| BMI consistent with height and weight | 0 | 0 | WHO |
+| CKD stage-3 eGFR within band | 1 | 1 | KDIGO 2012 |
+| hba1c median (type2_diabetes/M) | 7.242 | 7.3 | NHANES 2017-2020 |
+| triglycerides median (healthy/F) | 88.97 | 88 | NHANES 2017-2020 |
+| diabetic obesity rate | 0.6385 | 0.612 | NHANES 2017-2020 |
+| weight_kg/hdl correlation (healthy) | -0.2392 | -0.2584 | NHANES 2017-2020 |
+| **BMI/HDL correlation, emergent (healthy)** | **-0.2884** | **-0.2998** | NHANES 2017-2020 |
 
-All 46 checks pass — but they are **not equally strong evidence**, and the report grades
+Row labels and values are copied verbatim from `FIDELITY.md`, and a test asserts every
+one of them still matches — five of these rows had silently drifted before that test
+existed, in the most persuasive table on the page.
+
+The last row is the one worth reading. BMI is computed from height and weight and is
+never in the correlation matrix, so nothing configures its relationship to HDL; it
+emerges from the weight/HDL pair surviving the copula. It is the only row here that
+could fail while every configured value stayed correct.
+
+All 58 checks pass — but they are **not equally strong evidence**, and the report grades
 them rather than reporting a flat total:
 
 | Grade | Checks | What a pass proves |

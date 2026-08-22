@@ -237,6 +237,31 @@ CORRELATION_PAIRS = (
     ("hemoglobin", "hematocrit"),
     ("hemoglobin", "rbc"),
     ("hematocrit", "rbc"),
+    # The metabolic cluster: adiposity, glycaemia and lipids move together, and the
+    # model drew them independently until this was measured. Emitted per stratum
+    # because pooling manufactures dependence that does not exist within one —
+    # weight/glucose reads +0.10 across everyone and −0.08 inside the diabetic
+    # stratum, since the pooled figure is mostly "heavier people are more often
+    # diabetic", a fact the profile split already encodes. Fitting the pooled value
+    # would count it twice.
+    ("weight_kg", "hdl"),
+    ("glucose", "triglycerides"),
+    ("glucose", "hdl"),
+    # HbA1c needs its own pairs. The first attempt specified only glucose's links and
+    # predicted the copula would carry them to HbA1c through the 0.82 glucose/HbA1c
+    # correlation, giving about -0.15. Measured: -0.009. A Gaussian copula fills an
+    # unspecified entry with zero, which *forces* independence rather than leaving it
+    # free to be implied — so an unstated correlation is a stated zero.
+    ("hba1c", "hdl"),
+    ("hba1c", "triglycerides"),
+    # Not fitted, measured only: BMI is computed from height and weight, so its link
+    # to HDL is whatever the weight pair induces. Having the target here lets a
+    # fidelity check compare an unconfigured quantity against the survey.
+    ("bmi", "hdl"),
+    # Deliberately absent: weight/glucose and weight/hba1c, whose sign reverses
+    # between strata for the reason above, and every pair involving blood pressure —
+    # systolic against weight, glucose or lipids is between −0.02 and +0.11 with no
+    # consistent sign across sexes, which is noise, not a relationship.
 )
 
 

@@ -1788,7 +1788,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Cholesterol in HDL [Mass/volume] in Serum or Plasma: 49 mg/dL (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Cholesterol in HDL [Mass/volume] in Serum or Plasma: 47 mg/dL (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -1826,7 +1826,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 49,
+          "value": 47,
           "unit": "mg/dL",
           "system": "http://unitsofmeasure.org",
           "code": "mg/dL"
@@ -1855,7 +1855,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Cholesterol in LDL [Mass/volume] in Serum or Plasma by calculation: 128 mg/dL (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Cholesterol in LDL [Mass/volume] in Serum or Plasma by calculation: 134 mg/dL (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -1893,7 +1893,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 128,
+          "value": 134,
           "unit": "mg/dL",
           "system": "http://unitsofmeasure.org",
           "code": "mg/dL"
@@ -1922,7 +1922,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Triglyceride [Mass/volume] in Serum or Plasma: 286 mg/dL (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Triglyceride [Mass/volume] in Serum or Plasma: 269 mg/dL (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -1960,7 +1960,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 286,
+          "value": 269,
           "unit": "mg/dL",
           "system": "http://unitsofmeasure.org",
           "code": "mg/dL"
@@ -2257,7 +2257,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Body weight: 100.9 kg (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Body weight: 97.5 kg (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -2295,7 +2295,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 100.9,
+          "value": 97.5,
           "unit": "kg",
           "system": "http://unitsofmeasure.org",
           "code": "kg"
@@ -2324,7 +2324,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Body mass index (BMI) [Ratio]: 37.7 kg/m2 (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Body mass index (BMI) [Ratio]: 36.4 kg/m2 (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -2362,7 +2362,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 37.7,
+          "value": 36.4,
           "unit": "kg/m2",
           "system": "http://unitsofmeasure.org",
           "code": "kg/m2"

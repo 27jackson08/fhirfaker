@@ -159,7 +159,7 @@ Not that my generator is better than Synthea. Synthea covers 231 conditions, a l
 per patient, and three of the four measures in that table. On breadth it is not close.
 
 Nor that the fidelity is broadly validated. The report grades every check by what a pass
-proves, and says out loud that **1 of 46 is genuinely out-of-sample** — the rest establish
+proves, and says out loud that **1 of 58 is genuinely out-of-sample** — the rest establish
 self-consistency, which is necessary and is a weaker claim than the phrase "fidelity
 report" suggests. A test pins that count so it cannot grow by relabelling.
 

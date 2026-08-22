@@ -110,6 +110,70 @@ BP_CORRELATION_BY_SEX = {"F": 0.6771, "M": 0.743}
 TG_HDL_CORRELATION_BY_SEX = {"F": -0.4332, "M": -0.2969}
 HEIGHT_WEIGHT_CORRELATION_BY_SEX = {"F": 0.3036, "M": 0.446}
 
+# The metabolic cluster: adiposity, glycaemia and lipids co-vary. Until this was
+# measured the model drew them independently, producing a heavy patient no likelier
+# to have a low HDL than anyone else — the correlation reads -0.26 in NHANES and was
+# +0.01 in generated output, which is the single largest joint-structure miss found
+# so far. Marginals were right; the dependence between them was absent.
+#
+# Keyed by stratum, unlike the pairs above, because pooling manufactures dependence
+# that vanishes within a profile. Weight against glucose reads +0.10 across everyone
+# and -0.08 inside the diabetic stratum: the pooled figure is mostly "heavier people
+# are more often diabetic", which the profile split already encodes. Fitting it would
+# count the same fact twice — the error `CONTRIBUTING.md` records for pooled
+# height/weight, in a new place.
+#
+# HbA1c carries its own lipid pairs, and the first attempt here got that wrong. It
+# specified only glucose's links, on the argument that HbA1c correlates with glucose
+# at 0.82 so the copula would carry the dependence across at roughly 0.82 x -0.18 =
+# -0.15. Measured in generated output: -0.009. **A Gaussian copula fills every
+# unspecified entry with zero**, which forces independence rather than leaving it free
+# to be implied. An unstated correlation is a stated zero, and the prediction was only
+# caught because it was checked rather than reasoned about.
+#
+# BMI is the genuine exception: it is computed from height and weight, so it is never
+# in the matrix, and its -0.27 against HDL is entirely induced by the weight pair.
+# That one really does propagate, because it is arithmetic rather than a copula entry.
+METABOLIC_CORRELATIONS_BY_STRATUM: dict[str, dict[str, tuple[tuple[str, str, float], ...]]] = {
+    "nondiabetic": {
+        "F": (
+            ("weight_kg", "hdl", -0.2584),
+            ("glucose", "triglycerides", 0.1873),
+            ("glucose", "hdl", -0.1785),
+            ("hba1c", "hdl", -0.2492),
+            ("hba1c", "triglycerides", 0.131),
+        ),
+        "M": (
+            ("weight_kg", "hdl", -0.2001),
+            ("glucose", "triglycerides", 0.0908),
+            ("glucose", "hdl", -0.0744),
+            ("hba1c", "hdl", -0.1291),
+            # 0.0031 is the measured value, and it is kept rather than rounded to zero
+            # or borrowed from women: the same pair reads 0.131 in women, and a sex
+            # difference that large is exactly what the sex-stratified model exists to
+            # carry. Configuring it explicitly also distinguishes "measured as absent"
+            # from "never considered", which the zero-fill above makes indistinguishable.
+            ("hba1c", "triglycerides", 0.0031),
+        ),
+    },
+    "diagnosed": {
+        "F": (
+            ("weight_kg", "hdl", -0.1711),
+            ("glucose", "triglycerides", 0.2045),
+            ("glucose", "hdl", -0.0771),
+            ("hba1c", "hdl", -0.1054),
+            ("hba1c", "triglycerides", 0.1737),
+        ),
+        "M": (
+            ("weight_kg", "hdl", -0.2333),
+            ("glucose", "triglycerides", 0.3081),
+            ("glucose", "hdl", -0.108),
+            ("hba1c", "hdl", -0.0795),
+            ("hba1c", "triglycerides", 0.159),
+        ),
+    },
+}
+
 # NHANES 45-65: share of *diagnosed* diabetics who report having been told they have
 # high blood pressure (BPQ020). Diagnosed on both sides, matching the `E11.9` and
 # `I10` codes the profile emits rather than a measured-BP definition.
@@ -403,10 +467,20 @@ ALBUMINURIA_NORMAL = (
 )
 
 
-def _lipid_and_body_correlations(sex: str) -> list[tuple[str, str, float]]:
+def _lipid_and_body_correlations(
+    sex: str, *, stratum: str = "nondiabetic"
+) -> list[tuple[str, str, float]]:
+    """Lipid, body and metabolic dependence for one profile.
+
+    `stratum` selects which NHANES population the metabolic pairs are measured in, and
+    should be the same stratum the profile's own marginals come from — `diagnosed` for
+    the diabetes profile, `nondiabetic` for everything else. See
+    METABOLIC_CORRELATIONS_BY_STRATUM for why this cannot be pooled.
+    """
     return [
         ("triglycerides", "hdl", TG_HDL_CORRELATION_BY_SEX[sex]),
         ("height_cm", "weight_kg", HEIGHT_WEIGHT_CORRELATION_BY_SEX[sex]),
+        *METABOLIC_CORRELATIONS_BY_STRATUM[stratum][sex],
     ]
 
 
@@ -559,7 +633,9 @@ def type2_diabetes(sex: str) -> ClinicalProfile:
             correlations=[
                 ("hba1c", "glucose", rho),
                 ("systolic", "diastolic", BP_CORRELATION_BY_SEX[sex]),
-                *_lipid_and_body_correlations(sex),
+                # The only profile whose marginals come from the diagnosed stratum,
+                # so its metabolic dependence is measured there too.
+                *_lipid_and_body_correlations(sex, stratum="diagnosed"),
                 *_routine_correlations(sex),
             ],
         ),
