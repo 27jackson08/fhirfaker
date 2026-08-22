@@ -92,3 +92,41 @@ def test_every_shipped_document_is_reachable_from_the_readme():
     assert not unreachable, (
         f"these documents ship but are not linked from the README: {unreachable}"
     )
+
+
+def test_readme_obesity_figures_match_the_fidelity_report():
+    """The README quotes the diabetic obesity rate; it has drifted twice.
+
+    First when the anthropometrics moved to the diagnosed stratum, then again when the
+    red cell correlations shifted every profile's RNG stream. Both times the figure was
+    a hand-typed copy of a number the fidelity report already computes.
+    """
+    readme = (ROOT / "README.md").read_text()
+    row = re.search(r"\| diabetic obesity rate \| ([0-9.]+) \| ([0-9.]+) \|", FIDELITY.read_text())
+    assert row, "FIDELITY.md no longer reports the diabetic obesity rate"
+    observed, expected = float(row.group(1)), float(row.group(2))
+
+    claim = re.search(r"([0-9.]+)% obese against\s*\n?\s*NHANES's ([0-9.]+)%", readme)
+    assert claim, "README no longer states the obesity comparison"
+    assert float(claim.group(1)) == pytest.approx(observed * 100, abs=0.05), (
+        f"README says {claim.group(1)}% obese, fidelity report computes {observed:.1%}"
+    )
+    assert float(claim.group(2)) == pytest.approx(expected * 100, abs=0.05), (
+        f"README says NHANES {claim.group(2)}%, fidelity report target is {expected:.1%}"
+    )
+
+
+def test_readme_does_not_deny_capabilities_the_library_has():
+    """The README claimed 'no longitudinal history' after `generate_history` shipped.
+
+    Understating is as much a documentation defect as overstating, and this one
+    contradicted a section of the same file — a reader hitting the limits list would
+    conclude the feature above it did not exist.
+    """
+    readme = (ROOT / "README.md").read_text()
+    from carebundle import __all__ as exported
+
+    if "generate_history" in exported:
+        assert "No longitudinal history —" not in readme, (
+            "README denies longitudinal support while generate_history is exported"
+        )

@@ -50,7 +50,7 @@ rather than quietly dropped.
 |---|---|---|
 | Runtime | Java JDK 17+ | pure Python, `pydantic` + `numpy` |
 | Shape | batch — generates a population into a folder | library — returns a `Bundle` object in-process |
-| Scope | full patient lifecycle simulation | one visit, clinically coherent |
+| Scope | full patient lifecycle simulation | one visit, or a bounded course of visits |
 | Reproducible fixtures | not a contract | **byte-identical for a given seed** |
 | CMS *Controlling High Blood Pressure* | **0%** (published) | **71.5%** (real-world 69.7–74.5%) |
 
@@ -443,13 +443,13 @@ Stated here rather than left for you to discover.
 - **Blood pressure marginals are clinical definitions**, not population fits —
   "normotensive" and "hypertensive" are the populations the profiles mean. Everything
   else is calibrated against NHANES (see below).
-- **Diabetic BMI runs slightly high.** Generated diabetics are 64.8% obese against
-  NHANES's 61.5% for the same age band and stratum, with a median BMI of 32.5 against
+- **Diabetic BMI runs slightly high.** Generated diabetics are 63.8% obese against
+  NHANES's 61.2% for the same age band and stratum, with a median BMI of 32.5 against
   31.9. Weight is drawn from a symmetric truncated normal while the real distribution is
   right-skewed, and BMI is computed from it, so the derived median lands a little above
   target. Within the fidelity tolerance, checked every run, and stated here rather than
   rounded away.
-- **One encounter per bundle.** No longitudinal history — that is Synthea's territory.
+- **One encounter per bundle by default.** `generate_history` adds a bounded course of visits with blood pressure responding to titration, but there is no lifetime simulation, no disease progression and no birth or death — that remains Synthea's territory.
 - **Terminology is a curated subset** — 106 codes (42 LOINC, 30 RxNorm, 24 ICD-10-CM),
   not full coverage. Every code *and display* is verified against its source vocabulary
   by `python -m carebundle.terminology.verify`, which runs nightly in CI.
