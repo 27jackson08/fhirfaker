@@ -169,6 +169,12 @@ def test_every_readme_evidence_row_matches_the_fidelity_report():
     assert checked >= 8, f"only matched {checked} README rows against the report"
 
 
+def _measured_rate() -> str:
+    """The canonical Synthea CBP rate, formatted as the documents write it."""
+    from carebundle.benchmark.drift import load_record
+
+    return f"{load_record()['controlling_high_blood_pressure']['synthea']['rate'] * 100:.1f}%"
+
 def test_no_document_claims_synthea_scores_zero_in_the_present_tense():
     """The most expensive error in this project's history was a stale citation.
 
@@ -195,8 +201,11 @@ def test_no_document_claims_synthea_scores_zero_in_the_present_tense():
             if phrase not in text:
                 continue
             # Permitted only where the same document carries the correction, so a
-            # reader cannot reach the claim without reaching the retraction.
-            assert "74.8%" in text, (
+            # reader cannot reach the claim without reaching the retraction. The figure
+            # is read from the record rather than typed here: this guard used to hardcode
+            # 74.8%, and kept passing after the canonical figure became the 74.4% median,
+            # which is the drift it exists to prevent showing up inside the guard itself.
+            assert _measured_rate() in text, (
                 f"{name} still asserts {phrase!r} without the measured correction"
             )
 
@@ -207,7 +216,9 @@ def test_benchmark_states_when_the_synthea_figure_was_measured():
     Without the date the number is indistinguishable from the citation it replaced.
     """
     text = BENCHMARK.read_text()
-    assert "74.8%" in text, "BENCHMARK.md no longer reports the measured Synthea rate"
+    assert _measured_rate() in text, (
+        "BENCHMARK.md no longer reports the measured Synthea rate"
+    )
     assert "August 2026" in text or "Aug 2026" in text, (
         "BENCHMARK.md reports a Synthea rate without saying when it was measured"
     )

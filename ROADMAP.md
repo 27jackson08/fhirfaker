@@ -16,9 +16,16 @@ document already says why in Section 14:
 > lifecycles, it competes on Synthea's terms and loses.
 
 That warning is still correct and this roadmap does not overturn it. Synthea has 231 disease
-modules, a decade of development, MITRE behind it, and — since PySynthea — a JVM-free Python
-port. Breadth is not winnable. Neither is "easier to install", which was a real differentiator
-until May 2026 and is now gone.
+modules, a decade of development, MITRE behind it, and — since
+[PySynthea](https://arxiv.org/abs/2606.28346) in May 2026 — a JVM-free Python
+reimplementation. Breadth is not winnable. Neither is "easier to install", which was a real
+differentiator until May 2026 and is now gone.
+
+> Two details worth having straight, since both were got wrong here at least once.
+> PySynthea is a community reimplementation, not an official MITRE release. And the
+> `pysynthea` name **on PyPI is a different, unrelated project** — OMOP query tooling that
+> merely consumes Synthea output — so anyone checking this claim by installing that name
+> will conclude the reimplementation does not exist. It does.
 
 So the plan is not to out-simulate Synthea. It is to **out-validate** it, on ground where
 Synthea has a published, peer-reviewed, measured weakness and where this project's architecture
@@ -29,7 +36,14 @@ is already the right shape.
 Two findings reframe the whole competitive picture. Both are external and citable, which
 matters: this project's positioning rule is that claims are checked, not asserted.
 
-### 2.1 Synthea fails outcome measures, and it is documented
+### 2.1 Synthea failed outcome measures in 2019, and no longer does
+
+> **Heading corrected, August 2026.** It read "Synthea fails outcome measures, and it is
+> documented" — present tense, on a 2019 citation, which is exactly the framing that let
+> the error below survive. Measured against build `d9d07a6`, Synthea scores 74.4% on
+> blood-pressure control. The section is kept because the reasoning it contains was sound
+> given the evidence available, and because the strategy this project chose was built on
+> it. Read it as history.
 
 A validation study in *BMC Medical Informatics and Decision Making* tested Synthea against four
 CMS clinical quality measures:
