@@ -1,0 +1,47 @@
+{
+  "_comment": [
+    "The measured Synthea comparison, with the provenance needed to detect that it has",
+    "gone stale. This file exists because the claim it replaced -- Synthea scoring 0% on",
+    "blood-pressure control -- was false for an unknown length of time, and survived",
+    "because it was cited rather than run. Replacing a stale citation with a measurement",
+    "that nothing re-runs would repeat the same failure one level up.",
+    "",
+    "Regenerate with the commands in `carebundle/benchmark/synthea.py`, then",
+    "`python -m carebundle.benchmark.drift --record`. The scheduled workflow in",
+    ".github/workflows/synthea-drift.yml re-runs it monthly and fails if the figures move",
+    "or if Synthea has published a new build."
+  ],
+  "measured_on": "2026-08-23",
+  "synthea": {
+    "version": "d9d07a6",
+    "build_timestamp": "2026-08-18T16:13:33.069+0000",
+    "jar_sha256": "018ad7f04f7aacb995804d7d4781c76d5fc714f7f23257ba50daa9eefae224ac",
+    "source": "https://github.com/synthetichealth/synthea/releases/download/master-branch-latest/synthea-with-dependencies.jar",
+    "generation": "-p 1200 -s 42 -a 18-85, default Massachusetts settings",
+    "bundles": 1462
+  },
+  "carebundle": {
+    "version": "0.4.0-dev",
+    "cohort": "generate_cohort(count=1500, seed=42, sex='mixed', age_range=(18, 85))"
+  },
+  "controlling_high_blood_pressure": {
+    "synthea": {"numerator": 320, "denominator": 431, "rate": 0.742},
+    "carebundle": {"numerator": 459, "denominator": 667, "rate": 0.688},
+    "reference_us": 0.697,
+    "reference_ma": 0.745,
+    "published_2019_synthea": 0.0
+  },
+  "dependence": {
+    "_comment": "Mean absolute deviation from the committed NHANES extraction across 7 analyte pairs x 2 sexes, ages 45-65.",
+    "synthea": {"mean_deviation": 0.192, "median_deviation": 0.194, "worst": 0.431, "sign_agreement": "10/14", "panels": 492},
+    "carebundle": {"mean_deviation": 0.053, "median_deviation": 0.040, "worst": 0.149, "sign_agreement": "14/14", "panels": 2998}
+  },
+  "diabetic_amputation": {
+    "_comment": "Kartoun et al., JAMIA Open 2023, report 100% of Synthea type-2 diabetics carrying an amputation. It does not reproduce.",
+    "synthea_diabetics": 537,
+    "synthea_with_amputation": 3,
+    "synthea_rate": 0.0056,
+    "published_2023_claim": 1.0,
+    "real_world_incidence_per_1000_per_year": 5
+  }
+}

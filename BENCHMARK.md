@@ -39,13 +39,20 @@ patients, default Massachusetts settings) was generated and scored with
 
 | | CBP rate | Denominator | Nearest real-world reference |
 |---|---:|---:|---|
-| **Synthea, measured Aug 2026** | **74.8%** | 326 | Massachusetts, 74.5% |
+| **Synthea, measured Aug 2026** | **74.2%** | 431 | Massachusetts, 74.5% |
 | **carebundle 0.4.0-dev, same code** | **68.8%** | 667 | US national, 69.7% |
 | Synthea, *as published* Chen 2019 | 0% | — | — |
 
+Measured against **Synthea `d9d07a6`**, built 2026-08-18, JAR SHA-256
+`018ad7f0…fae224ac`. Pinning the commit matters more here than usual: `master-branch-latest`
+is a moving target, so a reader re-running this next year and getting a different number
+would have no way to tell a Synthea change from an error in this document.
+
 The result is not fragile. Across four defensible readings of the measure — most recent
 reading ever or within a 12- or 24-month window, including or excluding decedents —
-Synthea lands between **74.2% and 75.0%**.
+Synthea lands between **74.2% and 75.0%**; the 74.8% variant excludes decedents. The
+figure above is what `python -m carebundle.benchmark.synthea` prints by default, so the
+document reports what the tool reports.
 
 **Why this says 68.8% where `FIDELITY.md` says 74.6%.** They score different
 populations. The fidelity check draws the `hypertension` profile at a fixed age 58, so

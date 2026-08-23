@@ -45,6 +45,24 @@ Practically, for anyone pinning: **pin the patch version.** `carebundle==0.1.2` 
   Synthea FHIR export, so the comparison is reproducible instead of quoted. Synthea is
   not vendored, for the same reason the NHANES files are not; the module docstring gives
   the four commands.
+- **`carebundle.benchmark.drift`, a recorded comparison, and a monthly workflow.**
+  Replacing a stale citation with a measurement fixes half the problem: a measurement
+  taken once and never repeated goes stale the same way, with better provenance
+  attached. So the comparison is now recorded with the **exact Synthea build that
+  produced it** — commit `d9d07a6`, built 2026-08-18, JAR SHA-256 `018ad7f0…` — and
+  `.github/workflows/synthea-drift.yml` regenerates the population monthly and fails if
+  the figures move or if Synthea has shipped a new build. Those two are reported
+  separately: a new upstream build is a shelf-life notice, not a defect here.
+
+  It runs in **51 seconds** over 1,462 lifetime bundles. The first implementation parsed
+  the population once per measure; the second materialised it into a list to share, and
+  did not finish inside ten minutes because ~1,500 bundles of ~1,000 resources do not
+  belong in memory at once. A single streaming pass feeds both measures.
+
+  Five tests pin it, including one that fails if `BENCHMARK.md` quotes a figure the
+  record does not contain, and one asserting an empty denominator is still reported as a
+  terminology fault rather than as a rate of 0% — the specific way the withdrawn claim
+  could come back looking confirmed.
 - **`carebundle.benchmark.dependence`** — measures cross-domain analyte dependence in
   any FHIR source against the committed NHANES extraction, and it exists because the
   claim that replaced the withdrawn one should not also go unchecked. Seven pairs across

@@ -1,0 +1,76 @@
+name: Synthea drift
+
+# Re-measures the competitor comparison in BENCHMARK.md and fails if it has moved.
+#
+# This exists because this repository asserted for years that Synthea scores 0% on
+# Controlling High Blood Pressure, on the authority of a 2019 paper, and it was false.
+# Replacing the citation with a measurement is only half the fix: a measurement taken
+# once and never repeated goes stale in exactly the same way, with better provenance
+# attached. So it runs on a schedule and fails loudly.
+#
+# It is deliberately NOT part of `ci.yml`. It needs a 197 MB download, a JVM and several
+# minutes of population generation, and none of that should sit between a contributor
+# and a green pull request. It also fails for a reason that is not the contributor's
+# fault — somebody else shipped a new build.
+on:
+  schedule:
+    # 06:00 UTC on the first of each month. Synthea's master-branch-latest moves often
+    # enough that monthly is the right granularity for "our documentation has a shelf
+    # life", and rare enough that a failure is worth reading rather than muting.
+    - cron: "0 6 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@v5
+
+      - name: Install
+        run: uv pip install --system -e ".[dev]"
+
+      - name: Fetch Synthea
+        run: |
+          curl -sSL --retry 3 -o synthea.jar \
+            "https://github.com/synthetichealth/synthea/releases/download/master-branch-latest/synthea-with-dependencies.jar"
+          echo "sha256: $(sha256sum synthea.jar | cut -d' ' -f1)"
+          unzip -p synthea.jar version.txt | sed 's/^/build: /'
+
+      - name: Generate the recorded population
+        # Same flags and seed as the recorded comparison. Synthea is seeded, so an
+        # identical build reproduces an identical population and any movement in the
+        # numbers is a real change rather than sampling noise.
+        run: |
+          java -jar synthea.jar -p 1200 -s 42 -a 18-85 \
+            --exporter.fhir.export=true \
+            --exporter.hospital.fhir.export=false \
+            --exporter.practitioner.fhir.export=false \
+            --exporter.baseDirectory=./pop > synthea-gen.log 2>&1 || {
+              echo "::error::Synthea generation failed"; tail -40 synthea-gen.log; exit 1; }
+          echo "bundles: $(ls pop/fhir | wc -l)"
+
+      - name: Check the recorded comparison still holds
+        run: python -m carebundle.benchmark.drift --fhir-dir ./pop/fhir --jar ./synthea.jar
+
+      - name: What to do when this fails
+        if: failure()
+        run: |
+          echo "::notice::The Synthea comparison in BENCHMARK.md no longer matches reality."
+          echo "Re-measure, update carebundle/benchmark/data/synthea_comparison.json and"
+          echo "the figures in BENCHMARK.md, and record in CHANGELOG.md that a"
+          echo "competitor's number moved. Do not widen the tolerance to make this pass."
