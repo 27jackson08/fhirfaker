@@ -52,9 +52,17 @@ jobs:
           unzip -p synthea.jar version.txt | sed 's/^/build: /'
 
       - name: Generate the recorded population
-        # Same flags and seed as the recorded comparison. Synthea is seeded, so an
-        # identical build reproduces an identical population and any movement in the
-        # numbers is a real change rather than sampling noise.
+        # Same flags and seed as the recorded comparison.
+        #
+        # This comment used to claim the seed made the population reproducible, so any
+        # movement would be a real change rather than noise. The first rehearsal of this
+        # workflow refuted that: the same build and the same seed produced 1,449 bundles
+        # here against 1,462 on the machine that recorded the comparison. `-p` counts
+        # living patients and Synthea generates concurrently, so the number of deceased
+        # records that come out varies with thread interleaving.
+        #
+        # The tolerances in `drift.py` are therefore sized against observed run-to-run
+        # variation, not against an assumption of determinism.
         run: |
           java -jar synthea.jar -p 1200 -s 42 -a 18-85 \
             --exporter.fhir.export=true \

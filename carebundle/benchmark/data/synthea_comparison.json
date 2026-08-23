@@ -18,23 +18,42 @@
     "jar_sha256": "018ad7f04f7aacb995804d7d4781c76d5fc714f7f23257ba50daa9eefae224ac",
     "source": "https://github.com/synthetichealth/synthea/releases/download/master-branch-latest/synthea-with-dependencies.jar",
     "generation": "-p 1200 -s 42 -a 18-85, default Massachusetts settings",
-    "bundles": 1462
+    "bundles": 1462,
+    "_reproducibility": [
+      "A fixed seed does NOT make this reproducible across machines. The same build and",
+      "seed produced 1462 bundles here and 1449 in CI: `-p` counts living patients and",
+      "generation is concurrent, so the number of deceased records exported varies with",
+      "thread interleaving. Observed spread between those runs was 0.002 on the CBP rate",
+      "and 0.016 on the mean dependence deviation. The tolerances in drift.py are sized",
+      "against that, not against an assumption of determinism."
+    ]
   },
   "carebundle": {
     "version": "0.4.0-dev",
     "cohort": "generate_cohort(count=1500, seed=42, sex='mixed', age_range=(18, 85))"
   },
   "controlling_high_blood_pressure": {
-    "synthea": {"numerator": 320, "denominator": 431, "rate": 0.742},
+    "_comment": [
+      "Synthea's figure is the median of three generation runs of the same build and",
+      "seed, which do not produce identical populations; the runs are listed so a",
+      "single lucky draw cannot become the published number."
+    ],
+    "synthea": {"rate": 0.744, "observed_runs": [0.742, 0.744, 0.745], "denominator": 431},
     "carebundle": {"numerator": 459, "denominator": 667, "rate": 0.688},
     "reference_us": 0.697,
     "reference_ma": 0.745,
     "published_2019_synthea": 0.0
   },
   "dependence": {
-    "_comment": "Mean absolute deviation from the committed NHANES extraction across 7 analyte pairs x 2 sexes, ages 45-65.",
-    "synthea": {"mean_deviation": 0.192, "median_deviation": 0.194, "worst": 0.431, "sign_agreement": "10/14", "panels": 492},
-    "carebundle": {"mean_deviation": 0.053, "median_deviation": 0.040, "worst": 0.149, "sign_agreement": "14/14", "panels": 2998}
+    "_comment": [
+      "Mean absolute deviation from the committed NHANES extraction across 7 analyte",
+      "pairs x 2 sexes, ages 45-65. Both sides are medians with their observed spread,",
+      "because reporting one seeded draw for this package against a noisy average for",
+      "Synthea would flatter this package. Synthea varies run to run even at a fixed",
+      "seed; this package is deterministic per seed and varies across seeds instead."
+    ],
+    "synthea": {"mean_deviation": 0.208, "observed_runs": [0.192, 0.208, 0.209], "worst": 0.431, "sign_agreement": "10/14", "panels": 492},
+    "carebundle": {"mean_deviation": 0.047, "observed_seeds": [0.040, 0.040, 0.053, 0.055], "worst": 0.149, "sign_agreement": "14/14", "panels": 2998}
   },
   "diabetic_amputation": {
     "_comment": "Kartoun et al., JAMIA Open 2023, report 100% of Synthea type-2 diabetics carrying an amputation. It does not reproduce.",

@@ -63,14 +63,30 @@ Practically, for anyone pinning: **pin the patch version.** `carebundle==0.1.2` 
   record does not contain, and one asserting an empty denominator is still reported as a
   terminology fault rather than as a rate of 0% — the specific way the withdrawn claim
   could come back looking confirmed.
+
+  **Rehearsing the workflow refuted an assumption inside it.** The job was written
+  claiming a fixed seed made Synthea reproducible, so any movement would be a real
+  change rather than noise. The first run produced **1,449 bundles from the same build
+  and seed that produced 1,462 locally** — `-p` counts living patients and generation is
+  concurrent, so the number of deceased records varies with thread interleaving. The
+  mean dependence deviation moved 0.192 → 0.208, within 0.004 of tripping a tolerance
+  chosen on the assumption that it could not move at all. `DEVIATION_TOLERANCE` is now
+  0.05, sized against that measured spread and still far below the 0.14 gap it exists to
+  detect. Noted here rather than adjusted quietly, which is what the module's own failure
+  message demands.
 - **`carebundle.benchmark.dependence`** — measures cross-domain analyte dependence in
   any FHIR source against the committed NHANES extraction, and it exists because the
   claim that replaced the withdrawn one should not also go unchecked. Seven pairs across
   adiposity, glycaemia and lipids, within sex, ages 45–65, one contemporaneous panel per
   patient.
 
-  Measured: mean absolute deviation from NHANES of **0.053** here against **0.192** for
-  Synthea, with sign agreement 14/14 against 10/14. Synthea's dependence follows module
+  Measured: median absolute deviation from NHANES of **0.047** here (0.040–0.055 across
+  four seeds) against **0.208** for Synthea (0.192–0.209 across three runs), with sign
+  agreement 14/14 against 10/14. Both sides are reported as medians with their spread
+  because Synthea does not reproduce a population from a fixed seed and this package
+  does; quoting one seeded draw here against a noisy average there would have flattered
+  this package, and the first version of the table did exactly that — it used 0.192,
+  the lowest of the three Synthea runs. Synthea's dependence follows module
   co-membership — glucose against triglycerides is over-coupled at roughly double the
   real value, while weight against HDL is +0.01 against a real −0.26, and the inverse
   triglyceride/HDL relationship comes out *positive* in men.

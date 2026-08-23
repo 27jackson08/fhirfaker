@@ -35,11 +35,25 @@ from typing import Any
 
 RECORD = Path(__file__).resolve().parent / "data" / "synthea_comparison.json"
 
-# A rate is a proportion; a correlation deviation is on the same 0-1 scale. Both move a
-# little with the population Synthea happens to generate, so an exact match is the wrong
-# test. One point is far tighter than the 74-point error this exists to catch.
+# Sized against measured run-to-run variation, not against an assumption.
+#
+# Synthea is *not* reproducible under a fixed seed across machines: the first rehearsal
+# of the drift workflow generated 1,449 bundles from the same build and seed that
+# produced 1,462 locally, because `-p` counts living patients and generation is
+# concurrent, so the number of deceased records varies with thread interleaving.
+#
+# Observed spread across those two runs: the CBP rate moved 0.002 (0.742 -> 0.744) and
+# the mean dependence deviation moved 0.016 (0.192 -> 0.208). The dependence figure is
+# the noisier of the two because it averages fourteen correlations over roughly 490
+# panels, where a single correlation carries a standard error near 0.045.
+#
+# The tolerances sit above that spread and far below the errors they exist to catch: 74
+# points on the rate, and the 0.14 gap between a generator that models cross-domain
+# dependence (0.053) and one that does not (0.192). DEVIATION_TOLERANCE was 0.02 and was
+# raised after the rehearsal came within 0.004 of a false alarm — recorded here rather
+# than adjusted quietly, which is what this module's own failure message demands.
 RATE_TOLERANCE = 0.01
-DEVIATION_TOLERANCE = 0.02
+DEVIATION_TOLERANCE = 0.05
 
 
 def load_record(path: Path = RECORD) -> dict[str, Any]:

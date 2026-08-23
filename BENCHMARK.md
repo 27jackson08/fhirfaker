@@ -39,7 +39,7 @@ patients, default Massachusetts settings) was generated and scored with
 
 | | CBP rate | Denominator | Nearest real-world reference |
 |---|---:|---:|---|
-| **Synthea, measured Aug 2026** | **74.2%** | 431 | Massachusetts, 74.5% |
+| **Synthea, measured Aug 2026** | **74.4%** | ~431 | Massachusetts, 74.5% |
 | **carebundle 0.4.0-dev, same code** | **68.8%** | 667 | US national, 69.7% |
 | Synthea, *as published* Chen 2019 | 0% | — | — |
 
@@ -51,8 +51,9 @@ would have no way to tell a Synthea change from an error in this document.
 The result is not fragile. Across four defensible readings of the measure — most recent
 reading ever or within a 12- or 24-month window, including or excluding decedents —
 Synthea lands between **74.2% and 75.0%**; the 74.8% variant excludes decedents. The
-figure above is what `python -m carebundle.benchmark.synthea` prints by default, so the
-document reports what the tool reports.
+74.4% above is the median of three generation runs (74.2 / 74.4 / 74.5), all of which
+`python -m carebundle.benchmark.synthea` prints by default, so the document reports what
+the tool reports rather than the most flattering of them.
 
 **Why this says 68.8% where `FIDELITY.md` says 74.6%.** They score different
 populations. The fidelity check draws the `hypertension` profile at a fixed age 58, so
@@ -91,10 +92,18 @@ both, from emitted FHIR, against the committed NHANES extraction.
 Seven analyte pairs across adiposity, glycaemia and lipids, within sex, ages 45–65, one
 contemporaneous panel per patient:
 
-| | mean \|deviation\| | median | worst cell | sign agreement |
-|---|---:|---:|---:|---:|
-| **Synthea** | 0.192 | 0.194 | 0.431 | 10 / 14 |
-| **carebundle 0.4.0-dev** | **0.053** | **0.040** | **0.149** | **14 / 14** |
+| | mean \|deviation\| | observed spread | worst cell | sign agreement |
+|---|---:|---|---:|---:|
+| **Synthea** | 0.208 | 0.192 – 0.209, 3 runs | 0.431 | 10 / 14 |
+| **carebundle 0.4.0-dev** | **0.047** | 0.040 – 0.055, 4 seeds | **0.149** | **14 / 14** |
+
+Both figures are medians with their spread, and that is not decoration. Synthea does not
+produce an identical population from an identical seed — three runs of build `d9d07a6`
+gave 1,462, 1,449 and 1,447 bundles, because `-p` counts living patients and generation
+is concurrent. This package is deterministic per seed and varies across seeds instead.
+Reporting one seeded draw here against a noisy average there would have flattered this
+package, and the first version of this table did exactly that: it quoted 0.192, which
+turned out to be the lowest of the three Synthea runs.
 
 **Deviation, not CI coverage, is the metric.** Synthea's sample here is 492 panels
 against 2,998, so its confidence intervals are roughly twice as wide and cover the
