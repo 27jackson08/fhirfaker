@@ -45,6 +45,26 @@ Practically, for anyone pinning: **pin the patch version.** `carebundle==0.1.2` 
   Synthea FHIR export, so the comparison is reproducible instead of quoted. Synthea is
   not vendored, for the same reason the NHANES files are not; the module docstring gives
   the four commands.
+- **`carebundle.benchmark.dependence`** — measures cross-domain analyte dependence in
+  any FHIR source against the committed NHANES extraction, and it exists because the
+  claim that replaced the withdrawn one should not also go unchecked. Seven pairs across
+  adiposity, glycaemia and lipids, within sex, ages 45–65, one contemporaneous panel per
+  patient.
+
+  Measured: mean absolute deviation from NHANES of **0.053** here against **0.192** for
+  Synthea, with sign agreement 14/14 against 10/14. Synthea's dependence follows module
+  co-membership — glucose against triglycerides is over-coupled at roughly double the
+  real value, while weight against HDL is +0.01 against a real −0.26, and the inverse
+  triglyceride/HDL relationship comes out *positive* in men.
+
+  Deviation rather than CI coverage is reported, because Synthea's smaller sample gives
+  wider intervals that cover the target more often by luck; the coverage metric would
+  have read 4/14 against 7/14 and rewarded having less data.
+
+  **This package was in the same position four days ago** — its own weight/HDL
+  correlation was +0.01 until 0.4.0-dev measured it, with every marginal passing
+  throughout. Four tests now guard the result, including one that fails on any
+  correlation with the wrong sign.
 
 ### Fixed
 

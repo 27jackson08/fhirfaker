@@ -73,6 +73,56 @@ as Synthea had been fixed and nobody here had checked. It survived because it wa
 comparative claim below is now produced by code in this repository, against software
 downloaded at the version stated.
 
+## The claim that survived, also measured
+
+Losing the outcome-measure claim left a narrower architectural one: that a per-condition
+module graph represents dependence *within* a condition and not *between* body systems.
+Having just been wrong about a competitor on an unchecked claim, that one was checked
+before being published. `python -m carebundle.benchmark.dependence` measures it, on
+both, from emitted FHIR, against the committed NHANES extraction.
+
+Seven analyte pairs across adiposity, glycaemia and lipids, within sex, ages 45–65, one
+contemporaneous panel per patient:
+
+| | mean \|deviation\| | median | worst cell | sign agreement |
+|---|---:|---:|---:|---:|
+| **Synthea** | 0.192 | 0.194 | 0.431 | 10 / 14 |
+| **carebundle 0.4.0-dev** | **0.053** | **0.040** | **0.149** | **14 / 14** |
+
+**Deviation, not CI coverage, is the metric.** Synthea's sample here is 492 panels
+against 2,998, so its confidence intervals are roughly twice as wide and cover the
+target more often by luck. Scoring "cells whose CI covers NHANES" would reward having
+less data; it gives Synthea 4/14 and this package 7/14, and that comparison is an
+artefact of sample size rather than a finding.
+
+Three cells carry most of the difference, and they point at the mechanism:
+
+| pair | NHANES | Synthea | reading |
+|---|---:|---:|---|
+| triglycerides ~ HDL (M) | −0.297 | **+0.134** | wrong sign, CI [0.006, 0.258] excludes zero |
+| BMI ~ HDL (F / M) | −0.303 / −0.264 | +0.012 / +0.028 | absent, wrong sign in both sexes |
+| glucose ~ triglycerides (F) | 0.234 | **0.473** | roughly double |
+
+Read together they are one story rather than three defects. Synthea's dependence comes
+from **module co-membership**: a patient inside the diabetes module gets a raised
+glucose and raised triglycerides together, so that pair is over-coupled at twice the
+real value — while weight and HDL, which no single module links, are uncorrelated at
++0.01 against a real −0.30. The inverse triglyceride/HDL relationship in men, one of the
+most reproducible findings in lipidology, comes out positive.
+
+**This package was in the same position four days ago.** Its own weight/HDL correlation
+was +0.01 against the same −0.26 until it was measured in 0.4.0-dev, and every marginal
+passed the whole time. The difference is not that a copula is inherently better than a
+module graph — it is that dependence you do not measure is dependence you do not have,
+in either architecture, and only one of the two currently checks.
+
+Caveats that belong next to the numbers: Synthea simulates Massachusetts against a
+national NHANES reference, which correlations are far less sensitive to than
+prevalences but not immune. And this package fits correlations *within* stratum and then
+mixes profiles, so a mixture carries between-group covariance on top — which is why its
+own glucose/triglyceride cell is its worst at 0.149, sitting above the pooled target
+rather than below it.
+
 ## Results
 
 | Measure | Synthea (measured) | **carebundle** | Real (US) | Real (MA) |
