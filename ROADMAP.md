@@ -61,6 +61,15 @@ outcome measure needs and the machinery Synthea does not have.
 US healthcare. Synthea scores **0%**. This project already emits hypertensive patients with
 real blood-pressure distributions. **That gap is the wedge.**
 
+> **The wedge closed, August 2026.** Measured rather than cited, current Synthea scores
+> **74.8%** on CBP — 0.3 points from the Massachusetts rate it simulates. The 0% above is
+> Chen et al. 2019 and was stale for an unknown length of time because this document
+> repeated a citation instead of running the software. The strategy built on that gap is
+> retained here as written, and it was wrong: **there is no outcome-measure wedge.**
+> `BENCHMARK.md` carries the correction and `carebundle.benchmark.synthea` the harness.
+> What is left of the differentiation is evidence discipline and within-visit joint
+> structure — both checkable, neither a scoreboard win.
+
 ### 2.2 The field's failure mode is exactly what the copula was chosen to prevent
 
 "Synthetic but Not Realistic" (arXiv:2606.08903, 2026) evaluated four generative paradigms

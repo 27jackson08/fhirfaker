@@ -167,3 +167,50 @@ def test_every_readme_evidence_row_matches_the_fidelity_report():
     # Guards the guard: if the README table were reformatted so no label matched, the
     # loop above would pass vacuously.
     assert checked >= 8, f"only matched {checked} README rows against the report"
+
+
+def test_no_document_claims_synthea_scores_zero_in_the_present_tense():
+    """The most expensive error in this project's history was a stale citation.
+
+    `BENCHMARK.md`, `README.md` and the write-up all asserted that Synthea scores 0% on
+    Controlling High Blood Pressure. That came from Chen et al. 2019 and was repeated
+    for years without anyone running the software. Measured in August 2026, Synthea
+    scores 74.8% — so the project's headline competitive claim had been false for an
+    unknown length of time, and it survived precisely because a citation cannot go
+    stale in CI the way a measurement can.
+
+    This asserts the present-tense form is gone. Quoting the 2019 result as history is
+    fine and necessary; asserting it as the current state of the software is not, and
+    the difference is whether a correction sits beside it.
+    """
+    banned = (
+        "Synthea scores 0%",
+        "Synthea scores **0%**",
+        "against Synthea's published 0%",
+        "a pathway simulator scores **0%** on",
+    )
+    for name in ("BENCHMARK.md", "README.md", "docs/outcome-measures.md"):
+        text = (ROOT / name).read_text()
+        for phrase in banned:
+            if phrase not in text:
+                continue
+            # Permitted only where the same document carries the correction, so a
+            # reader cannot reach the claim without reaching the retraction.
+            assert "74.8%" in text, (
+                f"{name} still asserts {phrase!r} without the measured correction"
+            )
+
+
+def test_benchmark_states_when_the_synthea_figure_was_measured():
+    """A competitor's score is a measurement with a date, not a constant.
+
+    Without the date the number is indistinguishable from the citation it replaced.
+    """
+    text = BENCHMARK.read_text()
+    assert "74.8%" in text, "BENCHMARK.md no longer reports the measured Synthea rate"
+    assert "August 2026" in text or "Aug 2026" in text, (
+        "BENCHMARK.md reports a Synthea rate without saying when it was measured"
+    )
+    assert "carebundle.benchmark.synthea" in text, (
+        "BENCHMARK.md reports a measured rate without naming the harness that produced it"
+    )

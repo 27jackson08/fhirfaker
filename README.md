@@ -52,7 +52,16 @@ rather than quietly dropped.
 | Shape | batch — generates a population into a folder | library — returns a `Bundle` object in-process |
 | Scope | full patient lifecycle simulation | one visit, or a bounded course of visits |
 | Reproducible fixtures | not a contract | **byte-identical for a given seed** |
-| CMS *Controlling High Blood Pressure* | **0%** (published) | **71.5%** (real-world 69.7–74.5%) |
+| CMS *Controlling High Blood Pressure* | 74.8% *(measured Aug 2026)* | 68.8% *(same measure code)* |
+| Evidence for the numbers | published validation, 2019 | 58 checks graded by strength, regenerated per release |
+
+> **This row used to say Synthea scored 0%, and that was wrong.** The figure came from a
+> 2019 paper and was never re-checked. Running a current Synthea through this package's
+> own measure code puts it at **74.8%** — 0.3 points from the Massachusetts rate it
+> simulates, while this package lands 0.9 points from the US national rate it calibrates
+> to. Both reproduce their own target population. The full correction, and the harness
+> that produced it, are in
+> [BENCHMARK.md](https://github.com/27jackson08/fhirfaker/blob/main/BENCHMARK.md).
 
 **If you want a realistic population to analyse, use Synthea.** Breadth is not close:
 231 disease modules against five clinical profiles, and a lifetime per patient against a

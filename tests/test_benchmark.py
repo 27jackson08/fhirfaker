@@ -26,7 +26,14 @@ REAL_WORLD_CBP_MA = 0.745
 
 
 def _bundle(*, age: str, birth: str, systolic, diastolic, hypertensive=True):
-    """A minimal bundle shaped like the real emitter's output."""
+    """A minimal bundle shaped like the real emitter's output.
+
+    `effectiveDateTime` on the observation is not optional decoration. This fixture
+    claimed to match real output while omitting it, and the omission went unnoticed
+    until the measure started reading dates to find the most recent reading — at which
+    point every test here failed and the emitter was fine. A fixture that is missing a
+    field the emitter always writes is a test asserting the wrong thing.
+    """
     entries = [
         {"resource": {"resourceType": "Patient", "birthDate": birth}},
         {"resource": {"resourceType": "Encounter", "period": {"start": age}}},
@@ -43,6 +50,7 @@ def _bundle(*, age: str, birth: str, systolic, diastolic, hypertensive=True):
         entries.append({"resource": {
             "resourceType": "Observation",
             "code": {"coding": [{"system": systems.LOINC, "code": "85354-9"}]},
+            "effectiveDateTime": f"{age}T09:00:00Z",
             "component": [
                 {"code": {"coding": [{"code": codes.BP_DIASTOLIC.code}]},
                  "valueQuantity": {"value": diastolic}},

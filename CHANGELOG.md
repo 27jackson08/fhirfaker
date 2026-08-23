@@ -19,6 +19,49 @@ Practically, for anyone pinning: **pin the patch version.** `carebundle==0.1.2` 
 
 ## [Unreleased]
 
+### Corrected — **the headline competitive claim was false and is withdrawn**
+
+- **Synthea does not score 0% on Controlling High Blood Pressure.** This project said it
+  did, in `README.md`, `BENCHMARK.md`, `ROADMAP.md`, the write-up and two docstrings, on
+  the authority of Chen et al. 2019. Measured in August 2026 against a current build,
+  with this package's own measure code, Synthea scores **74.8%** — 0.3 points from the
+  Massachusetts rate it simulates, while this package scores 68.8% on a matched cohort,
+  0.9 points from the US national rate it calibrates to. Both reproduce their own target
+  population. **There is no outcome-measure wedge**, and the strategy built on one is
+  annotated as wrong rather than deleted.
+
+  A second published criticism also failed to reproduce: Kartoun et al. (JAMIA Open 2023)
+  report 100% of Synthea type-2 diabetics carrying an amputation; measured here it is
+  **0.56%** (3 of 537), against a real-world incidence near 5 per 1,000 per year.
+
+  The claim survived for as long as it did because it was *cited* rather than *run*, and
+  a citation cannot go stale in CI. Two tests now fail if any document asserts the 0%
+  figure in the present tense without the correction beside it, or reports a competitor's
+  score without the date and harness that produced it.
+
+### Added
+
+- **`carebundle.benchmark.synthea`** — runs this package's quality measures against a
+  Synthea FHIR export, so the comparison is reproducible instead of quoted. Synthea is
+  not vendored, for the same reason the NHANES files are not; the module docstring gives
+  the four commands.
+
+### Fixed
+
+- **`cqm` scored any SNOMED-coded source at zero.** It recognised hypertension only in
+  ICD-10-CM, which this package emits and Synthea does not. An empty denominator is not
+  a rate of zero, and this one would have "reproduced" the 2019 finding for a pure
+  terminology reason. SNOMED hypertension codes are now recognised — read off a
+  generated population rather than recalled — and an empty denominator is reported as
+  such, never as 0%.
+- **`cqm` mis-scored longitudinal bundles.** "Most recent blood pressure" took the last
+  array element rather than the latest by date, and age came from `encounters[0]`, which
+  on a lifetime is usually infancy. Both are corrections rather than Synthea adapters:
+  on a one-visit bundle they are invisible, and this package's own rates are unchanged.
+- **A test fixture claimed to match real output while omitting `effectiveDateTime`.**
+  Every benchmark test failed the moment the measure started reading dates, and the
+  emitter was fine throughout.
+
 ### Changed — **seeded output changes; this is a breaking change (0.4.0)**
 
 - **The metabolic cluster is now modelled.** Adiposity, glycaemia and lipids were drawn

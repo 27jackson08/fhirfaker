@@ -11,7 +11,11 @@ RXNORM = "http://www.nlm.nih.gov/research/umls/rxnorm"
 ICD10CM = "http://hl7.org/fhir/sid/icd-10-cm"
 UCUM = "http://unitsofmeasure.org"
 
-SNOMED = "http://snomed.info/sct"  # Deliberately unused in v1 — see build doc Section 6.
+# Never emitted — see build doc Section 6 for the licensing reason. Read, though:
+# `carebundle.benchmark.cqm` recognises SNOMED-coded conditions so a measure can be run
+# against output from generators that do emit it. Recognising a vocabulary and shipping
+# it are different commitments.
+SNOMED = "http://snomed.info/sct"
 
 # HL7 terminology (freely usable, no licence gate).
 CONDITION_CATEGORY = "http://terminology.hl7.org/CodeSystem/condition-category"

@@ -26,11 +26,58 @@ the blood pressure did after the thiazide started, so a control rate cannot emer
 it. This project models clinical state directly, which is the machinery an outcome
 measure needs.
 
+## Correction, August 2026: the Synthea figure was stale and is withdrawn
+
+**This document used to report Synthea at 0% on blood-pressure control, and that is no
+longer true.** The 0% came from Chen et al. 2019 — a citation, not a measurement, about
+a build seven years old.
+
+It is now measured. A current Synthea (`master-branch-latest`, August 2026, 1,200
+patients, default Massachusetts settings) was generated and scored with
+`carebundle.benchmark.cqm` — the same code that scores this package — via
+`python -m carebundle.benchmark.synthea`:
+
+| | CBP rate | Denominator | Nearest real-world reference |
+|---|---:|---:|---|
+| **Synthea, measured Aug 2026** | **74.8%** | 326 | Massachusetts, 74.5% |
+| **carebundle 0.4.0-dev, same code** | **68.8%** | 667 | US national, 69.7% |
+| Synthea, *as published* Chen 2019 | 0% | — | — |
+
+The result is not fragile. Across four defensible readings of the measure — most recent
+reading ever or within a 12- or 24-month window, including or excluding decedents —
+Synthea lands between **74.2% and 75.0%**.
+
+**Why this says 68.8% where `FIDELITY.md` says 74.6%.** They score different
+populations. The fidelity check draws the `hypertension` profile at a fixed age 58, so
+every patient is hypertensive by construction; the row above scores a mixed cohort aged
+18-85, matching the shape of the Synthea population it is being compared against, where
+hypertensives arise by prevalence across a much wider age range. Both numbers are
+correct. A control rate is a property of a denominator, not of a model, which is the
+same trap that makes NHANES report 20.7% and HEDIS ~70% for the same country.
+
+**Read the reference column before reading the rates.** Synthea simulates Massachusetts
+by default and lands 0.3 points from the Massachusetts rate. This package calibrates to
+NHANES national and lands 0.9 points from the US rate. Both reproduce their own target
+population; neither wins, and a comparison that ignored which population each was aiming
+at would manufacture a difference that is not there.
+
+**A second published criticism also failed to reproduce.** Kartoun et al. (JAMIA Open
+2023) report that "100% of Synthea type-2 diabetics had at least one amputation". In
+this population, 3 of 537 diabetes-coded patients carried any amputation code —
+**0.56%**, against a real-world US incidence of roughly 5 per 1,000 diabetics per year.
+Whatever produced that finding has been fixed too.
+
+**What this cost.** The headline competitive claim of this project was false for as long
+as Synthea had been fixed and nobody here had checked. It survived because it was
+*cited* rather than *run*, and a citation cannot go stale in CI. Every remaining
+comparative claim below is now produced by code in this repository, against software
+downloaded at the version stated.
+
 ## Results
 
-| Measure | Synthea | **carebundle** | Real (US) | Real (MA) |
+| Measure | Synthea (measured) | **carebundle** | Real (US) | Real (MA) |
 |---|---:|---:|---:|---:|
-| Controlling high blood pressure (CBP) | 0% | **71.5%** | 69.7% | 74.5% |
+| Controlling high blood pressure (CBP) | 74.8% | **68.8%** | 69.7% | 74.5% |
 | Colorectal cancer screening | 68.7% | *not modelled* | 69.8% | 77.3% |
 | COPD 30-day mortality | 0.7% | *not modelled* | 8.0% | 7.0% |
 | Complications after hip/knee replacement | 0% | *not modelled* | 2.8% | 2.9% |
@@ -65,11 +112,19 @@ reading below **140/90**, with both components required.
 
 | Population | Denominator | CBP rate |
 |---|---:|---:|
-| `hypertension` profile | 1500 | 70.3% |
-| `type2_diabetes` profile | 1045 | 70.8% |
-| `ckd_stage3` profile | 1197 | 71.8% |
-| **Mixed cohort (prevalence-drawn)** | **1822 / 4000** | **71.5%** |
+| `hypertension` profile | 1500 | 69.9% |
+| `type2_diabetes` profile | 1044 | 71.6% |
+| `ckd_stage3` profile | 1180 | 72.8% |
+| **Mixed cohort, ages 45–65 (default)** | **1803 / 4000** | **69.3%** |
+| **Mixed cohort, ages 18–85 (matched to Synthea)** | **667 / 1500** | **68.8%** |
 | `healthy` profile | 0 | *not in denominator* |
+
+Every row moved by up to two points in 0.4.0-dev, when the metabolic cluster changed the
+joint sampling and with it every profile's RNG stream. The mixed-cohort figure was 71.5%
+before that change and is 69.3% after; the titration narrative below quotes the earlier
+number because that is what the experiment measured at the time. The 18–85 row exists
+only so the Synthea comparison at the top of this document scores a population of the
+same shape.
 
 ## How the number was produced, and why it is not tuned
 
@@ -233,13 +288,28 @@ relative to what is being measured here.
 
 ## What this does and does not establish
 
-It establishes that a distributional model reproduces an outcome measure that a
-pathway simulator scores **0%** on, from independently cited inputs, checked in CI.
+It establishes that a distributional model reproduces a published outcome measure from
+independently cited inputs, checked in CI, landing 0.9 points from the US national rate.
+
+**It does not establish any advantage over Synthea on this measure.** Measured on the
+same day with the same code, Synthea scores 74.8% against its own Massachusetts
+reference and this package 68.8% against its national one. Both are right. The earlier
+version of this document claimed a 71.5-point gap that no longer exists, and the
+rewrite above explains why.
 
 It does not establish that this is a better synthetic data generator than Synthea.
 Synthea covers 231 conditions, a lifetime per patient, and three of the four measures
 in this very table. On breadth it is not close, and [ROADMAP.md](ROADMAP.md) does not
 propose competing there.
+
+**Where the difference actually is**, now that the outcome-measure claim has gone: this
+package grades every one of its 58 fidelity checks by what a pass proves and says out
+loud that 1 is out-of-sample; it derives its marginals, correlations and treatment
+effects from named sources that regenerate byte-identically; and it models joint
+structure within a visit — adiposity against HDL, glycaemia against triglycerides — that
+a per-condition module graph does not represent. Those are checkable claims about
+evidence discipline. "Synthea scores zero" was a checkable claim too, which is how it
+came to be withdrawn.
 
 ## Sources
 

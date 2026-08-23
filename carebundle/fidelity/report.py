@@ -370,10 +370,18 @@ def quality_measure_checks(size: int, seed: int) -> list[Check]:
 
     This one can. The inputs are NHANES treatment prevalence and Law 2003 effect sizes;
     the control rate is not fitted to anything, and it is checked against a rate
-    published by somebody else. Synthea scores 0% on the same measure. `BENCHMARK.md`
-    is the authoritative version — it computes the measure from emitted FHIR rather
-    than from draws — and this row exists so the report says out loud that it has
-    exactly one such check.
+    published by somebody else. `BENCHMARK.md` is the authoritative version — it
+    computes the measure from emitted FHIR rather than from draws — and this row exists
+    so the report says out loud that it has exactly one such check.
+
+    Note the population: this draws the hypertension profile at a fixed age 58, so
+    every patient is hypertensive by construction. `BENCHMARK.md` reports a lower rate
+    because it scores a mixed cohort aged 18-85, where hypertensives arise by
+    prevalence across a wider age range. Both are correct and they are not comparable
+    to each other — a control rate is a property of a denominator, not of a model.
+
+    This docstring used to claim Synthea scores 0% here, on a 2019 citation. Measured
+    in August 2026 it scores 74.8%. See `carebundle.benchmark.synthea`.
     """
     rng = np.random.default_rng(seed + 6)
     profile = get_profile("hypertension", "F")

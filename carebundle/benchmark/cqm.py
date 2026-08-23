@@ -19,8 +19,16 @@ That is a statement about architecture. A state machine over care pathways decid
 *whether a patient was screened*; it has no representation of what the blood pressure
 did afterwards, so a control rate cannot emerge from it.
 
+**That study is from 2019 and its blood-pressure result no longer reproduces.** Run
+against a current Synthea build (August 2026, 1,200 patients, default Massachusetts
+settings) this module measures Synthea at **74.8%** on CBP, not 0%. Whatever was
+broken in 2019 has been fixed. `carebundle.benchmark.synthea` is the harness that
+measures it, so the claim is now checked rather than cited — see `BENCHMARK.md` for
+the full comparison and what it means for this project's positioning.
+
 This project models clinical state directly, which is the machinery an outcome measure
-needs, so this is the ground on which it can be compared and win.
+needs. That remains the architectural difference; it is no longer a claim that Synthea
+scores zero.
 
 Reading the numbers honestly
 ----------------------------
@@ -93,24 +101,50 @@ def _resources(bundle: dict[str, Any], resource_type: str) -> list[dict[str, Any
     ]
 
 
+# Hypertension in SNOMED CT. This package does not *emit* SNOMED — it cannot, on
+# licensing grounds — but a measure that only recognises ICD-10-CM scores any
+# SNOMED-coded source at zero for a terminology reason, and a zero from an empty
+# denominator is indistinguishable from a zero from uncontrolled patients unless you
+# go looking. Synthea codes conditions in SNOMED only, so without this the head-to-head
+# would have "reproduced" the 2019 finding by accident.
+#
+# Read off a generated Synthea population rather than recalled: 59621000 is the only
+# hypertension code that appeared. The rest are its near neighbours, included so a
+# configuration that emits them is not silently dropped.
+HYPERTENSION_SNOMED = frozenset({
+    "59621000",   # essential hypertension
+    "38341003",   # hypertensive disorder, systemic arterial
+    "1201005",    # benign essential hypertension
+    "10725009",   # benign hypertension
+    "48146000",   # diastolic hypertension
+})
+
+
 def _has_hypertension(bundle: dict[str, Any]) -> bool:
     for condition in _resources(bundle, "Condition"):
         for coding in condition.get("code", {}).get("coding", []):
-            if (
-                coding.get("system") == systems.ICD10CM
-                and coding.get("code") in HYPERTENSION_CODES
-            ):
+            system, code = coding.get("system"), coding.get("code")
+            if system == systems.ICD10CM and code in HYPERTENSION_CODES:
+                return True
+            if system == systems.SNOMED and code in HYPERTENSION_SNOMED:
                 return True
     return False
 
 
-def _blood_pressures(bundle: dict[str, Any]) -> list[tuple[float, float]]:
-    """Every (systolic, diastolic) pair recorded in the bundle.
+def _blood_pressures(bundle: dict[str, Any]) -> list[tuple[str, float, float]]:
+    """Every (date, systolic, diastolic) recorded in the bundle, oldest first.
 
     Reads the panel's components rather than trusting ordering, because a BP panel is
     a single Observation with two components and their order is not guaranteed.
+
+    Sorted by `effectiveDateTime`, because the measure asks for the *most recent*
+    reading and array position is not time. On a one-visit bundle the distinction is
+    invisible; on a lifetime it decides the answer, and a benchmark that silently took
+    whichever reading happened to be last in the file would not be measuring CBP.
+    Readings with no date are dropped — an undated observation cannot be known to be
+    the most recent one.
     """
-    readings: list[tuple[float, float]] = []
+    readings: list[tuple[str, float, float]] = []
     for observation in _resources(bundle, "Observation"):
         panel = {
             coding.get("code")
@@ -131,29 +165,33 @@ def _blood_pressures(bundle: dict[str, Any]) -> list[tuple[float, float]]:
                 systolic = float(value)
             elif _DIASTOLIC in found:
                 diastolic = float(value)
-        if systolic is not None and diastolic is not None:
-            readings.append((systolic, diastolic))
-    return readings
+        when = (observation.get("effectiveDateTime") or "")[:10]
+        if systolic is not None and diastolic is not None and when:
+            readings.append((when, systolic, diastolic))
+    return sorted(readings)
 
 
-def _age_years(bundle: dict[str, Any]) -> float | None:
-    """Age at the encounter, from birthDate and the encounter period.
+def _age_on(bundle: dict[str, Any], iso_date: str | None) -> float | None:
+    """Age on a given date, from birthDate.
 
-    Returns None when either is missing rather than guessing — an unknown age must not
-    silently enter or leave a measure denominator.
+    Takes the date rather than reading `encounters[0]`. The measure asks whether the
+    patient was 18-85 *when the blood pressure was taken*; on a single-visit bundle the
+    first encounter is that visit, but on a lifetime it is usually infancy, which would
+    drop most of the denominator for no clinical reason.
+
+    Returns None when either input is missing rather than guessing — an unknown age must
+    not silently enter or leave a measure denominator.
     """
     patients = _resources(bundle, "Patient")
-    encounters = _resources(bundle, "Encounter")
-    if not patients or not encounters:
+    if not patients or not iso_date:
         return None
     birth = patients[0].get("birthDate")
-    start = encounters[0].get("period", {}).get("start")
-    if not birth or not start:
+    if not birth:
         return None
     birth_year, birth_month, birth_day = (int(p) for p in birth.split("-"))
-    enc_year, enc_month, enc_day = (int(p) for p in start[:10].split("-"))
-    years = enc_year - birth_year
-    if (enc_month, enc_day) < (birth_month, birth_day):
+    year, month, day = (int(p) for p in iso_date[:10].split("-"))
+    years = year - birth_year
+    if (month, day) < (birth_month, birth_day):
         years -= 1
     return float(years)
 
@@ -165,17 +203,17 @@ def controlling_high_blood_pressure(bundle: dict[str, Any]) -> tuple[bool, bool]
     Numerator:   most recent BP below 140/90. Both components must be controlled;
                  an isolated diastolic elevation fails the measure.
     """
-    age = _age_years(bundle)
+    readings = _blood_pressures(bundle)
+    if not readings:
+        return False, False
+    when, systolic, diastolic = readings[-1]
+
+    age = _age_on(bundle, when)
     if age is None or not (CBP_MIN_AGE <= age <= CBP_MAX_AGE):
         return False, False
     if not _has_hypertension(bundle):
         return False, False
 
-    readings = _blood_pressures(bundle)
-    if not readings:
-        return False, False
-
-    systolic, diastolic = readings[-1]
     controlled = (
         systolic < CBP_SYSTOLIC_THRESHOLD and diastolic < CBP_DIASTOLIC_THRESHOLD
     )

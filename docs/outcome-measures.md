@@ -23,6 +23,16 @@ decade of work behind it, and the result splits cleanly [1]:
 
 One percentage point off on the process measure. Zero on the outcome measures.
 
+> **Correction, August 2026.** That table is Chen et al.'s 2019 result and it no longer
+> describes Synthea. Measured in August 2026 with this project's own measure code,
+> current Synthea scores **74.8%** on blood-pressure control, not 0%, and 0.56% of its
+> diabetic patients carry an amputation code rather than the 100% a 2023 paper reported.
+> The argument below — that a pathway simulator has no representation of what the blood
+> pressure did afterwards — was a reasonable reading of the 2019 evidence and is not a
+> safe claim about the software today. What survives is the design argument, not the
+> scoreboard. See [BENCHMARK.md](../BENCHMARK.md) for the measured comparison and the
+> harness that produced it.
+
 The authors name the cause: synthetic generators "do not currently model for deviations
 in care and the potential outcomes that may result from care deviations."
 
