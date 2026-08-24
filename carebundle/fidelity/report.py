@@ -294,7 +294,7 @@ def nhanes_checks(size: int, seed: int) -> list[Check]:
     """
     if not NHANES_TARGETS.exists():
         return []
-    targets = json.loads(NHANES_TARGETS.read_text())["strata"]
+    targets = json.loads(NHANES_TARGETS.read_text(encoding="utf-8"))["strata"]
 
     checks = []
     for profile_key, stratum, analyte, tolerance in NHANES_CHECKS:
@@ -425,7 +425,7 @@ def metabolic_cluster_checks(size: int, seed: int) -> list[Check]:
     # Same guard as nhanes_checks: the extraction is committed, but the report must
     # still render if it is not.
     measured = (
-        json.loads(NHANES_TARGETS.read_text())["correlations"]
+        json.loads(NHANES_TARGETS.read_text(encoding="utf-8"))["correlations"]
         if NHANES_TARGETS.exists() else {}
     )
     for profile_key, stratum, sex in (

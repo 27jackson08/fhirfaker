@@ -61,7 +61,7 @@ def test_version_is_single_sourced_and_cannot_drift():
     the configuration that guarantees it, since a future edit could reintroduce a
     literal and silently restore the failure mode.
     """
-    pyproject = (README.parent / "pyproject.toml").read_text()
+    pyproject = (README.parent / "pyproject.toml").read_text(encoding="utf-8")
     assert 'dynamic = ["version"]' in pyproject, (
         "pyproject must derive the version rather than duplicate it"
     )
@@ -102,14 +102,14 @@ def test_unknown_profile_names_are_rejected():
 # --- README claims that must stay true -------------------------------------------
 
 def test_readme_documents_the_profiles_that_actually_exist():
-    text = README.read_text()
+    text = README.read_text(encoding="utf-8")
     for profile in carebundle.PROFILES:
         assert f"`{profile}`" in text, f"README does not document profile {profile}"
 
 
 def test_readme_declares_only_the_real_runtime_dependencies():
     """The install-weight claim is part of the pitch; it has to stay honest."""
-    pyproject = (README.parent / "pyproject.toml").read_text()
+    pyproject = (README.parent / "pyproject.toml").read_text(encoding="utf-8")
     runtime = pyproject.split("dependencies = [")[1].split("]")[0]
     assert "scipy" not in runtime
     for declared in ("pydantic", "numpy"):
@@ -122,7 +122,7 @@ def test_typed_classifier_is_backed_by_a_py_typed_marker():
     PEP 561 requires the marker file; without it type checkers ignore the annotations
     entirely and the classifier is a claim the package does not honour.
     """
-    pyproject = (README.parent / "pyproject.toml").read_text()
+    pyproject = (README.parent / "pyproject.toml").read_text(encoding="utf-8")
     if "Typing :: Typed" not in pyproject:
         pytest.skip("package does not advertise inline types")
     marker = Path(carebundle.__file__).parent / "py.typed"
@@ -167,7 +167,7 @@ def test_readme_code_counts_match_the_terminology_tables():
     from carebundle.terminology import systems
     from carebundle.terminology.verify import registered_codes
 
-    match = _COUNT_CLAIM.search(README.read_text())
+    match = _COUNT_CLAIM.search(README.read_text(encoding="utf-8"))
     assert match, "README no longer states a terminology count"
     total, loinc, rxnorm, icd10 = (int(g) for g in match.groups())
 
@@ -187,7 +187,7 @@ def test_readme_code_counts_match_the_terminology_tables():
 def test_documented_bundle_sizes_match_generated_bundles(document):
     from carebundle.core.bundle import to_json
 
-    text = (README.parent / document).read_text()
+    text = (README.parent / document).read_text(encoding="utf-8")
     documented = _documented_entry_counts(text)
     assert documented, f"{document} no longer tabulates bundle sizes"
 
@@ -199,8 +199,8 @@ def test_documented_bundle_sizes_match_generated_bundles(document):
 
 
 def test_readme_and_conformance_doc_agree_with_each_other():
-    readme = _documented_entry_counts(README.read_text())
-    conformance = _documented_entry_counts(CONFORMANCE_DOC.read_text())
+    readme = _documented_entry_counts(README.read_text(encoding="utf-8"))
+    conformance = _documented_entry_counts(CONFORMANCE_DOC.read_text(encoding="utf-8"))
     shared = readme.keys() & conformance.keys()
     assert shared, "the two documents no longer share a profile table"
     for profile in shared:
@@ -220,7 +220,7 @@ def test_readme_has_no_relative_links_because_it_is_the_pypi_page():
     """
     import re
 
-    targets = re.findall(r"\]\(([^)]+)\)", README.read_text())
+    targets = re.findall(r"\]\(([^)]+)\)", README.read_text(encoding="utf-8"))
     relative = [
         t for t in targets
         if not t.startswith(("http://", "https://", "#", "mailto:"))

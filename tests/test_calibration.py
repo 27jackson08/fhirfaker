@@ -206,7 +206,7 @@ def test_configured_correlations_match_the_committed_nhanes_extraction():
 
     targets = json.loads(
         (Path(library.__file__).parents[1] / "calibration/data/nhanes_targets.json")
-        .read_text()
+        .read_text(encoding="utf-8")
     )["correlations"]
 
     expected = {
@@ -241,7 +241,7 @@ def test_configured_comorbidity_prevalence_matches_the_extraction():
 
     prevalences = json.loads(
         (Path(library.__file__).parents[1] / "calibration/data/nhanes_targets.json")
-        .read_text()
+        .read_text(encoding="utf-8")
     )["prevalences"]
 
     for sex, value in library.T2DM_HYPERTENSION_PREVALENCE_BY_SEX.items():

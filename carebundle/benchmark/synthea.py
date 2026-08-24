@@ -61,7 +61,7 @@ def load_bundles(fhir_dir: Path) -> Iterator[dict[str, Any]]:
         if path.name.lower().startswith(NON_PATIENT_PREFIXES):
             continue
         try:
-            yield json.loads(path.read_text())
+            yield json.loads(path.read_text(encoding="utf-8"))
         except json.JSONDecodeError as exc:  # pragma: no cover - corrupt export
             print(f"  skipped {path.name}: {exc}", file=sys.stderr)
 

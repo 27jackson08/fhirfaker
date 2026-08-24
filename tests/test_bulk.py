@@ -139,7 +139,7 @@ def test_cli_writes_one_file_per_resource_type(tmp_path, capsys):
     capsys.readouterr()
     written = sorted(p.name for p in tmp_path.glob("*.ndjson"))
     assert "Patient.ndjson" in written
-    assert len(json.loads((tmp_path / "Patient.ndjson").read_text().splitlines()[0])["id"]) > 0
+    assert len(json.loads((tmp_path / "Patient.ndjson").read_text(encoding="utf-8").splitlines()[0])["id"]) > 0
 
 
 def test_cli_refuses_ndjson_without_an_output_directory(capsys):

@@ -195,7 +195,7 @@ def command_generate(args: argparse.Namespace) -> int:
         args.out.mkdir(parents=True, exist_ok=True)
         streams = to_ndjson(bundles)
         for resource_type, lines in streams.items():
-            (args.out / f"{resource_type}.ndjson").write_text(lines)
+            (args.out / f"{resource_type}.ndjson").write_text(lines, encoding="utf-8")
         total = sum(text.count("\n") for text in streams.values())
         print(
             f"wrote {total} resources across {len(streams)} ndjson file(s) to {args.out}",
@@ -209,7 +209,7 @@ def command_generate(args: argparse.Namespace) -> int:
             print(rendered)
         else:
             target = args.out / f"{args.profile}-{args.seed}-{index:04d}.json"
-            target.write_text(rendered)
+            target.write_text(rendered, encoding="utf-8")
 
     if args.out is not None:
         print(

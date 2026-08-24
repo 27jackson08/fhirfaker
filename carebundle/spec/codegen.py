@@ -73,7 +73,7 @@ def load_structure_definitions() -> dict[str, dict]:
     """Index every StructureDefinition in the R4 spec bundles by type name."""
     sds: dict[str, dict] = {}
     for filename in ("profiles-types.json", "profiles-resources.json"):
-        bundle = json.loads((SPEC_DIR / filename).read_text())
+        bundle = json.loads((SPEC_DIR / filename).read_text(encoding="utf-8"))
         for entry in bundle["entry"]:
             resource = entry["resource"]
             if resource.get("resourceType") != "StructureDefinition":
@@ -298,7 +298,7 @@ def main() -> None:
     source = generator.run()
     MODELS_DIR.mkdir(parents=True, exist_ok=True)
     out = MODELS_DIR / "r4.py"
-    out.write_text(source)
+    out.write_text(source, encoding="utf-8")
     classes = len(generator.emitted)
     print(f"generated {classes} classes -> {out.relative_to(Path.cwd())}")
 

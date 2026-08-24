@@ -18,7 +18,7 @@ the result by resource type, one ndjson stream per type, as the Bulk Data IG spe
     from carebundle import generate_cohort, to_ndjson
 
     for resource_type, lines in to_ndjson(generate_cohort(count=100, seed=42)).items():
-        Path(f"{resource_type}.ndjson").write_text(lines)
+        Path(f"{resource_type}.ndjson").write_text(lines, encoding="utf-8")
 """
 
 from __future__ import annotations

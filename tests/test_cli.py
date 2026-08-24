@@ -121,7 +121,7 @@ def test_generate_writes_one_file_per_patient(tmp_path, capsys):
 def test_generated_patients_differ_from_each_other(tmp_path, capsys):
     main(["generate", "--count", "3", "--seed", "7", "--out", str(tmp_path)])
     capsys.readouterr()
-    contents = {p.read_text() for p in tmp_path.glob("*.json")}
+    contents = {p.read_text(encoding="utf-8") for p in tmp_path.glob("*.json")}
     assert len(contents) == 3, "each patient in a run must be distinct"
 
 
@@ -137,7 +137,7 @@ def test_mixed_sex_alternates(tmp_path, capsys):
     capsys.readouterr()
     genders = []
     for path in sorted(tmp_path.glob("*.json")):
-        payload = json.loads(path.read_text())
+        payload = json.loads(path.read_text(encoding="utf-8"))
         patient = next(
             e["resource"] for e in payload["entry"]
             if e["resource"]["resourceType"] == "Patient"

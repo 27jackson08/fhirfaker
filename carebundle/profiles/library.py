@@ -336,7 +336,7 @@ def _measured_strata() -> dict:
     path = (
         Path(__file__).resolve().parents[1] / "calibration" / "data" / "nhanes_targets.json"
     )
-    return json.loads(path.read_text())["strata"]
+    return json.loads(path.read_text(encoding="utf-8"))["strata"]
 
 
 def measured_marginal(analyte: str, sex: str, stratum: str = "nondiabetic") -> EmpiricalMarginal:

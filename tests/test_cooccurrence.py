@@ -134,7 +134,7 @@ def test_the_skewed_analytes_are_still_the_ones_documented():
 
     targets = _json.loads(
         (Path(__file__).resolve().parents[1]
-         / "carebundle/calibration/data/nhanes_targets.json").read_text()
+         / "carebundle/calibration/data/nhanes_targets.json").read_text(encoding="utf-8")
     )["strata"]
 
     skewed = set()

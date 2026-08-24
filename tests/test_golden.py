@@ -38,14 +38,14 @@ def _check(name: str, rendered: str, update: bool) -> None:
     path = GOLDEN_DIR / f"{name}.json"
     if update:
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(rendered)
+        path.write_text(rendered, encoding="utf-8")
         pytest.skip(f"regenerated {path.name}")
     if not path.exists():
         pytest.fail(
             f"missing golden file {path}. Create it with:\n"
             "  pytest tests/test_golden.py --update-golden"
         )
-    assert rendered == path.read_text(), (
+    assert rendered == path.read_text(encoding="utf-8"), (
         f"{name} no longer matches its golden file.\n"
         "Generated output changed. Under the stability policy that is a MAJOR version\n"
         "event: users pin fixtures to seeds. If intended, regenerate with\n"

@@ -149,7 +149,7 @@ def _confidence(r: float, n: int) -> tuple[float, float]:
 
 
 def measure(rows: list[dict[str, Any]]) -> list[Cell]:
-    targets = json.loads(NHANES_TARGETS.read_text())["correlations"]
+    targets = json.loads(NHANES_TARGETS.read_text(encoding="utf-8"))["correlations"]
     cells: list[Cell] = []
     for first, second in PAIRS:
         for sex in ("F", "M"):
@@ -197,7 +197,7 @@ def load_dir(fhir_dir: Path) -> Iterator[dict[str, Any]]:
         if path.name.lower().startswith(("hospital", "practitioner")):
             continue
         try:
-            yield json.loads(path.read_text())
+            yield json.loads(path.read_text(encoding="utf-8"))
         except json.JSONDecodeError:  # pragma: no cover - corrupt export
             continue
 

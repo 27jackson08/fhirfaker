@@ -25,7 +25,7 @@ FIDELITY = ROOT / "FIDELITY.md"
 
 @pytest.fixture(scope="module")
 def writeup() -> str:
-    return WRITEUP.read_text()
+    return WRITEUP.read_text(encoding="utf-8")
 
 
 # Each figure, and the document that is its source of truth.
@@ -48,7 +48,7 @@ CITED = [
 @pytest.mark.parametrize("figure,source,description", CITED)
 def test_every_cited_figure_still_appears_in_its_source(writeup, figure, source, description):
     assert figure in writeup, f"write-up no longer quotes {figure} ({description})"
-    assert figure in source.read_text(), (
+    assert figure in source.read_text(encoding="utf-8"), (
         f"write-up quotes {figure} ({description}) but {source.name} no longer contains "
         f"it — one of the two has drifted"
     )
@@ -58,7 +58,7 @@ def test_the_out_of_sample_count_matches_the_fidelity_report(writeup):
     """The write-up's most self-critical claim, and so the one most worth pinning."""
     claimed = re.search(r"\*\*(\d+) of (\d+) is genuinely out-of-sample\*\*", writeup)
     assert claimed, "the write-up no longer states the out-of-sample count"
-    actual = re.search(r"Only (\d+) of (\d+) checks is genuinely out-of-sample", FIDELITY.read_text())
+    actual = re.search(r"Only (\d+) of (\d+) checks is genuinely out-of-sample", FIDELITY.read_text(encoding="utf-8"))
     assert actual, "FIDELITY.md no longer states the out-of-sample count"
     assert claimed.groups() == actual.groups(), (
         f"write-up says {claimed.group(0)}, fidelity report says {actual.group(0)}"
@@ -67,7 +67,7 @@ def test_the_out_of_sample_count_matches_the_fidelity_report(writeup):
 
 def test_writeup_links_are_absolute_or_repo_relative_but_not_broken():
     """Relative links must point at files that exist, since this ships in the repo."""
-    targets = re.findall(r"\]\(([^)]+)\)", WRITEUP.read_text())
+    targets = re.findall(r"\]\(([^)]+)\)", WRITEUP.read_text(encoding="utf-8"))
     for target in targets:
         if target.startswith(("http://", "https://", "#")):
             continue
@@ -82,7 +82,7 @@ def test_every_shipped_document_is_reachable_from_the_readme():
     the landing page and PyPI renders it as the project description — so anything not
     linked from it is effectively unpublished.
     """
-    readme = (ROOT / "README.md").read_text()
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
     shipped = [
         "BENCHMARK.md", "CONFORMANCE.md", "FIDELITY.md", "ROADMAP.md",
         "CHANGELOG.md", "CONTRIBUTING.md", "RELEASING.md",
@@ -101,8 +101,8 @@ def test_readme_obesity_figures_match_the_fidelity_report():
     red cell correlations shifted every profile's RNG stream. Both times the figure was
     a hand-typed copy of a number the fidelity report already computes.
     """
-    readme = (ROOT / "README.md").read_text()
-    row = re.search(r"\| diabetic obesity rate \| ([0-9.]+) \| ([0-9.]+) \|", FIDELITY.read_text())
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    row = re.search(r"\| diabetic obesity rate \| ([0-9.]+) \| ([0-9.]+) \|", FIDELITY.read_text(encoding="utf-8"))
     assert row, "FIDELITY.md no longer reports the diabetic obesity rate"
     observed, expected = float(row.group(1)), float(row.group(2))
 
@@ -123,7 +123,7 @@ def test_readme_does_not_deny_capabilities_the_library_has():
     contradicted a section of the same file — a reader hitting the limits list would
     conclude the feature above it did not exist.
     """
-    readme = (ROOT / "README.md").read_text()
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
     from carebundle import __all__ as exported
 
     if "generate_history" in exported:
@@ -144,8 +144,8 @@ def test_every_readme_evidence_row_matches_the_fidelity_report():
     labels verbatim rather than friendlier paraphrases. A row that cannot be found is a
     failure, not a skip: a renamed check must not silently drop out of the guard.
     """
-    readme = (ROOT / "README.md").read_text()
-    fidelity = FIDELITY.read_text()
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    fidelity = FIDELITY.read_text(encoding="utf-8")
 
     reported = {
         m.group(1).strip(): m.group(2)
@@ -182,7 +182,7 @@ def _markdown_documents():
     checks has now escaped into a third document once already.
     """
     for path in sorted(ROOT.glob("*.md")) + sorted((ROOT / "docs").glob("*.md")):
-        yield path.relative_to(ROOT).as_posix(), path.read_text()
+        yield path.relative_to(ROOT).as_posix(), path.read_text(encoding="utf-8")
 
 
 # A bare zero rate: "0%" or "0.0%", not the "10%" inside a larger number.
@@ -236,7 +236,7 @@ def test_benchmark_states_when_the_synthea_figure_was_measured():
 
     Without the date the number is indistinguishable from the citation it replaced.
     """
-    text = BENCHMARK.read_text()
+    text = BENCHMARK.read_text(encoding="utf-8")
     assert _measured_rate() in text, (
         "BENCHMARK.md no longer reports the measured Synthea rate"
     )

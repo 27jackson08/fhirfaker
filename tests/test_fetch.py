@@ -109,7 +109,7 @@ def test_one_failed_file_does_not_abort_the_rest(tmp_path: Path, monkeypatch):
 @pytest.mark.parametrize("stem", fetch.FILES)
 def test_every_file_is_documented_somewhere(stem):
     """A reader should be able to tell why each file is downloaded."""
-    source = Path(fetch.__file__).read_text()
+    source = Path(fetch.__file__).read_text(encoding="utf-8")
     line = next(l for l in source.splitlines() if f'"{stem}"' in l)
     assert "#" in line, f"{stem} is listed with no comment saying what it is for"
 

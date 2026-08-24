@@ -43,7 +43,7 @@ def test_the_record_carries_enough_provenance_to_be_rechecked(record):
 
 def test_benchmark_quotes_the_recorded_figures(record):
     """BENCHMARK.md's headline numbers must come from the record, not from memory."""
-    text = BENCHMARK.read_text()
+    text = BENCHMARK.read_text(encoding="utf-8")
     cbp = record["controlling_high_blood_pressure"]
     for label, rate in (("Synthea", cbp["synthea"]["rate"]),
                         ("carebundle", cbp["carebundle"]["rate"])):

@@ -57,7 +57,7 @@ DEVIATION_TOLERANCE = 0.05
 
 
 def load_record(path: Path = RECORD) -> dict[str, Any]:
-    return json.loads(path.read_text())
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def jar_version(jar: Path) -> tuple[str | None, str | None]:

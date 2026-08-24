@@ -432,7 +432,7 @@ def main() -> int:
             "correlations": correlations(people),
             "prevalences": prevalences(people),
         }
-        args.emit_targets.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+        args.emit_targets.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         print(
             f"wrote {len(payload['strata'])} strata and "
             f"{len(payload['correlations'])} correlations and "

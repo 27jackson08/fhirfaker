@@ -93,6 +93,19 @@ Practically, for anyone pinning: **pin the patch version.** `carebundle==0.1.2` 
   On its first run it failed on `synthetic-fhir-generator-build-doc.md`, a fourth
   document that no hand-written list had ever covered.
 
+### Fixed
+
+- **Every text read and write is explicitly UTF-8.** The structural guard added above
+  failed on Windows in CI: `Path.read_text()` uses the *platform* default encoding, which
+  is cp1252 there, and the markdown documents it globs contain em dashes. The Python
+  matrix caught it within minutes of a push I had not been able to verify locally.
+
+  Fixed at the class level rather than at the one call site — 15 modules and tests on the
+  read side, plus the CLI's own `--out` and ndjson writers, which emit FHIR JSON and are
+  therefore UTF-8 by specification. They were safe only because `json.dumps` escapes
+  non-ASCII by default, which is a property of the serialiser and not of the code around
+  it.
+
 ### Performance
 
 - **`get_profile` is cached, and generation is ~40% faster.** It rebuilt the profile on
