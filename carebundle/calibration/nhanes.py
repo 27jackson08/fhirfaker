@@ -82,7 +82,27 @@ class Moments:
 
     @property
     def skew_ratio(self) -> float:
-        """How much the raw SD exceeds the robust one. >1.3 means visibly skewed."""
+        """How much the raw SD exceeds the robust one. >1.3 means visibly skewed.
+
+        **A high ratio here does not imply the marginal should be log-normal, and the
+        obvious inference was tried and refuted.** Six analytes exceed 1.3 in the
+        stratum their profile draws from — AST 3.69, creatinine 3.41, ALT 2.58, glucose
+        1.51, bilirubin 1.43, alkaline phosphatase 1.34 — while using a symmetric
+        normal, which looks like a straightforward defect.
+
+        It is not fixable that way. Both `Marginal` and `LogNormalMarginal` are fitted
+        from the quartiles, so both reproduce the IQR and both miss the same far tail.
+        Measured on nondiabetic glucose, switching families moves P(>=100 mg/dL) from
+        18.9% to 18.6% against a real ~23%, and moves the 97.5th percentile from 109.5
+        to 110.6 against a measured 123.0. The distribution's p97.5 sits 2.6 IQRs above
+        its median where a normal puts it at 1.45; no two-parameter family fitted to
+        quartiles spans that.
+
+        Capturing it needs a third parameter fitted to a tail percentile rather than to
+        the IQR. That is real work, and `BENCHMARK.md` records what it would buy: the
+        under-produced upper tail is one of the reasons this package's four-criteria
+        co-occurrence lands at 14.6% against a real 19.7%.
+        """
         return self.sd / self.robust_sd if self.robust_sd else float("inf")
 
     def as_marginal(self) -> str:

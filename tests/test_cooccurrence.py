@@ -118,3 +118,36 @@ def test_a_perfectly_independent_population_scores_ratio_one():
         ))
     result = co.measure(rows)
     assert result.dependence_ratio(3) == pytest.approx(1.0, abs=0.12)
+
+
+def test_the_skewed_analytes_are_still_the_ones_documented():
+    """Pins the audit behind the refuted log-normal fix.
+
+    BENCHMARK.md and `nhanes.skew_ratio` both name six analytes that exceed the
+    project's own 1.3 "visibly skewed" threshold in the stratum their profile draws
+    from, and explain why switching them to the log-normal family does not help. If the
+    calibration changes and that list changes, the explanation is stale and the
+    experiment is worth re-running rather than quietly wrong.
+    """
+    import json as _json
+    from pathlib import Path
+
+    targets = _json.loads(
+        (Path(__file__).resolve().parents[1]
+         / "carebundle/calibration/data/nhanes_targets.json").read_text()
+    )["strata"]
+
+    skewed = set()
+    for key, value in targets.items():
+        _, stratum, analyte = key.split("/")
+        if stratum == "nondiabetic" and value.get("skew_ratio", 0) > 1.30:
+            skewed.add(analyte)
+
+    documented = {
+        "ast", "creatinine", "alt", "glucose", "bilirubin_total",
+        "alkaline_phosphatase", "triglycerides",
+    }
+    assert skewed == documented, (
+        f"the skewed-analyte set moved: {sorted(skewed ^ documented)}. "
+        "BENCHMARK.md's explanation of the failed log-normal fix names these by hand."
+    )

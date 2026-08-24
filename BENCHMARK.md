@@ -169,6 +169,23 @@ inverted explanation behind it. `carebundle.benchmark.cooccurrence` always print
 control beside the rate, and a test asserts a synthetic population with genuinely
 independent components scores 1.0.
 
+**What the same instrument says about this package.** Its dependence ratio is 1.45
+against a real 1.59, so it is slightly *under*-clustered, and its glucose marginal puts
+35.2% of the cohort above 100 mg/dL against a real 47.4%. Both push the 3-of-4 rate
+below reality, and the second is the larger term.
+
+The obvious fix was tried and does not work. Six analytes exceed this project's own
+"visibly skewed" threshold of 1.3 in the stratum their profile draws from — AST 3.69,
+creatinine 3.41, ALT 2.58, glucose 1.51, bilirubin 1.43, alkaline phosphatase 1.34 —
+while using a symmetric marginal, and the package already ships a log-normal family it
+uses for triglycerides and HbA1c. Switching glucose to it moves P(≥100) from **18.9% to
+18.6%**, the wrong way, and the 97.5th percentile from 109.5 to 110.6 against a measured
+**123.0**. Both families are fitted from the quartiles, so both reproduce the IQR and
+both miss the same tail: the real p97.5 sits 2.6 IQRs above its median where a normal
+puts it at 1.45. Closing it needs a third parameter fitted to a tail percentile rather
+than to the IQR. That is not scheduled, and it is recorded here so the next person does
+not repeat the experiment.
+
 **Deviation, not CI coverage, is the metric.** Synthea's sample here is 492 panels
 against 2,998, so its confidence intervals are roughly twice as wide and cover the
 target more often by luck. Scoring "cells whose CI covers NHANES" would reward having
