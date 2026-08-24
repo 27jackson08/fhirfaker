@@ -491,6 +491,31 @@ python -m carebundle.fidelity.report     # regenerate the fidelity report
 python -m carebundle.spec.codegen        # regenerate models from the R4 StructureDefinitions
 python -m carebundle.terminology.verify  # re-check every code against LOINC/RxNorm/ICD-10-CM
 python -m carebundle.calibration.nhanes --data-dir <dir>   # re-derive marginals from NHANES
+python -m carebundle.calibration.fetch --data-dir <dir>    # download the NHANES files first
+```
+
+### Measuring this against another generator
+
+The comparison in [BENCHMARK.md](https://github.com/27jackson08/fhirfaker/blob/main/BENCHMARK.md)
+is reproducible rather than quoted. These read any directory of FHIR bundles, so they
+score a competitor's output with the same code that scores this package's:
+
+```bash
+# HEDIS quality measures over someone else's export
+python -m carebundle.benchmark.synthea --fhir-dir ./pop/fhir
+
+# Cross-domain analyte dependence, against the committed NHANES extraction
+python -m carebundle.benchmark.dependence --fhir-dir ./pop/fhir
+python -m carebundle.benchmark.dependence            # ...or against this package
+
+# How often several abnormalities land in the same patient, with an
+# independence control so a low rate is not misread as missing dependence
+python -m carebundle.benchmark.cooccurrence --fhir-dir ./pop/fhir
+python -m carebundle.benchmark.cooccurrence
+
+# Re-measure the recorded comparison and report what moved. Runs monthly in CI,
+# because a measurement taken once goes stale exactly as a citation does.
+python -m carebundle.benchmark.drift --fhir-dir ./pop/fhir --jar ./synthea.jar
 ```
 
 `carebundle/models/r4.py` is generated from the official FHIR R4 4.0.1 StructureDefinitions

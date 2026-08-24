@@ -229,3 +229,55 @@ def test_readme_has_no_relative_links_because_it_is_the_pypi_page():
         f"README is published as the PyPI long description, so these would 404 there: "
         f"{relative}. Use absolute https://github.com/... URLs."
     )
+
+
+def test_every_runnable_module_is_documented():
+    """A module with a CLI is a feature, and an undocumented feature does not exist.
+
+    Four benchmark modules shipped in one session — `synthea`, `dependence`,
+    `cooccurrence`, `drift` — and none of them appeared in `README.md` or
+    `CONTRIBUTING.md`. Nothing failed, because nothing was checking. This is the same
+    defect as the README denying a capability the package had, pointed the other way:
+    capability the package has and nobody can find.
+
+    "Runnable" means the module guards `__main__` and defines `main`, which is this
+    project's convention for a command-line entry point. Documented means named in the
+    README or the contributor guide — the two places a user or contributor looks.
+    """
+    import re
+
+    import tomllib
+
+    root = README.parent
+    package = root / "carebundle"
+    scripts = tomllib.loads(
+        (root / "pyproject.toml").read_text(encoding="utf-8")
+    ).get("project", {}).get("scripts", {})
+    console_scripts: dict[str, list[str]] = {}
+    for name, target in scripts.items():
+        console_scripts.setdefault(target.split(":")[0], []).append(name)
+    readme = README.read_text(encoding="utf-8")
+    contributing = (root / "CONTRIBUTING.md").read_text(encoding="utf-8")
+
+    undocumented = []
+    for path in sorted(package.rglob("*.py")):
+        source = path.read_text(encoding="utf-8")
+        if '__name__ == "__main__"' not in source or not re.search(r"^def main\(", source, re.MULTILINE):
+            continue
+        dotted = ".".join(path.relative_to(root).with_suffix("").parts)
+        if dotted.endswith(".__main__"):
+            continue
+        # A module is documented under either name it can be invoked by: the dotted
+        # path for `python -m`, or its console-script name if pyproject declares one.
+        # `carebundle.cli` is documented everywhere as `carebundle generate ...` and
+        # nowhere as `python -m carebundle.cli`, which is correct and which the first
+        # version of this test flagged as missing.
+        names = [dotted, *console_scripts.get(dotted, ())]
+        if not any(name in readme or name in contributing for name in names):
+            undocumented.append(dotted)
+
+    assert not undocumented, (
+        "runnable modules absent from both README.md and CONTRIBUTING.md: "
+        f"{undocumented}. Shipping a command nobody can discover is the same as not "
+        "shipping it."
+    )

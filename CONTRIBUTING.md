@@ -100,6 +100,21 @@ python -m carebundle.calibration.nhanes   --data-dir nhanes/ --emit-targets care
 python -m carebundle.fidelity.transfer    --data-dir nhanes/    # the transfer result
 ```
 
+The competitive comparison is regenerated the same way — measured, not cited. Synthea is
+not vendored either; `carebundle/benchmark/synthea.py` documents the four commands that
+produce a population, and then:
+
+```bash
+python -m carebundle.benchmark.synthea      --fhir-dir ./pop/fhir   # HEDIS measures
+python -m carebundle.benchmark.dependence   --fhir-dir ./pop/fhir   # analyte dependence
+python -m carebundle.benchmark.cooccurrence --fhir-dir ./pop/fhir   # co-occurrence
+python -m carebundle.benchmark.drift --fhir-dir ./pop/fhir --jar ./synthea.jar
+```
+
+`drift` is the one to run before editing a figure in `BENCHMARK.md`: it compares against
+the recorded comparison and reports whether a number moved because the competitor changed
+or because this repository did. Those are different problems and it says which.
+
 The calibration is deterministic: regenerating the targets from a fresh download
 produces a file **byte-identical** to the committed one. If yours differs, either NCHS
 has republished the files or something in the extraction changed — both worth

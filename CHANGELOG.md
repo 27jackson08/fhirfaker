@@ -93,6 +93,24 @@ Practically, for anyone pinning: **pin the patch version.** `carebundle==0.1.2` 
   On its first run it failed on `synthetic-fhir-generator-build-doc.md`, a fourth
   document that no hand-written list had ever covered.
 
+### Documentation
+
+- **Four shipped modules were undiscoverable.** `benchmark.synthea`,
+  `benchmark.dependence`, `benchmark.cooccurrence` and `benchmark.drift` all landed in
+  one session and appeared in neither `README.md` nor `CONTRIBUTING.md`. Nothing failed,
+  because nothing was checking. That is the "README denies a capability the package has"
+  defect pointed the other way: capability the package has and nobody can find.
+
+  All four are now documented with the point that matters — they read *any* directory of
+  FHIR bundles, so they score a competitor's output with the same code that scores this
+  package's.
+
+  A test now fails when a module that guards `__main__` and defines `main` is named in
+  neither document. It accepts a console-script name as documentation too: `carebundle.cli`
+  is documented everywhere as `carebundle generate …` and nowhere as `python -m
+  carebundle.cli`, which is correct, and which the first version of the guard reported as
+  missing. It covers eleven runnable modules.
+
 ### Investigated and not built
 
 - **The residual clustering gap is tail dependence, and a t-copula does not close it.**
