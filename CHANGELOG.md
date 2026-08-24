@@ -19,13 +19,24 @@ Practically, for anyone pinning: **pin the patch version.** `carebundle==0.1.2` 
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-08-24
+
+**Seeded output changes.** Fixtures pinned to a seed under 0.3.0 will not reproduce; the
+golden files were regenerated and the diff is values only, no structural change. Under
+the 0.x policy at the top of this file a breaking change takes the minor position.
+
+The release is dominated by corrections rather than features, and that is the point of
+it: the project's headline competitive claim was false, and finding out cost four
+hypotheses of which three were refuted.
+
 ### Corrected — **the headline competitive claim was false and is withdrawn**
 
 - **Synthea does not score 0% on Controlling High Blood Pressure.** This project said it
   did, in `README.md`, `BENCHMARK.md`, `ROADMAP.md`, the write-up and two docstrings, on
   the authority of Chen et al. 2019. Measured in August 2026 against a current build,
-  with this package's own measure code, Synthea scores **74.8%** — 0.3 points from the
-  Massachusetts rate it simulates, while this package scores 68.8% on a matched cohort,
+  with this package's own measure code, Synthea scores **74.4%** (median of three runs)
+  — 0.3 points from the Massachusetts rate it simulates, while this package scores 68.8%
+  on a matched cohort,
   0.9 points from the US national rate it calibrates to. Both reproduce their own target
   population. **There is no outcome-measure wedge**, and the strategy built on one is
   annotated as wrong rather than deleted.
@@ -371,7 +382,8 @@ determinism contract described above starts now.
   draws on CPT-4 (AMA-licensed) and SNOMED CT, so warning-free US Core Encounter
   conformance is not reachable without licensed terminology. See `CONFORMANCE.md`.
 
-[Unreleased]: https://github.com/27jackson08/fhirfaker/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/27jackson08/fhirfaker/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/27jackson08/fhirfaker/releases/tag/v0.4.0
 [0.3.0]: https://github.com/27jackson08/fhirfaker/releases/tag/v0.3.0
 [0.2.0]: https://github.com/27jackson08/fhirfaker/releases/tag/v0.2.0
 [0.1.2]: https://github.com/27jackson08/fhirfaker/releases/tag/v0.1.2
