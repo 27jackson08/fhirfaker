@@ -169,6 +169,46 @@ inverted explanation behind it. `carebundle.benchmark.cooccurrence` always print
 control beside the rate, and a test asserts a synthetic population with genuinely
 independent components scores 1.0.
 
+### The residual is tail dependence, and a t-copula does not fix it
+
+After the correlations were corrected, the healthy profile still produced three-of-four
+metabolic abnormalities at a dependence ratio of 1.55 against a real 1.77. The suspected
+cause was the copula family: a **Gaussian copula has zero tail dependence**, so joint
+extremes are under-produced by construction, and a three-of-four threshold query
+measures joint extremes precisely.
+
+Measured, conditional co-occurrence above each variable's 80th centile — independence
+would be 0.20:
+
+| pair | NHANES | carebundle |
+|---|---:|---:|
+| triglycerides ~ HDL | 0.48 | 0.36 |
+| glucose ~ HDL | 0.36 | 0.26 |
+| glucose ~ triglycerides | 0.32 | 0.28 |
+| BMI ~ HDL | 0.31 | 0.30 |
+
+So the diagnosis holds: real data clusters in the tail more than this package does, on
+four of six pairs.
+
+**The obvious remedy was tested and rejected.** A Student-t copula has tail dependence
+that grows as its degrees of freedom fall, and ν → ∞ recovers the Gaussian. At the same
+Pearson correlation:
+
+| pair | Gaussian | t, ν=5 | t, ν=3 | NHANES |
+|---|---:|---:|---:|---:|
+| triglycerides ~ HDL | 0.396 | 0.418 | 0.431 | 0.48 |
+| glucose ~ HDL | 0.274 | 0.301 | 0.318 | 0.36 |
+
+Even at ν=3 — implausibly heavy — it closes roughly a third of the gap. It would also
+apply tail dependence to *every* pair including those that genuinely have none, require
+a Student-t quantile function implemented without scipy, and move seeded output. Closing
+this properly needs pair-specific copulas, which is a vine-copula architecture rather
+than a parameter change, and is not scheduled.
+
+One caveat on the target itself: the NHANES tail figures come from roughly 1,200 people
+per sex, so 0.48 carries a standard error near 0.05 and the gap is about 1.7 of those.
+Suggestive, not decisive — which is a further reason not to re-architect for it.
+
 **What the same instrument says about this package.** Its dependence ratio is 1.45
 against a real 1.59, so it is slightly *under*-clustered, and its glucose marginal puts
 35.2% of the cohort above 100 mg/dL against a real 47.4%. Both push the 3-of-4 rate

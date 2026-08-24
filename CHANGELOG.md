@@ -93,6 +93,26 @@ Practically, for anyone pinning: **pin the patch version.** `carebundle==0.1.2` 
   On its first run it failed on `synthetic-fhir-generator-build-doc.md`, a fourth
   document that no hand-written list had ever covered.
 
+### Investigated and not built
+
+- **The residual clustering gap is tail dependence, and a t-copula does not close it.**
+  With the correlations corrected, the healthy profile still clustered at a ratio of 1.55
+  against a real 1.77. Measured conditional co-occurrence above the 80th centile — where
+  independence is 0.20 — confirms the diagnosis: triglycerides/HDL is 0.48 in NHANES
+  against 0.36 here, glucose/HDL 0.36 against 0.26, and real data clusters harder on four
+  of six pairs.
+
+  A Student-t copula is the standard answer, since its tail dependence grows as degrees
+  of freedom fall. Simulated at matched Pearson correlations, **even ν=3 closes only
+  about a third of the gap** (0.396 → 0.431 against a needed 0.48). It would also impose
+  tail dependence on every pair including those that have none, need a Student-t quantile
+  function written without scipy, and move seeded output. Closing this properly means
+  pair-specific copulas — a vine architecture, not a parameter change.
+
+  Recorded rather than attempted, and with the target's own uncertainty stated: the
+  NHANES tail figures rest on ~1,200 people per sex, so 0.48 carries a standard error
+  near 0.05 and the gap is about 1.7 of those.
+
 ### Fixed
 
 - **Every text read and write is explicitly UTF-8.** The structural guard added above
