@@ -246,15 +246,24 @@ def test_every_runnable_module_is_documented():
     """
     import re
 
-    import tomllib
-
     root = README.parent
     package = root / "carebundle"
-    scripts = tomllib.loads(
-        (root / "pyproject.toml").read_text(encoding="utf-8")
-    ).get("project", {}).get("scripts", {})
+
+    # Parsed by regex rather than with tomllib, which is stdlib only from 3.11 and this
+    # package supports 3.10 — the CI matrix caught that, not local testing. Same reason
+    # `release.yml` reads `__version__` with a regex: the check should not need anything
+    # installed to run.
+    scripts_block = re.search(
+        r"^\[project\.scripts\]\s*$(.*?)^\[", 
+        (root / "pyproject.toml").read_text(encoding="utf-8"),
+        re.MULTILINE | re.DOTALL,
+    )
     console_scripts: dict[str, list[str]] = {}
-    for name, target in scripts.items():
+    for name, target in re.findall(
+        r"^\s*([\w.-]+)\s*=\s*[\"']([^\"']+)[\"']",
+        scripts_block.group(1) if scripts_block else "",
+        re.MULTILINE,
+    ):
         console_scripts.setdefault(target.split(":")[0], []).append(name)
     readme = README.read_text(encoding="utf-8")
     contributing = (root / "CONTRIBUTING.md").read_text(encoding="utf-8")
