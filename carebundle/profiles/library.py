@@ -23,13 +23,18 @@ BMI are computed from their inputs rather than sampled.
 
 from __future__ import annotations
 
+import json
 import math
+from functools import lru_cache
+from pathlib import Path
 
 from carebundle.correlation import relations
 from carebundle.correlation.distributions import (
+    EmpiricalMarginal,
     Marginal,
     calibrate_latent_correlation,
     correlation_from_r_squared,
+    empirical_from_quantiles,
     lognormal_from_quartiles,
     sd_from_regression_slope,
 )
@@ -78,16 +83,27 @@ DIAGNOSED_DIABETIC_HBA1C_BY_SEX = {
 # diagnosis-defined on purpose: undiagnosed diabetes is common, so "has not been told
 # they have diabetes" carries a long tail of undiagnosed hyperglycaemia that a healthy
 # baseline should not have.
-NORMOGLYCAEMIC_BY_SEX = {
-    "F": (
-        Marginal("hba1c", mean=5.6, sd=0.2965, low=4.9, high=6.3),
-        Marginal("glucose", mean=92.0, sd=8.895, low=76.0, high=123.0),
-    ),
-    "M": (
-        Marginal("hba1c", mean=5.6, sd=0.3706, low=4.8, high=6.4),
-        Marginal("glucose", mean=94.0, sd=9.637, low=75.0, high=126.8),
-    ),
+# Glucose uses the measured quantile function; HbA1c stays a fitted normal because its
+# nondiabetic skew ratio is 1.09, below the threshold where a family stops fitting.
+#
+# Glucose is the case that motivated `EmpiricalMarginal`. The fitted normal put 18.9% of
+# nondiabetic women above 100 mg/dL against a true 22.7%, and switching family to
+# log-normal moved it to 18.6% — the wrong way, because both are fitted from the same
+# quartiles. The measured grid gives 21.7%.
+NORMOGLYCAEMIC_HBA1C_BY_SEX = {
+    "F": Marginal("hba1c", mean=5.6, sd=0.2965, low=4.9, high=6.3),
+    "M": Marginal("hba1c", mean=5.6, sd=0.3706, low=4.8, high=6.4),
 }
+
+
+def normoglycaemic(sex: str) -> tuple:
+    """(HbA1c, glucose) for a non-diabetic patient.
+
+    A function rather than a module-level dict because the glucose side reads the
+    committed extraction, which is loaded lazily — a 233 KB parse should not happen on
+    `import carebundle`.
+    """
+    return (NORMOGLYCAEMIC_HBA1C_BY_SEX[sex], measured_marginal("glucose", sex))
 
 # Dependence structure, measured from NHANES 45-65 rather than estimated.
 #
@@ -272,19 +288,51 @@ COMMON_DRUG_ALLERGIES = (
 # A real ambulatory visit draws a comprehensive metabolic panel and a CBC alongside
 # whatever the presenting problem needs. Centred on standard adult reference
 # intervals, bounded at the limits a laboratory would flag rather than reject.
-COMPREHENSIVE_METABOLIC = (
-    Marginal("sodium", mean=140.0, sd=2.4, low=128.0, high=150.0),
-    Marginal("potassium", mean=4.2, sd=0.34, low=3.0, high=5.8),
-    Marginal("chloride", mean=102.0, sd=2.9, low=90.0, high=114.0),
-    Marginal("co2", mean=25.0, sd=2.4, low=15.0, high=34.0),
-    Marginal("calcium", mean=9.5, sd=0.40, low=7.5, high=11.5),
-    Marginal("albumin", mean=4.2, sd=0.34, low=2.5, high=5.4),
-    Marginal("bun", mean=15.0, sd=4.0, low=4.0, high=45.0),
-    Marginal("alt", mean=25.0, sd=11.0, low=5.0, high=90.0),
-    Marginal("ast", mean=24.0, sd=9.0, low=8.0, high=80.0),
-    Marginal("alkaline_phosphatase", mean=76.0, sd=21.0, low=25.0, high=180.0),
-    Marginal("bilirubin_total", mean=0.7, sd=0.28, low=0.1, high=2.0),
+# The comprehensive metabolic panel, drawn from the measured NHANES quantile function
+# rather than from a fitted family.
+#
+# These eleven were hand-set round numbers until 0.5.0 — ALT at mean 25.0, SD 11.0 —
+# while NHANES carried every one of them. Two defects at once: the values were
+# judgement rather than data, which this project's own contribution rules forbid, and
+# a symmetric normal cannot represent a liver enzyme regardless of how it is fitted.
+# Measured, the shipped normal put 0.1% of women above an ALT of 40 U/L against a true
+# 5.5%.
+#
+# `EmpiricalMarginal` assumes no family and interpolates the measured quantiles, which
+# takes the mean absolute error against true exceedance rates from 4.43 points to 0.73.
+_METABOLIC_PANEL = (
+    "sodium", "potassium", "chloride", "co2", "calcium", "albumin", "bun",
+    "alt", "ast", "alkaline_phosphatase", "bilirubin_total",
 )
+
+
+@lru_cache(maxsize=1)
+def _measured_strata() -> dict:
+    """The committed NHANES extraction, loaded once on first use.
+
+    Lazy rather than at import: the file is 233 KB and a caller who only wants
+    `PROFILES` should not pay for parsing it.
+    """
+    path = (
+        Path(__file__).resolve().parents[1] / "calibration" / "data" / "nhanes_targets.json"
+    )
+    return json.loads(path.read_text())["strata"]
+
+
+def measured_marginal(analyte: str, sex: str, stratum: str = "nondiabetic") -> EmpiricalMarginal:
+    """The measured quantile function for one analyte, sex and stratum."""
+    key = f"{sex}/{stratum}/{analyte}"
+    entry = _measured_strata().get(key)
+    if entry is None or not entry.get("quantiles"):
+        raise KeyError(
+            f"no measured quantiles for {key}; regenerate with "
+            "`python -m carebundle.calibration.nhanes --emit-targets ...`"
+        )
+    return empirical_from_quantiles(analyte, {q: v for q, v in entry["quantiles"]})
+
+
+def comprehensive_metabolic(sex: str) -> tuple[EmpiricalMarginal, ...]:
+    return tuple(measured_marginal(a, sex) for a in _METABOLIC_PANEL)
 CBC_BY_SEX = {
     "F": (
         Marginal("hemoglobin", mean=13.6, sd=1.05, low=8.0, high=17.0),
@@ -374,7 +422,7 @@ ELECTROLYTE_CORRELATIONS = (
 
 
 def _routine_marginals(sex: str) -> tuple:
-    return (*COMPREHENSIVE_METABOLIC, *CBC_BY_SEX[sex], *CBC_SHARED, *ROUTINE_VITALS)
+    return (*comprehensive_metabolic(sex), *CBC_BY_SEX[sex], *CBC_SHARED, *ROUTINE_VITALS)
 
 
 def _routine_correlations(sex: str, *, has_creatinine: bool = True) -> list[tuple[str, str, float]]:
@@ -537,7 +585,7 @@ def _metabolic_conditions(raw: dict[str, float]) -> tuple:
 
 
 def healthy(sex: str) -> ClinicalProfile:
-    hba1c, glucose = NORMOGLYCAEMIC_BY_SEX[sex]
+    hba1c, glucose = normoglycaemic(sex)
     cholesterol, triglycerides = NORMOLIPIDAEMIC_BY_SEX[sex]
     height, weight = ANTHROPOMETRICS_TYPICAL[sex]
     return ClinicalProfile(
@@ -686,7 +734,7 @@ def type2_diabetes(sex: str) -> ClinicalProfile:
 
 
 def hypertension(sex: str) -> ClinicalProfile:
-    hba1c, glucose = NORMOGLYCAEMIC_BY_SEX[sex]
+    hba1c, glucose = normoglycaemic(sex)
     cholesterol, triglycerides = NORMOLIPIDAEMIC_BY_SEX[sex]
     height, weight = ANTHROPOMETRICS_TYPICAL[sex]
     return ClinicalProfile(
@@ -732,7 +780,7 @@ def ckd_stage3(sex: str) -> ClinicalProfile:
     eGFR is sampled inside the stage-3 band and creatinine is *inverted* from it, so
     the constraint holds by construction instead of by rejection sampling.
     """
-    hba1c, glucose = NORMOGLYCAEMIC_BY_SEX[sex]
+    hba1c, glucose = normoglycaemic(sex)
     cholesterol, triglycerides = NORMOLIPIDAEMIC_BY_SEX[sex]
     height, weight = ANTHROPOMETRICS_TYPICAL[sex]
     return ClinicalProfile(
@@ -790,7 +838,7 @@ def _anaemia_conditions(raw: dict[str, float]) -> tuple:
 
 def anaemia(sex: str) -> ClinicalProfile:
     """Anaemia by WHO haemoglobin criteria, calibrated to the NHANES anaemic stratum."""
-    hba1c, glucose = NORMOGLYCAEMIC_BY_SEX[sex]
+    hba1c, glucose = normoglycaemic(sex)
     cholesterol, triglycerides = NORMOLIPIDAEMIC_BY_SEX[sex]
     height, weight = ANTHROPOMETRICS_TYPICAL[sex]
     haemoglobin, haematocrit, rbc = ANAEMIC_CBC_BY_SEX[sex]

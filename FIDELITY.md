@@ -65,8 +65,8 @@ Checks are **graded by evidential strength**, because they are not equivalent an
 | rbc median (anaemia/F) | 4.162 | 4.17 | -0.00838 | ±0.25 | NHANES 2017-2020 | PASS |
 | rbc median (anaemia/M) | 4.212 | 4.22 | -0.00832 | ±0.253 | NHANES 2017-2020 | PASS |
 | weight_kg/hdl correlation (healthy) | -0.2392 | -0.2584 | +0.0192 | ±0.06 | NHANES 2017-2020 | PASS |
-| glucose/triglycerides correlation (healthy) | 0.1648 | 0.1873 | -0.0225 | ±0.06 | NHANES 2017-2020 | PASS |
-| glucose/hdl correlation (healthy) | -0.1686 | -0.1785 | +0.00988 | ±0.06 | NHANES 2017-2020 | PASS |
+| glucose/triglycerides correlation (healthy) | 0.1567 | 0.1873 | -0.0306 | ±0.06 | NHANES 2017-2020 | PASS |
+| glucose/hdl correlation (healthy) | -0.1625 | -0.1785 | +0.016 | ±0.06 | NHANES 2017-2020 | PASS |
 | hba1c/hdl correlation (healthy) | -0.2501 | -0.2492 | -0.000928 | ±0.06 | NHANES 2017-2020 | PASS |
 | hba1c/triglycerides correlation (healthy) | 0.1118 | 0.131 | -0.0192 | ±0.06 | NHANES 2017-2020 | PASS |
 | BMI/HDL correlation, emergent (healthy) | -0.2884 | -0.2998 | +0.0114 | ±0.09 | NHANES 2017-2020 | PASS |

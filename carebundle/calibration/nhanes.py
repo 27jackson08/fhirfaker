@@ -50,6 +50,21 @@ VARIABLES = {
 }
 
 AGE_LOW, AGE_HIGH = 45, 65
+
+# The quantile grid emitted for `EmpiricalMarginal`, chosen by measurement rather than
+# taste. Scored as absolute error against the true exceedance rate over ten analyte/sex
+# cells, mean and worst:
+#
+#     shipped normal          4.43 / 8.20 points
+#     9 knots, p2.5-p97.5     1.57 / 2.53
+#     11 knots, p1-p99        0.73 / 1.84      <- this
+#     11 knots, p0.5-p99.5    0.64 / 2.08
+#
+# p0.5-p99.5 has the better mean and the worse worst case, and its endpoints rest on
+# roughly fifteen observations in a survey this size against thirty for p1-p99. The
+# outer knots matter most: a grid stopping at p2.5 has to be normalised back onto its
+# own support, which pulls the tail inward and costs more than the extra knots buy.
+QUANTILE_GRID = (0.01, 0.025, 0.05, 0.10, 0.25, 0.50, 0.75, 0.90, 0.95, 0.975, 0.99)
 DIABETES_HBA1C = 6.5  # ADA diagnostic threshold, for the lab-defined strata.
 
 # DIQ010: "Other than during pregnancy, has a doctor or other health professional ever
@@ -79,6 +94,9 @@ class Moments:
     q3: float
     p2_5: float
     p97_5: float
+    # The measured quantile function, for analytes no two-parameter family fits. See
+    # QUANTILE_GRID and `EmpiricalMarginal`.
+    quantiles: tuple[tuple[float, float], ...] = ()
 
     @property
     def skew_ratio(self) -> float:
@@ -98,10 +116,12 @@ class Moments:
         its median where a normal puts it at 1.45; no two-parameter family fitted to
         quartiles spans that.
 
-        Capturing it needs a third parameter fitted to a tail percentile rather than to
-        the IQR. That is real work, and `BENCHMARK.md` records what it would buy: the
-        under-produced upper tail is one of the reasons this package's four-criteria
-        co-occurrence lands at 14.6% against a real 19.7%.
+        **Resolved in 0.5.0 by dropping the family, not by choosing a better one.**
+        `EmpiricalMarginal` interpolates the measured quantile grid emitted below, which
+        assumes nothing about shape. Mean absolute error against true exceedance rates
+        falls from 4.43 points to 0.73 across ten analyte/sex cells. So a high ratio
+        here now means "use the measured quantiles", and this attribute is a diagnostic
+        rather than a family selector.
         """
         return self.sd / self.robust_sd if self.robust_sd else float("inf")
 
@@ -217,6 +237,7 @@ def moments(records: list[dict], analyte: str, stratum: str) -> Moments | None:
     if values.size < 30:
         return None
     q1, q3 = np.percentile(values, [25.0, 75.0])
+    grid = np.percentile(values, [100.0 * q for q in QUANTILE_GRID])
     return Moments(
         analyte=analyte,
         stratum=stratum,
@@ -231,6 +252,7 @@ def moments(records: list[dict], analyte: str, stratum: str) -> Moments | None:
         # the moments, tight enough to exclude implausible tail draws.
         p2_5=float(np.percentile(values, 2.5)),
         p97_5=float(np.percentile(values, 97.5)),
+        quantiles=tuple((q, float(v)) for q, v in zip(QUANTILE_GRID, grid, strict=True)),
     )
 
 
@@ -391,6 +413,7 @@ def main() -> int:
                     "q1": round(r.q1, 4), "q3": round(r.q3, 4),
                     "skew_ratio": round(r.skew_ratio, 3),
                     "p2_5": round(r.p2_5, 4), "p97_5": round(r.p97_5, 4),
+                    "quantiles": [[q, round(v, 4)] for q, v in r.quantiles],
                 }
                 for r in rows
             },

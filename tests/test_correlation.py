@@ -350,3 +350,64 @@ def test_a_bigger_regimen_gains_more_from_each_doubling():
     one = relations.titrated_response(systolic=200.0, diastolic=115.0, agent_count=1)
     three = relations.titrated_response(systolic=200.0, diastolic=115.0, agent_count=3)
     assert three[0] < one[0]
+
+
+class TestEmpiricalMarginal:
+    """The measured-quantile marginal, added in 0.5.0.
+
+    It exists because both fitted families miss the same tail: `Marginal` and
+    `LogNormalMarginal` are each parameterised from the median and IQR, so on a
+    right-skewed analyte they agree with each other and disagree with reality.
+    """
+
+    def test_reproduces_its_knots_exactly(self):
+        """The whole point: no family, so the measured quantiles come back."""
+        from carebundle.correlation.distributions import empirical_from_quantiles
+
+        knots = {0.01: 7.0, 0.10: 11.0, 0.25: 14.0, 0.50: 19.0,
+                 0.75: 27.0, 0.90: 38.0, 0.99: 71.0}
+        m = empirical_from_quantiles("alt", knots)
+        u = np.random.default_rng(0).random(400_000)
+        drawn = m.ppf(u)
+        span = 0.99 - 0.01
+        for level, value in knots.items():
+            observed = np.percentile(drawn, 100.0 * (level - 0.01) / span)
+            assert observed == pytest.approx(value, rel=0.02), (level, value, observed)
+
+    def test_analytic_moments_match_sampling(self):
+        """`moments()` integrates the quantile function in closed form."""
+        from carebundle.correlation.distributions import empirical_from_quantiles
+
+        m = empirical_from_quantiles(
+            "glucose", {0.01: 74.0, 0.25: 87.0, 0.50: 92.0, 0.75: 99.0, 0.99: 131.0})
+        mean, sd = m.moments()
+        drawn = m.ppf(np.random.default_rng(1).random(400_000))
+        assert mean == pytest.approx(float(drawn.mean()), rel=1e-3)
+        assert sd == pytest.approx(float(drawn.std()), rel=2e-3)
+
+    def test_support_is_the_outer_knots_with_no_point_mass(self):
+        """Rescaling onto [0,1] is what stops 1% of patients sharing one value.
+
+        A naive `np.interp` against un-normalised levels clamps, which piles every draw
+        below the first knot onto it. That is invisible in a mean and obvious in a
+        histogram.
+        """
+        from carebundle.correlation.distributions import empirical_from_quantiles
+
+        m = empirical_from_quantiles("x", {0.01: 10.0, 0.5: 20.0, 0.99: 90.0})
+        drawn = m.ppf(np.random.default_rng(2).random(200_000))
+        assert drawn.min() >= 10.0 and drawn.max() <= 90.0
+        # No more than a handful of draws land exactly on an endpoint.
+        assert (drawn == 10.0).mean() < 1e-4
+        assert (drawn == 90.0).mean() < 1e-4
+
+    @pytest.mark.parametrize("bad", [
+        {0.5: 1.0},                            # too few knots
+        {0.5: 2.0, 0.25: 1.0, 0.75: 1.5},      # values not monotone with probs
+        {0.0: 1.0, 0.5: 2.0, 1.0: 3.0},        # levels not strictly inside (0, 1)
+    ])
+    def test_rejects_malformed_grids(self, bad):
+        from carebundle.correlation.distributions import empirical_from_quantiles
+
+        with pytest.raises(ValueError):
+            empirical_from_quantiles("x", bad)

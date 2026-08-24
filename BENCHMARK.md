@@ -182,9 +182,29 @@ uses for triglycerides and HbA1c. Switching glucose to it moves P(≥100) from *
 18.6%**, the wrong way, and the 97.5th percentile from 109.5 to 110.6 against a measured
 **123.0**. Both families are fitted from the quartiles, so both reproduce the IQR and
 both miss the same tail: the real p97.5 sits 2.6 IQRs above its median where a normal
-puts it at 1.45. Closing it needs a third parameter fitted to a tail percentile rather
-than to the IQR. That is not scheduled, and it is recorded here so the next person does
-not repeat the experiment.
+puts it at 1.45.
+
+**Fixed in 0.5.0, by dropping the family rather than choosing a better one.**
+`EmpiricalMarginal` interpolates the measured quantile function at eleven levels from
+p1 to p99 and assumes nothing about shape. Mean absolute error against true exceedance
+rates, across ten analyte/sex cells:
+
+| fit | mean \|error\| | worst |
+|---|---:|---:|
+| fitted normal (shipped through 0.4.0) | 4.43 pts | 8.20 |
+| 9 knots, p2.5–p97.5 | 1.57 | 2.53 |
+| **11 knots, p1–p99** | **0.73** | **1.84** |
+
+The grid is part of the method. Five knots is *worse* than the normal on heavy skew —
+linear interpolation across a wide q3-to-p97.5 gap spreads mass uniformly where the real
+density is falling, overshooting ALT to 12.1% against a true 5.5%. And a grid stopping at
+p2.5 must be rescaled onto its own support, which pulls the tail back in and costs more
+than the extra knots buy.
+
+The same change caught a larger problem beside it: the eleven comprehensive metabolic
+panel analytes were **hand-set round numbers** — ALT at mean 25.0, SD 11.0 — with no sex
+stratification at all, while NHANES carried every one of them. Their mean absolute error
+was 2.45 points and is now 0.81, and ALT's true mean is 19.37 rather than 25.0.
 
 **Deviation, not CI coverage, is the metric.** Synthea's sample here is 492 panels
 against 2,998, so its confidence intervals are roughly twice as wide and cover the

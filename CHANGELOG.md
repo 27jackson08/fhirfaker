@@ -19,6 +19,52 @@ Practically, for anyone pinning: **pin the patch version.** `carebundle==0.1.2` 
 
 ## [Unreleased]
 
+### Changed — **seeded output changes; this is a breaking change (0.5.0)**
+
+- **The comprehensive metabolic panel was never calibrated, and now is.** Eleven
+  analytes — sodium, potassium, chloride, CO2, calcium, albumin, BUN, ALT, AST, alkaline
+  phosphatase, bilirubin — were **hand-set round numbers** with *no sex stratification at
+  all*, while NHANES carried every one of them. ALT sat at mean 25.0, SD 11.0 against a
+  true mean of 19.37, and one figure served both sexes where the true exceedance rates
+  are 5.5% and 12.8%. Mean absolute error against true exceedance rates falls from
+  **2.45 points to 0.81**.
+
+  This is the failure the contribution rules exist to prevent — "numbers come from
+  sources, not from judgement" — sitting in the routine panel of every profile since v1,
+  found only because the co-occurrence work made the tails worth auditing.
+
+- **`EmpiricalMarginal`: marginals from measured quantiles, with no family.** 0.4.0
+  documented that both `Marginal` and `LogNormalMarginal` are fitted from the median and
+  IQR, so both reproduce the middle and miss the same tail, and recorded that closing it
+  needed a third parameter fitted to a tail percentile. The fix turned out to be dropping
+  the family instead: interpolate the measured quantile function directly.
+
+  Mean absolute error against true exceedance rates over ten analyte/sex cells —
+  **fitted normal 4.43 points, 9 knots (p2.5–p97.5) 1.57, 11 knots (p1–p99) 0.73.** The
+  grid is part of the method, not an implementation detail: five knots is *worse* than
+  the normal on heavy skew, because linear interpolation across a wide q3-to-p97.5 gap
+  spreads mass uniformly where the real density is falling, overshooting ALT to 12.1%
+  against a true 5.5%. A grid stopping at p2.5 also has to be rescaled onto its own
+  support, which pulls the tail back in and costs more than the extra knots buy.
+
+  Non-diabetic glucose moves with it: 18.9% above 100 mg/dL against a true 22.7% under
+  the fitted normal, 21.7% now. HbA1c stays a fitted normal, because its non-diabetic
+  skew ratio is 1.09 and a family still fits it.
+
+  The extraction emits the grid; `skew_ratio` is now a diagnostic rather than a family
+  selector. Seven tests, including one asserting the knots come back exactly and one
+  that the endpoints carry no point mass — the artefact a naive clamping interpolation
+  would create, invisible in a mean and obvious in a histogram.
+
+  **One small cost, recorded rather than absorbed.** Glucose's realized correlations
+  drift slightly further from their configured targets — glucose/triglycerides from
+  0.1648 to 0.1567 against 0.1873, glucose/HDL from −0.1686 to −0.1625 against −0.1785 —
+  because a Gaussian copula's latent correlation maps to a *smaller* Pearson correlation
+  as the marginal gets more skewed, and these pairs are configured as latent values
+  rather than solved for a target. Both still pass with room, and the fix is to route
+  them through `calibrate_latent_correlation` as the HbA1c/glucose pair already is. Not
+  done here: it is a separate change and this one already moves seeded output.
+
 ## [0.4.0] — 2026-08-24
 
 **Seeded output changes.** Fixtures pinned to a seed under 0.3.0 will not reproduce; the

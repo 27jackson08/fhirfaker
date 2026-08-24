@@ -9,6 +9,7 @@ published approximations and accuracy-tested in `tests/test_correlation.py`.
 from __future__ import annotations
 
 import math
+from collections.abc import Sequence
 from dataclasses import dataclass
 from functools import lru_cache
 
@@ -242,9 +243,95 @@ def lognormal_from_quartiles(
     )
 
 
+@dataclass(frozen=True)
+class EmpiricalMarginal:
+    """A marginal defined by measured quantiles, with no distributional family.
+
+    Why this exists
+    ---------------
+    `Marginal` and `LogNormalMarginal` are both fitted from the median and the IQR, so
+    both reproduce the middle of the distribution and both miss the same tail. Measured
+    on NHANES nondiabetic glucose, the shipped normal put 18.9% of women above
+    100 mg/dL against a true 22.7%, and the log-normal fitted from the same quartiles
+    gave 18.6% — the wrong direction. For ALT the normal gave 0.1% above 40 U/L against
+    a true 5.5%. A right-skewed analyte's 97.5th percentile can sit 2.6 IQRs above its
+    median where a normal puts it at 1.45, and no two-parameter family fitted to
+    quartiles spans that.
+
+    So this one assumes nothing and interpolates the measured quantile function. Errors
+    against the true exceedance rate across ten analyte/sex cells, mean absolute:
+
+        shipped normal 4.44 points     5-knot 4.50     **9-knot 0.83**     13-knot 0.93
+
+    Five knots is *worse* than the normal on heavy skew — linear interpolation across a
+    wide q3-to-p97.5 gap spreads mass uniformly where the real density is falling, which
+    overshot ALT to 12.1% against a true 5.5%. The knot grid is part of the method, not
+    an implementation detail.
+
+    Semantics
+    ---------
+    `probs` are the quantile levels the values were measured at, and the support is
+    exactly [values[0], values[-1]] — the same truncation `Marginal` applies at
+    p2.5/p97.5. Probabilities are rescaled onto [0, 1] so the endpoints carry no point
+    mass, which a naive `np.interp` against un-normalised levels would create.
+    """
+
+    name: str
+    probs: tuple[float, ...]
+    values: tuple[float, ...]
+
+    def __post_init__(self) -> None:
+        if len(self.probs) != len(self.values):
+            raise ValueError(f"{self.name}: probs and values differ in length")
+        if len(self.probs) < 3:
+            raise ValueError(f"{self.name}: need at least 3 quantiles, got {len(self.probs)}")
+        if any(b <= a for a, b in zip(self.probs, self.probs[1:], strict=False)):
+            raise ValueError(f"{self.name}: probs must be strictly increasing")
+        if any(b < a for a, b in zip(self.values, self.values[1:], strict=False)):
+            raise ValueError(f"{self.name}: values must be non-decreasing")
+        if not 0.0 < self.probs[0] < self.probs[-1] < 1.0:
+            raise ValueError(f"{self.name}: probs must lie strictly inside (0, 1)")
+
+    @property
+    def _unit_probs(self) -> np.ndarray:
+        p = np.asarray(self.probs, dtype=float)
+        return (p - p[0]) / (p[-1] - p[0])
+
+    def ppf(self, u: np.ndarray) -> np.ndarray:
+        return np.interp(np.asarray(u), self._unit_probs, np.asarray(self.values, dtype=float))
+
+    def moments(self) -> tuple[float, float]:
+        """Realized (mean, sd) of the piecewise-linear quantile function.
+
+        Integrated in closed form rather than sampled, so the fidelity suite compares
+        against an exact figure. On a segment where Q rises linearly from x to y over a
+        probability width d, the contributions are d(x+y)/2 and d(x^2+xy+y^2)/3.
+        """
+        p, x = self._unit_probs, np.asarray(self.values, dtype=float)
+        width = np.diff(p)
+        lo, hi = x[:-1], x[1:]
+        mean = float(np.sum(width * (lo + hi) / 2.0))
+        second = float(np.sum(width * (lo**2 + lo * hi + hi**2) / 3.0))
+        variance = max(second - mean**2, 0.0)
+        return mean, float(np.sqrt(variance))
+
+
+def empirical_from_quantiles(
+    name: str, quantiles: dict[float, float] | Sequence[tuple[float, float]]
+) -> EmpiricalMarginal:
+    """Build an `EmpiricalMarginal` from measured (level, value) pairs."""
+    pairs = sorted(quantiles.items() if isinstance(quantiles, dict) else quantiles)
+    return EmpiricalMarginal(
+        name=name,
+        probs=tuple(float(p) for p, _ in pairs),
+        values=tuple(float(v) for _, v in pairs),
+    )
+
+
 # A joint model may mix families: the copula only ever calls `ppf`, so a skewed
-# analyte can use a log-normal while its neighbours stay normal.
-AnyMarginal = Marginal | LogNormalMarginal
+# analyte can use a log-normal or a measured quantile grid while its neighbours stay
+# normal.
+AnyMarginal = Marginal | LogNormalMarginal | EmpiricalMarginal
 
 
 def fit_truncated_normal(
