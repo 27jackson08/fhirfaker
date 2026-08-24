@@ -206,6 +206,9 @@ def calibrate_profile(
         )
 
     PROFILES[name] = factory
+    # `get_profile` caches by (key, sex); a re-registered name must not keep
+    # serving the profile it replaced.
+    get_profile.cache_clear()
     return name
 
 
@@ -218,6 +221,7 @@ def forget_profile(name: str) -> None:
     if name in BUILT_IN_PROFILES:
         raise ValueError(f"{name!r} is a built-in profile and cannot be removed")
     PROFILES.pop(name, None)
+    get_profile.cache_clear()
 
 
 # Captured at import, before any caller can register anything.

@@ -185,3 +185,59 @@ def test_built_in_profiles_cannot_be_removed(built_in):
     with pytest.raises(ValueError, match="built-in"):
         forget_profile(built_in)
     assert built_in in PROFILES
+
+
+def test_registering_a_profile_invalidates_the_profile_cache():
+    """`get_profile` is cached, so a re-registered name must not serve the old build.
+
+    The cache exists because building the diabetes profile costs ~10 ms — a 50,000
+    sample bisection for its HbA1c/glucose latent correlation — and it was paid once per
+    generated patient for an answer that never changes. Caching a registry lookup is
+    only safe if the registry tells the cache when it changes.
+    """
+    from carebundle.calibration.custom import calibrate_profile, forget_profile
+    from carebundle.profiles.library import get_profile
+
+    name = "cache_invalidation_probe"
+    try:
+        calibrate_profile(
+            name=name, base="healthy",
+            marginals={"hba1c": Quartiles(median=5.5, q1=5.2, q3=5.8, low=4.6, high=6.4)},
+        )
+        first = get_profile(name, "F")
+        assert first is get_profile(name, "F"), "cache is not serving repeat calls"
+
+        # Re-register the same name with a different distribution.
+        forget_profile(name)
+        calibrate_profile(
+            name=name, base="healthy",
+            marginals={"hba1c": Quartiles(median=6.1, q1=5.9, q3=6.3, low=5.2, high=7.0)},
+        )
+        second = get_profile(name, "F")
+        assert second is not first, "stale profile served after re-registration"
+
+        def median_of(profile):
+            marginal = next(m for m in profile.joint.marginals if m.name == "hba1c")
+            return marginal.moments()[0]
+
+        assert median_of(second) > median_of(first), (
+            "re-registered profile did not take effect"
+        )
+    finally:
+        forget_profile(name)
+
+
+def test_forgetting_a_profile_clears_it_from_the_cache():
+    """A removed profile must stop resolving, not linger in the cache."""
+    from carebundle.calibration.custom import calibrate_profile, forget_profile
+    from carebundle.profiles.library import get_profile
+
+    name = "cache_removal_probe"
+    calibrate_profile(
+        name=name, base="healthy",
+        marginals={"hba1c": Quartiles(median=5.5, q1=5.2, q3=5.8, low=4.6, high=6.4)},
+    )
+    get_profile(name, "F")
+    forget_profile(name)
+    with pytest.raises(ValueError, match="unknown profile"):
+        get_profile(name, "F")

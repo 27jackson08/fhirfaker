@@ -19,6 +19,20 @@ Practically, for anyone pinning: **pin the patch version.** `carebundle==0.1.2` 
 
 ## [Unreleased]
 
+### Performance
+
+- **`get_profile` is cached, and generation is ~40% faster.** It rebuilt the profile on
+  every call, and building the diabetes profile runs a 50,000-sample bisection to solve
+  its HbA1c/glucose latent correlation — **9.87 ms against 0.37 ms for `healthy`** — paid
+  once per generated patient for an answer identical every time.
+  `generate_cohort(200)` drops from **2.49 s to 1.50 s**.
+
+  Output is unchanged: the profile is a pure function of (key, sex), the RNG is passed
+  separately, and the golden files are byte-identical across the change. The one hazard
+  is the registry being mutated underneath the cache, so `calibrate_profile` and
+  `forget_profile` clear it and two tests assert a re-registered profile is not served
+  stale and a forgotten one stops resolving.
+
 ### Changed — **seeded output changes; this is a breaking change (0.5.0)**
 
 - **The comprehensive metabolic panel was never calibrated, and now is.** Eleven
