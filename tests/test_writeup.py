@@ -175,55 +175,62 @@ def _measured_rate() -> str:
 
     return f"{load_record()['controlling_high_blood_pressure']['synthea']['rate'] * 100:.1f}%"
 
-def test_no_document_claims_synthea_scores_zero_in_the_present_tense():
-    """The most expensive error in this project's history was a stale citation.
+def _markdown_documents():
+    """Every markdown document in the repository, discovered rather than listed.
 
-    `BENCHMARK.md`, `README.md` and the write-up all asserted that Synthea scores 0% on
-    Controlling High Blood Pressure. That came from Chen et al. 2019 and was repeated
-    for years without anyone running the software. Measured in August 2026, Synthea
-    scores 74.8% — so the project's headline competitive claim had been false for an
-    unknown length of time, and it survived precisely because a citation cannot go
-    stale in CI the way a measurement can.
-
-    This asserts the present-tense form is gone. Quoting the 2019 result as history is
-    fine and necessary; asserting it as the current state of the software is not, and
-    the difference is whether a correction sits beside it.
+    A hardcoded list only guards the files someone remembered, and the claim this
+    checks has now escaped into a third document once already.
     """
-    # This list is only as good as the phrasings it anticipates, and it has already
-    # missed one: the README's opening argument said Synthea "scores **0%** on every
-    # *outcome* measure" — present tense, fifteen lines above the correction — and every
-    # guard passed, because that wording was not here.
-    banned = (
-        "Synthea scores 0%",
-        "Synthea scores **0%**",
-        "against Synthea's published 0%",
-        "a pathway simulator scores **0%** on",
-        "scores\n**0%** on every",
-        "scores **0%** on every",
-        "and scores\n**0%**",
-    )
-    for name in ("BENCHMARK.md", "README.md", "docs/outcome-measures.md"):
-        text = (ROOT / name).read_text()
-        # Headings included: the write-up's own title read "Synthetic patient generators
-        # score 0% on outcome quality measures" while carrying the correction inside it,
-        # and every guard passed because none of them looked at the first line.
-        heading = text.split("\n", 1)[0]
-        assert "score 0%" not in heading and "scores 0%" not in heading, (
-            f"{name} asserts the withdrawn claim in its title: {heading!r}"
+    for path in sorted(ROOT.glob("*.md")) + sorted((ROOT / "docs").glob("*.md")):
+        yield path.relative_to(ROOT).as_posix(), path.read_text()
+
+
+# A bare zero rate: "0%" or "0.0%", not the "10%" inside a larger number.
+_ZERO_RATE = re.compile(r"(?<![.0-9])0(?:\.0+)?%")
+
+
+def test_any_document_pairing_synthea_with_a_zero_rate_carries_the_correction():
+    """Structural replacement for a list of banned phrasings.
+
+    The withdrawn claim — that Synthea scores 0% on blood-pressure control — survived
+    three separate guards by appearing in three syntactic positions: body prose, a
+    section heading, and a document title. Each fix extended a phrase list by exactly
+    the wording that had slipped past, which only ever catches the next instance if
+    somebody guesses its shape in advance.
+
+    So this does not look at phrasing at all. If a document mentions Synthea and states
+    a zero rate anywhere in it, it must also carry the measured figure. Quoting the 2019
+    result as history stays legal; quoting it with no correction anywhere in the same
+    document does not.
+    """
+    measured = _measured_rate()
+    for name, text in _markdown_documents():
+        if "Synthea" not in text or not _ZERO_RATE.search(text):
+            continue
+        assert measured in text, (
+            f"{name} pairs Synthea with a zero rate but never states the measured "
+            f"{measured}. Quote the 2019 figure as history if you need it, but the "
+            f"correction has to be in the same document."
         )
-        for phrase in banned:
-            if phrase not in text:
+
+
+def test_no_heading_asserts_the_withdrawn_claim():
+    """Prominence, which the rule above deliberately cannot see.
+
+    The write-up carried the correction *and* was titled "Synthetic patient generators
+    score 0% on outcome quality measures". Presence of the correction is not enough when
+    the headline says the opposite, so headings are held to a stricter rule than body
+    text — every one of them, not just the title, because the section heading in
+    ROADMAP.md was the second instance.
+    """
+    for name, text in _markdown_documents():
+        for line in text.splitlines():
+            if not line.startswith("#"):
                 continue
-            # Permitted only where the same document carries the correction, so a
-            # reader cannot reach the claim without reaching the retraction. The figure
-            # is read from the record rather than typed here: this guard used to hardcode
-            # 74.8%, and kept passing after the canonical figure became the 74.4% median,
-            # which is the drift it exists to prevent showing up inside the guard itself.
-            assert _measured_rate() in text, (
-                f"{name} still asserts {phrase!r} without the measured correction"
-            )
-
-
+            if "Synthea" in line or "generators" in line or "simulator" in line:
+                assert not _ZERO_RATE.search(line), (
+                    f"{name} asserts the withdrawn claim in a heading: {line!r}"
+                )
 def test_benchmark_states_when_the_synthea_figure_was_measured():
     """A competitor's score is a measurement with a date, not a constant.
 

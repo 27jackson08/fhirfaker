@@ -393,6 +393,18 @@ This is a multi-week project at a realistic pace alongside everything else curre
   > pathway simulator structurally cannot produce them. Competing on breadth would still
   > lose. If a future phase starts arguing for more disease modules, this risk has won and
   > the roadmap is wrong.
+  >
+  > **The 0% is Chen et al. 2019 and is withdrawn, August 2026.** Measured against a
+  > current build, Synthea scores **74.4%** on blood-pressure control. The reasoning above
+  > was sound on the evidence available and its conclusion — do not compete on breadth —
+  > still holds, but the ground it named has gone. What replaced it is measured rather
+  > than cited: on queries asking for several abnormalities in the same patient, this
+  > package lands at 15.0% against a real 19.7% where Synthea gives 4.1%. See
+  > `BENCHMARK.md`.
+  >
+  > This paragraph was found by a test that looks for any document pairing Synthea with a
+  > zero rate and no correction — written precisely because three hand-listed phrasings
+  > had already been missed. It found a fourth document on its first run.
 - **US Core Condition binding vs. the no-SNOMED decision.** May constrain Condition conformance. Settled empirically by the validator in Phase 0 — do not assert either way before then.
 - **JVM in CI undercuts the "no JVM" pitch.** Mitigated by stating clearly that it is dev/CI-only. Left unstated, it reads as a contradiction.
 - **Codegen maintenance.** Owning the models means owning spec updates. Mitigated by narrow scope (8 resources, write-side only) and by R4 4.0.1 being frozen.

@@ -76,10 +76,22 @@ Practically, for anyone pinning: **pin the patch version.** `carebundle==0.1.2` 
   shortfall was cohort composition. It was not — matched-stratum comparison put it in the
   healthy profile's joint structure.
 
-- **The write-up's title still asserted the withdrawn claim.** It read "Synthetic patient
-  generators score 0% on outcome quality measures" while carrying the correction inside
-  it. Every guard passed, because none of them read the first line. The guard now checks
-  headings.
+- **The phrase-list guard is replaced by a structural one, and it found a fourth
+  document immediately.** The withdrawn claim survived three separate guards by moving
+  syntactic position — body prose, a section heading, then the write-up's own title,
+  which read "Synthetic patient generators score 0% on outcome quality measures" while
+  carrying the correction inside it. Each fix extended a list of banned phrasings by
+  exactly the wording that had slipped past, which only catches the next instance if
+  somebody guesses its shape first.
+
+  The replacement ignores phrasing entirely: **any markdown document that mentions
+  Synthea and states a zero rate must also carry the measured figure**, with the
+  documents discovered by glob rather than listed and the figure read from the recorded
+  comparison. A second, stricter rule covers prominence, because the title case had the
+  correction present and the headline still said the opposite.
+
+  On its first run it failed on `synthetic-fhir-generator-build-doc.md`, a fourth
+  document that no hand-written list had ever covered.
 
 ### Performance
 
