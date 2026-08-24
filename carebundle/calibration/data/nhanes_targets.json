@@ -56,9 +56,21 @@
       "n": 1639,
       "pearson": 0.9503
     },
+    "F/all/weight_kg~glucose": {
+      "n": 1533,
+      "pearson": 0.0985
+    },
+    "F/all/weight_kg~hba1c": {
+      "n": 1579,
+      "pearson": 0.1126
+    },
     "F/all/weight_kg~hdl": {
       "n": 1542,
       "pearson": -0.26
+    },
+    "F/all/weight_kg~triglycerides": {
+      "n": 791,
+      "pearson": 0.0691
     },
     "F/anaemic/bmi~hdl": {
       "n": 181,
@@ -112,9 +124,21 @@
       "n": 186,
       "pearson": 0.969
     },
+    "F/anaemic/weight_kg~glucose": {
+      "n": 180,
+      "pearson": 0.1203
+    },
+    "F/anaemic/weight_kg~hba1c": {
+      "n": 185,
+      "pearson": 0.1575
+    },
     "F/anaemic/weight_kg~hdl": {
       "n": 181,
       "pearson": -0.27
+    },
+    "F/anaemic/weight_kg~triglycerides": {
+      "n": 90,
+      "pearson": 0.091
     },
     "F/diabetic/bmi~hdl": {
       "n": 279,
@@ -168,9 +192,21 @@
       "n": 290,
       "pearson": 0.9524
     },
+    "F/diabetic/weight_kg~glucose": {
+      "n": 278,
+      "pearson": -0.0835
+    },
+    "F/diabetic/weight_kg~hba1c": {
+      "n": 290,
+      "pearson": -0.1268
+    },
     "F/diabetic/weight_kg~hdl": {
       "n": 279,
       "pearson": -0.1661
+    },
+    "F/diabetic/weight_kg~triglycerides": {
+      "n": 153,
+      "pearson": 0.0118
     },
     "F/diagnosed/bmi~hdl": {
       "n": 268,
@@ -224,9 +260,21 @@
       "n": 288,
       "pearson": 0.9512
     },
+    "F/diagnosed/weight_kg~glucose": {
+      "n": 267,
+      "pearson": -0.0601
+    },
+    "F/diagnosed/weight_kg~hba1c": {
+      "n": 276,
+      "pearson": -0.1022
+    },
     "F/diagnosed/weight_kg~hdl": {
       "n": 268,
       "pearson": -0.1711
+    },
+    "F/diagnosed/weight_kg~triglycerides": {
+      "n": 154,
+      "pearson": 0.0366
     },
     "F/nondiabetic/bmi~hdl": {
       "n": 1260,
@@ -280,9 +328,21 @@
       "n": 1288,
       "pearson": 0.9478
     },
+    "F/nondiabetic/weight_kg~glucose": {
+      "n": 1253,
+      "pearson": 0.1753
+    },
+    "F/nondiabetic/weight_kg~hba1c": {
+      "n": 1289,
+      "pearson": 0.1958
+    },
     "F/nondiabetic/weight_kg~hdl": {
       "n": 1261,
       "pearson": -0.2584
+    },
+    "F/nondiabetic/weight_kg~triglycerides": {
+      "n": 636,
+      "pearson": 0.0495
     },
     "M/all/bmi~hdl": {
       "n": 1451,
@@ -336,9 +396,21 @@
       "n": 1550,
       "pearson": 0.9256
     },
+    "M/all/weight_kg~glucose": {
+      "n": 1445,
+      "pearson": 0.0969
+    },
+    "M/all/weight_kg~hba1c": {
+      "n": 1486,
+      "pearson": 0.1265
+    },
     "M/all/weight_kg~hdl": {
       "n": 1454,
       "pearson": -0.2141
+    },
+    "M/all/weight_kg~triglycerides": {
+      "n": 715,
+      "pearson": 0.0621
     },
     "M/anaemic/bmi~hdl": {
       "n": 107,
@@ -392,9 +464,21 @@
       "n": 109,
       "pearson": 0.9206
     },
+    "M/anaemic/weight_kg~glucose": {
+      "n": 109,
+      "pearson": 0.1319
+    },
+    "M/anaemic/weight_kg~hba1c": {
+      "n": 111,
+      "pearson": 0.1956
+    },
     "M/anaemic/weight_kg~hdl": {
       "n": 109,
       "pearson": -0.2106
+    },
+    "M/anaemic/weight_kg~triglycerides": {
+      "n": 51,
+      "pearson": 0.0682
     },
     "M/diabetic/bmi~hdl": {
       "n": 285,
@@ -448,9 +532,21 @@
       "n": 293,
       "pearson": 0.9378
     },
+    "M/diabetic/weight_kg~glucose": {
+      "n": 283,
+      "pearson": -0.0138
+    },
+    "M/diabetic/weight_kg~hba1c": {
+      "n": 293,
+      "pearson": -0.0268
+    },
     "M/diabetic/weight_kg~hdl": {
       "n": 285,
       "pearson": -0.1937
+    },
+    "M/diabetic/weight_kg~triglycerides": {
+      "n": 129,
+      "pearson": -0.0475
     },
     "M/diagnosed/bmi~hdl": {
       "n": 302,
@@ -504,9 +600,21 @@
       "n": 323,
       "pearson": 0.9362
     },
+    "M/diagnosed/weight_kg~glucose": {
+      "n": 299,
+      "pearson": 0.0187
+    },
+    "M/diagnosed/weight_kg~hba1c": {
+      "n": 310,
+      "pearson": 0.0086
+    },
     "M/diagnosed/weight_kg~hdl": {
       "n": 302,
       "pearson": -0.2333
+    },
+    "M/diagnosed/weight_kg~triglycerides": {
+      "n": 146,
+      "pearson": 0.0292
     },
     "M/nondiabetic/bmi~hdl": {
       "n": 1165,
@@ -560,9 +668,21 @@
       "n": 1190,
       "pearson": 0.9163
     },
+    "M/nondiabetic/weight_kg~glucose": {
+      "n": 1162,
+      "pearson": 0.0853
+    },
+    "M/nondiabetic/weight_kg~hba1c": {
+      "n": 1193,
+      "pearson": 0.1321
+    },
     "M/nondiabetic/weight_kg~hdl": {
       "n": 1168,
       "pearson": -0.2001
+    },
+    "M/nondiabetic/weight_kg~triglycerides": {
+      "n": 585,
+      "pearson": 0.0742
     }
   },
   "prevalences": {

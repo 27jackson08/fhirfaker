@@ -1,8 +1,9 @@
-# Synthetic patient generators score 0% on outcome quality measures
+# A synthetic-data claim I held for a year, and what measuring it cost
 
-*A write-up of the finding behind this library. Every figure here is asserted against the
-repository's own evidence documents by `tests/test_writeup.py`, so it cannot go stale
-quietly.*
+*A write-up of the finding behind this library, and of its withdrawal. Every figure here
+is asserted against the repository's own evidence documents by `tests/test_writeup.py`,
+so it cannot go stale quietly — which did not stop this document's own title asserting,
+in the present tense, something the correction three screens below already refuted.*
 
 If you generate synthetic health data, you probably validate it by checking that the
 distributions look right. That is the standard approach and it is not enough, in a way
@@ -169,7 +170,7 @@ Not that my generator is better than Synthea. Synthea covers 231 conditions, a l
 per patient, and three of the four measures in that table. On breadth it is not close.
 
 Nor that the fidelity is broadly validated. The report grades every check by what a pass
-proves, and says out loud that **1 of 58 is genuinely out-of-sample** — the rest establish
+proves, and says out loud that **1 of 64 is genuinely out-of-sample** — the rest establish
 self-consistency, which is necessary and is a weaker claim than the phrase "fidelity
 report" suggests. A test pins that count so it cannot grow by relabelling.
 

@@ -52,6 +52,35 @@ Practically, for anyone pinning: **pin the patch version.** `carebundle==0.1.2` 
   because the phrase list did not anticipate that wording. Fixed, and the list extended
   with what it missed.
 
+- **Three correlations were excluded on a mistaken argument, and it cost clustering.**
+  Weight against glucose, triglycerides and HbA1c were left out because their sign
+  reverses between strata. That was the wrong conclusion from the right observation:
+  reversal is a reason to key by stratum, which the table already does, so each profile
+  uses its own measured value and the pooled figure is never touched. Excluding them set
+  them to **zero**, and a Gaussian copula treats an unstated pair as a stated zero — the
+  same trap already recorded for HbA1c's lipid pairs.
+
+  Measured within matched strata, which is how it surfaced: the healthy profile produced
+  three-of-four metabolic abnormalities in **8.6%** of patients against **13.9%** of real
+  non-diabetic adults, a dependence ratio of 1.44 against 1.77, while the diabetes
+  profile matched at 44.3% against 41.4%. With the pairs restored: **9.3%** and a ratio
+  of **1.55**. The diabetes profile is unchanged, because those correlations are near
+  zero inside its stratum — which is exactly why the pooled figure was misleading.
+
+  A residual gap remains (1.55 against 1.77) and is expected: a **Gaussian copula has
+  zero tail dependence**, so joint extremes are under-produced by construction, and a
+  three-of-four threshold query measures precisely joint extremes. That is a property of
+  the family, not a calibration error.
+
+  This also corrected my earlier diagnosis, recorded in 0.4.0, that the co-occurrence
+  shortfall was cohort composition. It was not — matched-stratum comparison put it in the
+  healthy profile's joint structure.
+
+- **The write-up's title still asserted the withdrawn claim.** It read "Synthetic patient
+  generators score 0% on outcome quality measures" while carrying the correction inside
+  it. Every guard passed, because none of them read the first line. The guard now checks
+  headings.
+
 ### Performance
 
 - **`get_profile` is cached, and generation is ~40% faster.** It rebuilt the profile on

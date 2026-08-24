@@ -10,11 +10,11 @@ Checks are **graded by evidential strength**, because they are not equivalent an
 | Grade | Checks | What a pass means |
 |---|---:|---|
 | **out_of_sample** | 1 | A published relationship the model was NOT fitted to. This is the only category that is evidence of fidelity in the sense the word implies. |
-| **calibration** | 50 | Verifies a marginal fitted to a published source survived truncation and the copula. Meaningful — this is where truncation attenuation was caught — but in-sample by construction. |
+| **calibration** | 56 | Verifies a marginal fitted to a published source survived truncation and the copula. Meaningful — this is where truncation attenuation was caught — but in-sample by construction. |
 | **round_trip** | 3 | Verifies the sampler reproduces a value it was configured with. Proves the engine works; proves nothing about whether the configured value is right. |
 | **identity** | 4 | Computed from its own inputs. Cannot fail unless the code is broken, so it is a regression test, not evidence of fidelity. |
 
-**Read the top row first.** Only 1 of 58 checks is genuinely out-of-sample. The rest establish self-consistency, which is necessary but is a weaker claim than the phrase 'fidelity report' suggests on its own.
+**Read the top row first.** Only 1 of 64 checks is genuinely out-of-sample. The rest establish self-consistency, which is necessary but is a weaker claim than the phrase 'fidelity report' suggests on its own.
 
 ### out_of_sample (1)
 
@@ -22,7 +22,7 @@ Checks are **graded by evidential strength**, because they are not equivalent an
 |---|---:|---:|---:|---:|---|:--:|
 | CMS Controlling High Blood Pressure | 0.7423 | 0.72 | +0.0223 | ±0.09 | Chen 2019 (CMS/HEDIS) | PASS |
 
-### calibration (50)
+### calibration (56)
 
 | Check | Observed | Expected | Delta | Tolerance | Source | |
 |---|---:|---:|---:|---:|---|:--:|
@@ -34,8 +34,8 @@ Checks are **graded by evidential strength**, because they are not equivalent an
 | T2DM hypertension comorbidity | 0.7026 | 0.6997 | +0.0029 | ±0.0259 | NHANES 2017-2020 | PASS |
 | systolic/diastolic correlation | 0.7455 | 0.743 | +0.00252 | ±0.06 | NHANES 2017-2020 | PASS |
 | triglyceride/HDL correlation | -0.3094 | -0.2969 | -0.0125 | ±0.06 | NHANES 2017-2020 | PASS |
-| diabetic obesity rate | 0.6415 | 0.612 | +0.0295 | ±0.05 | NHANES 2017-2020 | PASS |
-| typical-adult median BMI | 30.01 | 28.8 | +1.21 | ±1.5 | NHANES 2017-2020 | PASS |
+| diabetic obesity rate | 0.6455 | 0.612 | +0.0335 | ±0.05 | NHANES 2017-2020 | PASS |
+| typical-adult median BMI | 30 | 28.8 | +1.2 | ±1.5 | NHANES 2017-2020 | PASS |
 | hba1c median (healthy/F) | 5.601 | 5.6 | +0.00137 | ±0.168 | NHANES 2017-2020 | PASS |
 | hba1c median (healthy/M) | 5.604 | 5.6 | +0.00365 | ±0.168 | NHANES 2017-2020 | PASS |
 | triglycerides median (healthy/F) | 88.76 | 88 | +0.763 | ±10.6 | NHANES 2017-2020 | PASS |
@@ -46,8 +46,8 @@ Checks are **graded by evidential strength**, because they are not equivalent an
 | hdl median (healthy/M) | 48.03 | 47 | +1.03 | ±3.76 | NHANES 2017-2020 | PASS |
 | creatinine median (healthy/F) | 0.7508 | 0.73 | +0.0208 | ±0.0584 | NHANES 2017-2020 | PASS |
 | creatinine median (healthy/M) | 0.985 | 0.97 | +0.015 | ±0.0776 | NHANES 2017-2020 | PASS |
-| weight_kg median (healthy/F) | 76.44 | 74.9 | +1.54 | ±4.49 | NHANES 2017-2020 | PASS |
-| weight_kg median (healthy/M) | 87.1 | 85 | +2.1 | ±5.1 | NHANES 2017-2020 | PASS |
+| weight_kg median (healthy/F) | 76.73 | 74.9 | +1.83 | ±4.49 | NHANES 2017-2020 | PASS |
+| weight_kg median (healthy/M) | 87.2 | 85 | +2.2 | ±5.1 | NHANES 2017-2020 | PASS |
 | height_cm median (healthy/F) | 160.3 | 160.1 | +0.186 | ±3.2 | NHANES 2017-2020 | PASS |
 | height_cm median (healthy/M) | 173.5 | 173.6 | -0.079 | ±3.47 | NHANES 2017-2020 | PASS |
 | hba1c median (type2_diabetes/F) | 7.04 | 7.1 | -0.0603 | ±0.355 | NHANES 2017-2020 | PASS |
@@ -56,26 +56,32 @@ Checks are **graded by evidential strength**, because they are not equivalent an
 | triglycerides median (type2_diabetes/M) | 129.9 | 132 | -2.07 | ±15.8 | NHANES 2017-2020 | PASS |
 | hdl median (type2_diabetes/F) | 50.37 | 49 | +1.37 | ±3.92 | NHANES 2017-2020 | PASS |
 | hdl median (type2_diabetes/M) | 43.02 | 42 | +1.02 | ±3.36 | NHANES 2017-2020 | PASS |
-| weight_kg median (type2_diabetes/F) | 84.68 | 83.15 | +1.53 | ±6.65 | NHANES 2017-2020 | PASS |
-| weight_kg median (type2_diabetes/M) | 96.37 | 92.6 | +3.77 | ±7.41 | NHANES 2017-2020 | PASS |
+| weight_kg median (type2_diabetes/F) | 85.08 | 83.15 | +1.93 | ±6.65 | NHANES 2017-2020 | PASS |
+| weight_kg median (type2_diabetes/M) | 96.51 | 92.6 | +3.91 | ±7.41 | NHANES 2017-2020 | PASS |
 | hemoglobin median (anaemia/F) | 11.11 | 11.3 | -0.185 | ±0.565 | NHANES 2017-2020 | PASS |
 | hemoglobin median (anaemia/M) | 11.89 | 12.1 | -0.212 | ±0.605 | NHANES 2017-2020 | PASS |
 | hematocrit median (anaemia/F) | 34.46 | 34.8 | -0.34 | ±1.74 | NHANES 2017-2020 | PASS |
 | hematocrit median (anaemia/M) | 36.53 | 36.8 | -0.274 | ±1.84 | NHANES 2017-2020 | PASS |
 | rbc median (anaemia/F) | 4.166 | 4.17 | -0.00446 | ±0.25 | NHANES 2017-2020 | PASS |
 | rbc median (anaemia/M) | 4.215 | 4.22 | -0.00546 | ±0.253 | NHANES 2017-2020 | PASS |
-| weight_kg/hdl correlation (healthy) | -0.2444 | -0.2584 | +0.014 | ±0.06 | NHANES 2017-2020 | PASS |
+| weight_kg/hdl correlation (healthy) | -0.2467 | -0.2584 | +0.0117 | ±0.06 | NHANES 2017-2020 | PASS |
 | glucose/triglycerides correlation (healthy) | 0.1664 | 0.1873 | -0.0209 | ±0.06 | NHANES 2017-2020 | PASS |
 | glucose/hdl correlation (healthy) | -0.1679 | -0.1785 | +0.0106 | ±0.06 | NHANES 2017-2020 | PASS |
 | hba1c/hdl correlation (healthy) | -0.252 | -0.2492 | -0.00284 | ±0.06 | NHANES 2017-2020 | PASS |
 | hba1c/triglycerides correlation (healthy) | 0.1175 | 0.131 | -0.0135 | ±0.06 | NHANES 2017-2020 | PASS |
-| BMI/HDL correlation, emergent (healthy) | -0.2946 | -0.2998 | +0.00519 | ±0.09 | NHANES 2017-2020 | PASS |
-| weight_kg/hdl correlation (type2_diabetes) | -0.2276 | -0.2333 | +0.00566 | ±0.06 | NHANES 2017-2020 | PASS |
+| weight_kg/glucose correlation (healthy) | 0.1915 | 0.1753 | +0.0162 | ±0.06 | NHANES 2017-2020 | PASS |
+| weight_kg/triglycerides correlation (healthy) | 0.04778 | 0.0495 | -0.00172 | ±0.06 | NHANES 2017-2020 | PASS |
+| weight_kg/hba1c correlation (healthy) | 0.1972 | 0.1958 | +0.00141 | ±0.06 | NHANES 2017-2020 | PASS |
+| BMI/HDL correlation, emergent (healthy) | -0.2903 | -0.2998 | +0.00954 | ±0.09 | NHANES 2017-2020 | PASS |
+| weight_kg/hdl correlation (type2_diabetes) | -0.2285 | -0.2333 | +0.00483 | ±0.06 | NHANES 2017-2020 | PASS |
 | glucose/triglycerides correlation (type2_diabetes) | 0.304 | 0.3081 | -0.0041 | ±0.06 | NHANES 2017-2020 | PASS |
 | glucose/hdl correlation (type2_diabetes) | -0.1106 | -0.108 | -0.00256 | ±0.06 | NHANES 2017-2020 | PASS |
 | hba1c/hdl correlation (type2_diabetes) | -0.09012 | -0.0795 | -0.0106 | ±0.06 | NHANES 2017-2020 | PASS |
 | hba1c/triglycerides correlation (type2_diabetes) | 0.1547 | 0.159 | -0.00434 | ±0.06 | NHANES 2017-2020 | PASS |
-| BMI/HDL correlation, emergent (type2_diabetes) | -0.2368 | -0.2056 | -0.0312 | ±0.09 | NHANES 2017-2020 | PASS |
+| weight_kg/glucose correlation (type2_diabetes) | 0.02996 | 0.0187 | +0.0113 | ±0.06 | NHANES 2017-2020 | PASS |
+| weight_kg/triglycerides correlation (type2_diabetes) | 0.0399 | 0.0292 | +0.0107 | ±0.06 | NHANES 2017-2020 | PASS |
+| weight_kg/hba1c correlation (type2_diabetes) | 0.01486 | 0.0086 | +0.00626 | ±0.06 | NHANES 2017-2020 | PASS |
+| BMI/HDL correlation, emergent (type2_diabetes) | -0.2374 | -0.2056 | -0.0318 | ±0.09 | NHANES 2017-2020 | PASS |
 
 ### round_trip (3)
 
@@ -94,7 +100,7 @@ Checks are **graded by evidential strength**, because they are not equivalent an
 | LDL consistent with panel (Friedewald) | 0 | 0 | +0 | ±1e-09 | Friedewald 1972 | PASS |
 | BMI consistent with height and weight | 0 | 0 | +0 | ±1e-09 | WHO | PASS |
 
-**58/58 passed.**
+**64/64 passed.**
 
 ## Clinical utility: does a model trained on this transfer?
 

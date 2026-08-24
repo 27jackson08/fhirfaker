@@ -300,10 +300,22 @@ CORRELATION_PAIRS = (
     # to HDL is whatever the weight pair induces. Having the target here lets a
     # fidelity check compare an unconfigured quantity against the survey.
     ("bmi", "hdl"),
-    # Deliberately absent: weight/glucose and weight/hba1c, whose sign reverses
-    # between strata for the reason above, and every pair involving blood pressure —
-    # systolic against weight, glucose or lipids is between −0.02 and +0.11 with no
-    # consistent sign across sexes, which is noise, not a relationship.
+    # Weight against glycaemia and against triglycerides. These were excluded on the
+    # argument that their sign reverses between strata, which was the wrong conclusion
+    # from the right observation: reversal is a reason to *stratify*, and these pairs
+    # are keyed by stratum, so each profile uses its own measured value and nothing is
+    # counted twice. Omitting them set them to zero instead, and a Gaussian copula
+    # treats an unstated pair as a stated zero -- the same trap recorded for HbA1c.
+    #
+    # The cost was measurable: the healthy profile produced three-of-four metabolic
+    # abnormalities in 8.6% of patients against 13.9% of real non-diabetic adults, a
+    # dependence ratio of 1.44 against 1.77, while the diabetes profile matched.
+    ("weight_kg", "glucose"),
+    ("weight_kg", "triglycerides"),
+    ("weight_kg", "hba1c"),
+    # Still absent: every pair involving blood pressure. Systolic against weight,
+    # glucose or lipids is between -0.02 and +0.11 with no consistent sign across
+    # sexes, which is noise rather than a relationship.
 )
 
 

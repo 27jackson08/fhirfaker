@@ -149,6 +149,15 @@ HEIGHT_WEIGHT_CORRELATION_BY_SEX = {"F": 0.3036, "M": 0.446}
 # BMI is the genuine exception: it is computed from height and weight, so it is never
 # in the matrix, and its -0.27 against HDL is entirely induced by the weight pair.
 # That one really does propagate, because it is arithmetic rather than a copula entry.
+#
+# Weight against glucose, triglycerides and HbA1c were originally excluded here, on the
+# argument that their sign reverses between strata. That was the wrong conclusion from
+# the right observation. Reversal is a reason to key by stratum, which this table
+# already does, so each profile uses its own measured value and the pooled figure is
+# never used. Excluding them set them to zero instead, and the cost was visible in the
+# healthy profile: three-of-four metabolic abnormalities in 8.6% of patients against
+# 13.9% of real non-diabetic adults, while the diabetes profile — whose stratum has
+# these correlations near zero anyway — already matched.
 METABOLIC_CORRELATIONS_BY_STRATUM: dict[str, dict[str, tuple[tuple[str, str, float], ...]]] = {
     "nondiabetic": {
         "F": (
@@ -157,6 +166,9 @@ METABOLIC_CORRELATIONS_BY_STRATUM: dict[str, dict[str, tuple[tuple[str, str, flo
             ("glucose", "hdl", -0.1785),
             ("hba1c", "hdl", -0.2492),
             ("hba1c", "triglycerides", 0.131),
+            ("weight_kg", "glucose", 0.1753),
+            ("weight_kg", "triglycerides", 0.0495),
+            ("weight_kg", "hba1c", 0.1958),
         ),
         "M": (
             ("weight_kg", "hdl", -0.2001),
@@ -169,6 +181,9 @@ METABOLIC_CORRELATIONS_BY_STRATUM: dict[str, dict[str, tuple[tuple[str, str, flo
             # carry. Configuring it explicitly also distinguishes "measured as absent"
             # from "never considered", which the zero-fill above makes indistinguishable.
             ("hba1c", "triglycerides", 0.0031),
+            ("weight_kg", "glucose", 0.0853),
+            ("weight_kg", "triglycerides", 0.0742),
+            ("weight_kg", "hba1c", 0.1321),
         ),
     },
     "diagnosed": {
@@ -178,6 +193,9 @@ METABOLIC_CORRELATIONS_BY_STRATUM: dict[str, dict[str, tuple[tuple[str, str, flo
             ("glucose", "hdl", -0.0771),
             ("hba1c", "hdl", -0.1054),
             ("hba1c", "triglycerides", 0.1737),
+            ("weight_kg", "glucose", -0.0601),
+            ("weight_kg", "triglycerides", 0.0366),
+            ("weight_kg", "hba1c", -0.1022),
         ),
         "M": (
             ("weight_kg", "hdl", -0.2333),
@@ -185,6 +203,9 @@ METABOLIC_CORRELATIONS_BY_STRATUM: dict[str, dict[str, tuple[tuple[str, str, flo
             ("glucose", "hdl", -0.108),
             ("hba1c", "hdl", -0.0795),
             ("hba1c", "triglycerides", 0.159),
+            ("weight_kg", "glucose", 0.0187),
+            ("weight_kg", "triglycerides", 0.0292),
+            ("weight_kg", "hba1c", 0.0086),
         ),
     },
 }

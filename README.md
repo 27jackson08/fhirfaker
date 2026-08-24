@@ -272,9 +272,9 @@ The claim is checked statistically on every run and published as a
 | CKD stage-3 eGFR within band | 1 | 1 | KDIGO 2012 |
 | hba1c median (type2_diabetes/M) | 7.239 | 7.3 | NHANES 2017-2020 |
 | triglycerides median (healthy/F) | 88.76 | 88 | NHANES 2017-2020 |
-| diabetic obesity rate | 0.6415 | 0.612 | NHANES 2017-2020 |
-| weight_kg/hdl correlation (healthy) | -0.2444 | -0.2584 | NHANES 2017-2020 |
-| **BMI/HDL correlation, emergent (healthy)** | **-0.2946** | **-0.2998** | NHANES 2017-2020 |
+| diabetic obesity rate | 0.6455 | 0.612 | NHANES 2017-2020 |
+| weight_kg/hdl correlation (healthy) | -0.2467 | -0.2584 | NHANES 2017-2020 |
+| **BMI/HDL correlation, emergent (healthy)** | **-0.2903** | **-0.2998** | NHANES 2017-2020 |
 
 Row labels and values are copied verbatim from `FIDELITY.md`, and a test asserts every
 one of them still matches — five of these rows had silently drifted before that test
@@ -285,7 +285,7 @@ never in the correlation matrix, so nothing configures its relationship to HDL; 
 emerges from the weight/HDL pair surviving the copula. It is the only row here that
 could fail while every configured value stayed correct.
 
-All 58 checks pass — but they are **not equally strong evidence**, and the report grades
+All 64 checks pass — but they are **not equally strong evidence**, and the report grades
 them rather than reporting a flat total:
 
 | Grade | Checks | What a pass proves |
@@ -464,7 +464,7 @@ Stated here rather than left for you to discover.
 - **Blood pressure marginals are clinical definitions**, not population fits —
   "normotensive" and "hypertensive" are the populations the profiles mean. Everything
   else is calibrated against NHANES (see below).
-- **Diabetic BMI runs slightly high.** Generated diabetics are 64.1% obese against
+- **Diabetic BMI runs slightly high.** Generated diabetics are 64.5% obese against
   NHANES's 61.2% for the same age band and stratum, with a median BMI of 32.5 against
   31.9. Weight is drawn from a symmetric truncated normal while the real distribution is
   right-skewed, and BMI is computed from it, so the derived median lands a little above

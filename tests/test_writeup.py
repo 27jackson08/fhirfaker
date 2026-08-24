@@ -204,6 +204,13 @@ def test_no_document_claims_synthea_scores_zero_in_the_present_tense():
     )
     for name in ("BENCHMARK.md", "README.md", "docs/outcome-measures.md"):
         text = (ROOT / name).read_text()
+        # Headings included: the write-up's own title read "Synthetic patient generators
+        # score 0% on outcome quality measures" while carrying the correction inside it,
+        # and every guard passed because none of them looked at the first line.
+        heading = text.split("\n", 1)[0]
+        assert "score 0%" not in heading and "scores 0%" not in heading, (
+            f"{name} asserts the withdrawn claim in its title: {heading!r}"
+        )
         for phrase in banned:
             if phrase not in text:
                 continue
