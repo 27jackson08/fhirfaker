@@ -74,6 +74,28 @@ Practically, for anyone pinning: **pin the patch version.** `carebundle==0.1.2` 
   0.05, sized against that measured spread and still far below the 0.14 gap it exists to
   detect. Noted here rather than adjusted quietly, which is what the module's own failure
   message demands.
+- **`carebundle.benchmark.cooccurrence`** — how often several abnormalities land in the
+  same patient, which is what a phenotyping or cohort-selection query actually asks.
+  Four criteria, one rule, three populations. On the 3-of-4 phenotype: real 19.7%,
+  **carebundle 14.6%, Synthea 4.1%** — absolute error against NHANES of −5.2 points
+  against −15.6.
+
+  **It reports an independence control beside every rate, because the mechanism was
+  wrong twice on the way here.** TSTR was tried first and found nothing: median AUC
+  retention 92.3% here against 92.5% for Synthea over ten disjoint folds, with
+  overlapping IQRs. A logistic model fits one weight per feature, so it reads
+  feature-to-label association and barely uses feature-to-feature dependence —
+  dissociable properties, and TSTR is close to blind to this one. Then the phenotype gap
+  looked like the predicted "Synthea draws components independently", and the control
+  refuted that too: dividing each population's rate by what its own marginals imply
+  under independence gives **NHANES 1.59×, Synthea 2.10×, carebundle 1.45×**. Synthea
+  clusters *more* than reality. Its low rate comes from mild marginals — glucose ≥ 100
+  in 8.7% of its patients against 47.4% of real ones — and its dependence is shaped by
+  module co-membership, tight inside a module and absent across them, exactly as the
+  correlation table shows. This package errs the other way, slightly under-clustered.
+
+  Ten tests, including one asserting a genuinely independent synthetic population scores
+  a ratio of 1.0, and one checking the control against a hand-computed four-coin case.
 - **`carebundle.benchmark.dependence`** — measures cross-domain analyte dependence in
   any FHIR source against the committed NHANES extraction, and it exists because the
   claim that replaced the withdrawn one should not also go unchecked. Seven pairs across

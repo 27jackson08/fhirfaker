@@ -105,6 +105,70 @@ Reporting one seeded draw here against a noisy average there would have flattere
 package, and the first version of this table did exactly that: it quoted 0.192, which
 turned out to be the lowest of the three Synthea runs.
 
+### What the dependence gap costs, and two wrong answers on the way
+
+**First attempt: it costs nothing measurable.** The obvious follow-up was the
+Train-on-Synthetic-Test-on-Real task this project already had — predict diabetes from
+BMI, triglycerides, HDL and systolic, scored on 1,330 real NHANES individuals. Over ten
+disjoint folds each:
+
+| trained on | median AUC | range | retention |
+|---|---:|---|---:|
+| real NHANES (ceiling) | 0.677 | — | 100% |
+| Synthea | 0.626 | 0.562–0.666 | 92.5% |
+| carebundle | 0.625 | 0.604–0.634 | 92.3% |
+
+Interquartile ranges overlap: **no separable difference.** A logistic model fits one
+weight per feature, so it reads each feature's association with the *label* and barely
+uses the dependence *between* features. Cross-domain dependence and single-label
+predictive utility are dissociable, and TSTR is close to blind to the thing at issue.
+
+*(A first pass compared one Synthea run against five carebundle runs and reported
+Synthea ahead at 94.3% against 91.0%. Synthea's single value sat inside carebundle's
+range. That is the same point-estimate error as quoting the lowest of three runs above,
+and it is why both sides now get folds.)*
+
+**Second attempt: a multi-criteria phenotype, which does consume the joint
+distribution.** Four abnormalities — BMI ≥ 30, triglycerides ≥ 150, HDL < 40/50,
+glucose ≥ 100 — scored by one rule on all three populations, ages 45–65:
+
+| | ≥1 | ≥2 | **≥3** | ≥4 |
+|---|---:|---:|---:|---:|
+| NHANES (real) | 71.8% | 44.3% | **19.7%** | 6.2% |
+| Synthea | 54.7% | 18.3% | **4.1%** | 0.8% |
+| **carebundle** | 74.5% | 39.1% | **14.6%** | 3.6% |
+
+Synthea produces the 3-of-4 phenotype at roughly a quarter of the real rate; this
+package at three-quarters. On absolute error against NHANES that is **−15.6 points
+against −5.2**. For anyone whose query counts patients meeting several criteria at once
+— cohort selection, phenotyping, data-quality rules — that difference is the whole
+answer, and TSTR could not see it.
+
+**The mechanism I was about to publish for that was wrong.** The obvious reading is that
+Synthea under-produces the phenotype because it draws the components independently.
+Dividing each population's observed rate by what its *own* marginals imply under
+independence:
+
+| | dependence ratio at ≥3 |
+|---|---:|
+| NHANES (real) | 1.59× |
+| Synthea | **2.10×** |
+| carebundle | 1.45× |
+
+**Synthea clusters more than reality, not less.** Its low phenotype rate comes from mild
+marginals — glucose ≥ 100 in 8.7% of its patients against 47.4% of real ones — and the
+over-clustering is coherent with the correlation table above, where its
+glucose/triglyceride pair is over-coupled at double the real value while weight/HDL is
+absent. Synthea's dependence is not missing; it is **shaped by module co-membership**,
+tight inside a module and absent across them. This package is nearer reality on both the
+marginals and the ratio, but the ratio error runs the other way: 1.45 against 1.59 is
+slightly *under*-clustered.
+
+Without that control a correct-looking headline number would have shipped with an
+inverted explanation behind it. `carebundle.benchmark.cooccurrence` always prints the
+control beside the rate, and a test asserts a synthetic population with genuinely
+independent components scores 1.0.
+
 **Deviation, not CI coverage, is the metric.** Synthea's sample here is 492 panels
 against 2,998, so its confidence intervals are roughly twice as wide and cover the
 target more often by luck. Scoring "cells whose CI covers NHANES" would reward having
