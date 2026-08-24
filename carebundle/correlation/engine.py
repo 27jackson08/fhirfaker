@@ -13,14 +13,30 @@ special cases, and the correlations can be taken straight from published regress
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import lru_cache
 
 import numpy as np
 
-from carebundle.correlation.distributions import AnyMarginal, standard_normal_cdf
+from carebundle.correlation.distributions import (
+    AnyMarginal,
+    latent_for_pearson,
+    standard_normal_cdf,
+)
 
 # Below this, a correlation matrix is treated as non-positive-definite. Cholesky on a
 # matrix that is merely near-singular yields silently wrong dependence.
 _MIN_EIGENVALUE = 1e-10
+
+
+@lru_cache(maxsize=4096)
+def _latent(x: AnyMarginal, y: AnyMarginal, target: float) -> float:
+    """Solve once per (pair of marginals, target) and reuse.
+
+    Keyed on the marginals themselves rather than on their names, so two profiles
+    sharing a pair share the solve, and two profiles whose marginals differ do not.
+    Marginals are frozen dataclasses of scalars and tuples, so they hash by value.
+    """
+    return latent_for_pearson(x, y, target)
 
 
 @dataclass(frozen=True)
@@ -28,6 +44,12 @@ class JointModel:
     """Marginals plus the correlation structure linking them."""
 
     marginals: tuple[AnyMarginal, ...]
+    # **Target Pearson correlations, not latent copula parameters.** A configured -0.26
+    # means the generated data should show -0.26. The latent value that produces it is
+    # solved for in `correlation_matrix`, because a copula attenuates dependence through
+    # the marginal transform — always toward zero, and more so the more skewed the
+    # marginals. Configuring latents directly left the realized values a mean 0.0086
+    # below target and 0.0298 at worst, every one of them short.
     correlations: tuple[tuple[str, str, float], ...] = ()
 
     @property
@@ -47,7 +69,9 @@ class JointModel:
             if not -1.0 <= rho <= 1.0:
                 raise ValueError(f"correlation ({left}, {right}) = {rho} is out of range")
             i, j = index[left], index[right]
-            matrix[i, j] = matrix[j, i] = rho
+            matrix[i, j] = matrix[j, i] = _latent(
+                self.marginals[i], self.marginals[j], rho
+            )
 
         smallest = float(np.linalg.eigvalsh(matrix).min())
         if smallest < _MIN_EIGENVALUE:

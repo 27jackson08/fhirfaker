@@ -189,11 +189,18 @@ def test_no_document_claims_synthea_scores_zero_in_the_present_tense():
     fine and necessary; asserting it as the current state of the software is not, and
     the difference is whether a correction sits beside it.
     """
+    # This list is only as good as the phrasings it anticipates, and it has already
+    # missed one: the README's opening argument said Synthea "scores **0%** on every
+    # *outcome* measure" — present tense, fifteen lines above the correction — and every
+    # guard passed, because that wording was not here.
     banned = (
         "Synthea scores 0%",
         "Synthea scores **0%**",
         "against Synthea's published 0%",
         "a pathway simulator scores **0%** on",
+        "scores\n**0%** on every",
+        "scores **0%** on every",
+        "and scores\n**0%**",
     )
     for name in ("BENCHMARK.md", "README.md", "docs/outcome-measures.md"):
         text = (ROOT / name).read_text()

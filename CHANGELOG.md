@@ -19,6 +19,39 @@ Practically, for anyone pinning: **pin the patch version.** `carebundle==0.1.2` 
 
 ## [Unreleased]
 
+### Changed — correlations now mean what they say
+
+- **Configured correlations are target Pearson values, solved for their latent
+  parameter.** They used to be latent copula parameters, so the numbers in the source
+  were not the numbers in the output: a Gaussian copula attenuates dependence through
+  the marginal transform, always toward zero. Across the 32 configured pairs, realized
+  values sat a mean **0.0086** below target and **0.0298** at worst, every one short.
+  Now: mean **0.0019**, worst **0.0043**, and the residual is sampling noise in the
+  measurement rather than model error.
+
+- **`latent_for_pearson`, by quadrature rather than sampling.** The existing
+  `calibrate_latent_correlation` solved this for a positive R² by searching upward from
+  √R², which cannot serve a signed target — half the dependence here is negative. The
+  replacement bisects on a signed target and evaluates the realized correlation by
+  two-dimensional Gauss–Hermite quadrature. A 30,000-draw Monte Carlo estimate carries a
+  standard error near 0.006, the same size as the attenuation being corrected, so the
+  estimator would have been the dominant error term; quadrature agrees with a 400,000
+  draw check to 0.0004 and returns the same number every run. The old function is
+  **removed**, not deprecated.
+
+- **A double correction, caught by the fidelity suite.** The HbA1c/glucose pair was
+  already solved to a latent inside `_adag_calibrated_glucose`, so once the engine
+  solved every pair it was corrected twice and the realized ADAG R² went to **0.875**
+  against a target of 0.84. It now returns the target and lets the engine solve it once.
+  This is the double-counting error recorded for pooled correlations and for blood
+  pressure, in a third place — and the reason the superseded solver was deleted rather
+  than left available.
+
+- **The README's opening argument still asserted Synthea scores 0%**, in the present
+  tense, fifteen lines above the correction saying it does not. Every guard passed,
+  because the phrase list did not anticipate that wording. Fixed, and the list extended
+  with what it missed.
+
 ### Performance
 
 - **`get_profile` is cached, and generation is ~40% faster.** It rebuilt the profile on
@@ -74,10 +107,12 @@ Practically, for anyone pinning: **pin the patch version.** `carebundle==0.1.2` 
   drift slightly further from their configured targets — glucose/triglycerides from
   0.1648 to 0.1567 against 0.1873, glucose/HDL from −0.1686 to −0.1625 against −0.1785 —
   because a Gaussian copula's latent correlation maps to a *smaller* Pearson correlation
-  as the marginal gets more skewed, and these pairs are configured as latent values
-  rather than solved for a target. Both still pass with room, and the fix is to route
-  them through `calibrate_latent_correlation` as the HbA1c/glucose pair already is. Not
-  done here: it is a separate change and this one already moves seeded output.
+  as the marginal gets more skewed, and these pairs were configured as latent values
+  rather than solved for a target.
+
+  **Resolved in the same unreleased delta, above.** Every configured correlation is now a
+  target Pearson value solved by the engine, which is what made the attenuation worth
+  fixing generally rather than patching for glucose alone.
 
 ## [0.4.0] — 2026-08-24
 

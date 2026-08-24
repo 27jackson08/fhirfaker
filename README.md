@@ -35,16 +35,17 @@ peer-reviewed, and does far more than this: full birth-to-death population simul
 export. **For most people it is still the right answer**, and this is not a replacement
 for it.
 
-There is one specific thing it measurably does not do. Synthea's
-[published validation](https://pmc.ncbi.nlm.nih.gov/articles/PMC6416981/) tested it
-against four CMS quality measures: it tracks reality on the *process* measure and scores
-**0%** on every *outcome* measure, because a simulator of care pathways has no
-representation of what the blood pressure did after treatment started. Modelling
-clinical state directly is what makes an outcome measure reachable at all.
+Synthea's [published validation](https://pmc.ncbi.nlm.nih.gov/articles/PMC6416981/)
+tested it against four CMS quality measures in 2019 and found it scored 0% on every
+*outcome* measure. **That is no longer true, and this project asserted it for far too
+long.** Measured in August 2026 against a current build, with this package's own measure
+code, Synthea scores 74.4% on blood-pressure control. There is no outcome-measure gap.
 
-That is the gap this fills. It is narrow, and the table below is honest about how
-narrow — one of four benchmark measures, with the other three marked *not modelled*
-rather than quietly dropped.
+What remains is narrower and is measured rather than cited: on queries that ask for
+several abnormalities *in the same patient* — phenotyping, cohort selection — this lands
+at 15.0% against a real 19.7% where Synthea gives 4.1%. Not because Synthea lacks
+dependence; it has more than reality. Its marginals are milder, with glucose ≥ 100 in
+8.7% of its patients against 47.4% of real ones.
 
 | | Synthea | this |
 |---|---|---|
@@ -52,12 +53,12 @@ rather than quietly dropped.
 | Shape | batch — generates a population into a folder | library — returns a `Bundle` object in-process |
 | Scope | full patient lifecycle simulation | one visit, or a bounded course of visits |
 | Reproducible fixtures | not a contract | **byte-identical for a given seed** |
-| CMS *Controlling High Blood Pressure* | 74.8% *(measured Aug 2026)* | 68.8% *(same measure code)* |
+| CMS *Controlling High Blood Pressure* | 74.4% *(measured Aug 2026)* | 68.8% *(same measure code)* |
 | Evidence for the numbers | published validation, 2019 | 58 checks graded by strength, regenerated per release |
 
 > **This row used to say Synthea scored 0%, and that was wrong.** The figure came from a
 > 2019 paper and was never re-checked. Running a current Synthea through this package's
-> own measure code puts it at **74.8%** — 0.3 points from the Massachusetts rate it
+> own measure code puts it at **74.4%** — 0.1 points from the Massachusetts rate it
 > simulates, while this package lands 0.9 points from the US national rate it calibrates
 > to. Both reproduce their own target population. The full correction, and the harness
 > that produced it, are in
@@ -263,17 +264,17 @@ The claim is checked statistically on every run and published as a
 | Check | Observed | Expected | Source |
 |---|---:|---:|---|
 | ADAG slope | 27.96 | 28.7 | Nathan 2008 |
-| **ADAG R^2** | **0.8447** | **0.84** | Nathan 2008 |
+| **ADAG R^2** | **0.8445** | **0.84** | Nathan 2008 |
 | glucose at HbA1c 8.0% | 183.1 | 182.9 | Nathan 2008 |
 | eGFR consistent with creatinine | 0 | 0 | CKD-EPI 2021 |
 | LDL consistent with panel (Friedewald) | 0 | 0 | Friedewald 1972 |
 | BMI consistent with height and weight | 0 | 0 | WHO |
 | CKD stage-3 eGFR within band | 1 | 1 | KDIGO 2012 |
-| hba1c median (type2_diabetes/M) | 7.242 | 7.3 | NHANES 2017-2020 |
-| triglycerides median (healthy/F) | 88.97 | 88 | NHANES 2017-2020 |
-| diabetic obesity rate | 0.6385 | 0.612 | NHANES 2017-2020 |
-| weight_kg/hdl correlation (healthy) | -0.2392 | -0.2584 | NHANES 2017-2020 |
-| **BMI/HDL correlation, emergent (healthy)** | **-0.2884** | **-0.2998** | NHANES 2017-2020 |
+| hba1c median (type2_diabetes/M) | 7.239 | 7.3 | NHANES 2017-2020 |
+| triglycerides median (healthy/F) | 88.76 | 88 | NHANES 2017-2020 |
+| diabetic obesity rate | 0.6415 | 0.612 | NHANES 2017-2020 |
+| weight_kg/hdl correlation (healthy) | -0.2444 | -0.2584 | NHANES 2017-2020 |
+| **BMI/HDL correlation, emergent (healthy)** | **-0.2946** | **-0.2998** | NHANES 2017-2020 |
 
 Row labels and values are copied verbatim from `FIDELITY.md`, and a test asserts every
 one of them still matches — five of these rows had silently drifted before that test
@@ -463,7 +464,7 @@ Stated here rather than left for you to discover.
 - **Blood pressure marginals are clinical definitions**, not population fits —
   "normotensive" and "hypertensive" are the populations the profiles mean. Everything
   else is calibrated against NHANES (see below).
-- **Diabetic BMI runs slightly high.** Generated diabetics are 63.8% obese against
+- **Diabetic BMI runs slightly high.** Generated diabetics are 64.1% obese against
   NHANES's 61.2% for the same age band and stratum, with a median BMI of 32.5 against
   31.9. Weight is drawn from a symmetric truncated normal while the real distribution is
   right-skewed, and BMI is computed from it, so the derived median lands a little above

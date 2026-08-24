@@ -389,51 +389,6 @@ def correlation_from_r_squared(r_squared: float) -> float:
 
 
 @lru_cache(maxsize=128)
-def calibrate_latent_correlation(
-    x: Marginal,
-    y: Marginal,
-    target_r_squared: float,
-    *,
-    samples: int = 50_000,
-    seed: int = 0,
-    tolerance: float = 1e-4,
-) -> float:
-    """Latent Gaussian correlation whose *realized* Pearson R^2 hits the target.
-
-    Truncating a marginal attenuates the correlation that survives the copula
-    transform: asking for rho = sqrt(0.84) yields a realized R^2 of about 0.827. The
-    honest fix is to solve for the latent value rather than accept the gap or apply a
-    hand-picked fudge factor.
-
-    Deterministic by construction — fixed seed, fixed sample, bisection on a monotone
-    function — so a profile's parameters do not drift between runs.
-    """
-    target_rho = math.sqrt(target_r_squared)
-    rng = np.random.default_rng(seed)
-    base = rng.standard_normal(samples)
-    independent = rng.standard_normal(samples)
-    u_x = np.clip(standard_normal_cdf(base), 1e-12, 1.0 - 1e-12)
-    x_values = x.ppf(u_x)
-
-    def realized_r_squared(rho: float) -> float:
-        partner = rho * base + math.sqrt(max(1.0 - rho * rho, 0.0)) * independent
-        u_y = np.clip(standard_normal_cdf(partner), 1e-12, 1.0 - 1e-12)
-        return float(np.corrcoef(x_values, y.ppf(u_y))[0, 1] ** 2)
-
-    low, high = target_rho, min(0.99999, target_rho + 0.25)
-    if realized_r_squared(high) < target_r_squared:
-        return high  # attenuation too strong to correct; use the strongest available
-    for _ in range(40):
-        mid = 0.5 * (low + high)
-        if realized_r_squared(mid) < target_r_squared:
-            low = mid
-        else:
-            high = mid
-        if high - low < tolerance:
-            break
-    return 0.5 * (low + high)
-
-
 def sd_from_regression_slope(*, slope: float, predictor_sd: float, rho: float) -> float:
     """Response SD implied by an OLS slope: slope = rho * (sd_y / sd_x).
 
@@ -443,3 +398,98 @@ def sd_from_regression_slope(*, slope: float, predictor_sd: float, rho: float) -
     if rho <= 0:
         raise ValueError(f"rho must be positive, got {rho}")
     return slope * predictor_sd / rho
+
+
+# Gauss-Hermite nodes for the bivariate integral below. 64 is comfortably past the
+# point where adding nodes stops moving the answer for these marginals, and the whole
+# grid is 4096 evaluations — cheaper than one Monte Carlo estimate and, unlike one,
+# exactly reproducible.
+_GH_NODES = 64
+
+
+@lru_cache(maxsize=4)
+def _hermite(nodes: int) -> tuple[np.ndarray, np.ndarray]:
+    x, w = np.polynomial.hermite.hermgauss(nodes)
+    return x, w
+
+
+def realized_pearson(x: AnyMarginal, y: AnyMarginal, rho: float, *, nodes: int = _GH_NODES) -> float:
+    """Pearson correlation that a Gaussian copula with latent `rho` actually produces.
+
+    Computed by two-dimensional Gauss-Hermite quadrature rather than by sampling. A
+    Monte Carlo estimate over 30,000 draws carries a standard error near 0.006, which is
+    the same size as the attenuation being corrected — the estimator would have been the
+    dominant error term. Quadrature has no such floor and returns the same number every
+    time.
+    """
+    u, w = _hermite(nodes)
+    root2 = math.sqrt(2.0)
+    z1 = root2 * u
+    fx = x.ppf(np.clip(standard_normal_cdf(z1), 1e-12, 1.0 - 1e-12))
+
+    # z2 | z1 for a standard bivariate normal with correlation rho.
+    z2 = rho * z1[:, None] + math.sqrt(max(1.0 - rho * rho, 0.0)) * (root2 * u)[None, :]
+    fy = y.ppf(np.clip(standard_normal_cdf(z2), 1e-12, 1.0 - 1e-12))
+
+    weights = np.outer(w, w) / math.pi
+    marginal_w = w / math.sqrt(math.pi)
+
+    mean_x = float(fx @ marginal_w)
+    mean_y = float((weights * fy).sum())
+    second_x = float((fx**2) @ marginal_w)
+    second_y = float((weights * fy**2).sum())
+    cross = float((weights * fx[:, None] * fy).sum())
+
+    var_x = max(second_x - mean_x**2, 0.0)
+    var_y = max(second_y - mean_y**2, 0.0)
+    if var_x <= 0.0 or var_y <= 0.0:
+        return 0.0
+    return (cross - mean_x * mean_y) / math.sqrt(var_x * var_y)
+
+
+def latent_for_pearson(
+    x: AnyMarginal,
+    y: AnyMarginal,
+    target: float,
+    *,
+    tolerance: float = 1e-4,
+    iterations: int = 60,
+) -> float:
+    """Latent Gaussian correlation whose *realized* Pearson correlation hits `target`.
+
+    This replaced `calibrate_latent_correlation`, which solved the same problem for a
+    positive R^2 by searching upward from sqrt(R^2). That could not serve a signed
+    target: half the dependence in this package is negative — weight against HDL at
+    -0.26, triglycerides against HDL at -0.43 — and an upward-only search has no meaning
+    there. The old function is gone rather than deprecated, because leaving two solvers
+    in place is how the ADAG pair came to be corrected twice.
+
+    Why it is needed: a Gaussian copula's latent correlation is attenuated by the
+    marginal transform, always toward zero, and the more skewed or truncated the
+    marginals the larger the gap. Measured across the 32 configured pairs before this
+    existed, realized values sat a mean 0.0086 below their targets and 0.0298 at worst,
+    every one toward zero — systematic under-correlation rather than noise.
+    """
+    if not -1.0 < target < 1.0:
+        raise ValueError(f"target correlation {target} must lie in (-1, 1)")
+    if target == 0.0:
+        return 0.0
+
+    limit = 0.99999
+    lo, hi = (target, limit) if target > 0 else (-limit, target)
+    extreme = hi if target > 0 else lo
+    if abs(realized_pearson(x, y, extreme)) < abs(target):
+        # Attenuation too strong to correct even at the extreme. Return the strongest
+        # available rather than silently pretending the target was met.
+        return extreme
+
+    for _ in range(iterations):
+        mid = (lo + hi) / 2.0
+        value = realized_pearson(x, y, mid)
+        if abs(value - target) <= tolerance:
+            return mid
+        if value < target:
+            lo = mid
+        else:
+            hi = mid
+    return (lo + hi) / 2.0

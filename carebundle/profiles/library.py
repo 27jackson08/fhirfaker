@@ -32,7 +32,6 @@ from carebundle.correlation import relations
 from carebundle.correlation.distributions import (
     EmpiricalMarginal,
     Marginal,
-    calibrate_latent_correlation,
     correlation_from_r_squared,
     empirical_from_quantiles,
     lognormal_from_quartiles,
@@ -556,12 +555,15 @@ def _adag_calibrated_glucose(hba1c: Marginal) -> tuple[Marginal, float]:
     # nominal parameters can be used as the realized targets directly.
     glucose = Marginal("glucose", mean=mean, sd=sd, low=70.0, high=400.0)
 
-    # sqrt(R^2) is the correlation we want to *observe*. Truncation attenuates it, so
-    # the latent copula parameter has to be solved for rather than used directly.
-    latent_rho = calibrate_latent_correlation(
-        hba1c, glucose, relations.ADAG_R_SQUARED
-    )
-    return glucose, latent_rho
+    # sqrt(R^2) is the correlation we want to *observe*, and it is returned as such.
+    #
+    # This used to solve for the latent copula parameter here, with
+    # `calibrate_latent_correlation`. Since `JointModel.correlations` became target
+    # Pearson values solved by the engine, doing it here as well corrected the
+    # attenuation twice and pushed the realized ADAG R^2 to 0.875 against a target of
+    # 0.84 — the double-counting error this project keeps rediscovering, in a new place.
+    # One mechanism, applied once.
+    return glucose, rho
 
 
 def _joint(*marginals, correlations=()) -> JointModel:

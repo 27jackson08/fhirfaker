@@ -1788,7 +1788,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Cholesterol in HDL [Mass/volume] in Serum or Plasma: 47 mg/dL (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Cholesterol in HDL [Mass/volume] in Serum or Plasma: 46 mg/dL (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -1826,7 +1826,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 47,
+          "value": 46,
           "unit": "mg/dL",
           "system": "http://unitsofmeasure.org",
           "code": "mg/dL"
@@ -1922,7 +1922,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Triglyceride [Mass/volume] in Serum or Plasma: 269 mg/dL (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Triglyceride [Mass/volume] in Serum or Plasma: 270 mg/dL (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -1960,7 +1960,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 269,
+          "value": 270,
           "unit": "mg/dL",
           "system": "http://unitsofmeasure.org",
           "code": "mg/dL"
@@ -2257,7 +2257,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Body weight: 97.5 kg (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Body weight: 97.4 kg (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -2295,7 +2295,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 97.5,
+          "value": 97.4,
           "unit": "kg",
           "system": "http://unitsofmeasure.org",
           "code": "kg"
