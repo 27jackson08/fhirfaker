@@ -53,6 +53,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import sys
 from collections.abc import Iterable
 from dataclasses import dataclass
@@ -158,6 +159,34 @@ def rows_from_bundles(bundles: Iterable[dict[str, Any]]):
         panel = panel_of(bundle)
         if panel and all(k in panel for k in REQUIRED):
             yield panel, panel["sex"]
+
+
+def rows_from_records(records: Iterable[dict[str, Any]], *, sex_key: str = "sex"):
+    """Panels from plain tabular records, for generators that do not emit FHIR.
+
+    Not every synthetic-data tool speaks FHIR. Tabular generators — CTGAN, TVAE, the
+    copula and diffusion models in that family — produce a row per patient, and those
+    rows carry exactly the analytes this measure reads. Requiring FHIR would have meant
+    writing an adapter whose only purpose was to be parsed straight back out.
+
+    Records need the four analyte keys and a sex, where sex is 'F'/'M' or anything that
+    starts with one of those letters. Records missing an analyte are skipped rather than
+    imputed: a generator that omits a value has not produced a patient this measure can
+    score, and quietly filling it in would flatter it.
+    """
+    for record in records:
+        if not all(k in record for k in REQUIRED):
+            continue
+        raw = str(record.get(sex_key, "")).strip().upper()[:1]
+        if raw not in ("F", "M"):
+            continue
+        try:
+            panel = {k: float(record[k]) for k in REQUIRED}
+        except (TypeError, ValueError):
+            continue
+        if not all(math.isfinite(v) for v in panel.values()):
+            continue
+        yield panel, raw
 
 
 def render(name: str, result: Cooccurrence) -> str:

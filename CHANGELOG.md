@@ -19,6 +19,34 @@ Practically, for anyone pinning: **pin the patch version.** `carebundle==0.1.2` 
 
 ## [Unreleased]
 
+### Added
+
+- **`rows_from_records`: the benchmark accepts tabular generators.** Not every synthetic
+  data tool speaks FHIR — CTGAN, TVAE and the rest of that family produce a row per
+  patient carrying exactly the analytes the co-occurrence measure reads. Requiring FHIR
+  would have meant writing an adapter whose only purpose was to be parsed straight back
+  out.
+
+  Records missing an analyte, carrying a NaN, or lacking a usable sex are **skipped
+  rather than imputed**. A generator that omits a value has not produced a patient this
+  measure can score, and filling one in would flatter it invisibly — the exact failure
+  mode the benchmark exists to catch.
+
+### Assessed and excluded
+
+- **PySynthea (`tietai-synthea` 1.0.1) cannot be benchmarked.** It was the intended third
+  generator: pip-installable, no JVM, 231 modules, FHIR R4 export. Its export emits
+  Observations *without values* — systolic, diastolic, height, weight, glucose, HDL,
+  triglycerides, HbA1c, ALT and AST are all present and all valueless, with
+  `status: "final"` and no `dataAbsentReason`. Only 15% of its observations carry a
+  `valueQuantity`, and none of those are analytes any benchmark here reads. The HL7
+  validator returns **166 errors and 266 warnings** on a single bundle.
+
+  Recorded with its reproduction in `pysynthea_assessment.json` rather than left as an
+  unexplained absence from a results table. This repository's README claimed "no Java is
+  no longer a reason to pick this project", which assumed the alternative produced usable
+  output; that is corrected.
+
 ## [0.5.0] — 2026-08-25
 
 **Seeded output changes.** Fixtures pinned to a seed under 0.4.0 will not reproduce; the

@@ -151,3 +151,39 @@ def test_the_skewed_analytes_are_still_the_ones_documented():
         f"the skewed-analyte set moved: {sorted(skewed ^ documented)}. "
         "BENCHMARK.md's explanation of the failed log-normal fix names these by hand."
     )
+
+
+class TestTabularInput:
+    """Generators that do not speak FHIR.
+
+    CTGAN, TVAE and the rest of the tabular family produce a row per patient carrying
+    exactly the analytes this measure reads. Requiring FHIR would have meant writing an
+    adapter whose only job was to be parsed straight back out, so the measure accepts
+    records directly — which is what let a learned generator into the benchmark at all.
+    """
+
+    def test_accepts_plain_records(self):
+        rows = list(co.rows_from_records([
+            {"bmi": 31.0, "triglycerides": 170.0, "hdl": 38.0, "glucose": 105.0, "sex": "M"},
+            {"bmi": 22.0, "triglycerides": 80.0, "hdl": 70.0, "glucose": 88.0, "sex": "female"},
+        ]))
+        assert [sex for _, sex in rows] == ["M", "F"]
+        assert co.criteria_met(rows[0][0], "M") == 4
+        assert co.criteria_met(rows[1][0], "F") == 0
+
+    @pytest.mark.parametrize("record,why", [
+        ({"bmi": 28.0, "triglycerides": 120.0, "hdl": 45.0, "sex": "M"}, "missing glucose"),
+        ({"bmi": float("nan"), "triglycerides": 120.0, "hdl": 45.0,
+          "glucose": 99.0, "sex": "F"}, "NaN analyte"),
+        ({"bmi": 26.0, "triglycerides": 110.0, "hdl": 50.0,
+          "glucose": 95.0, "sex": "unknown"}, "unusable sex"),
+        ({"bmi": "n/a", "triglycerides": 110.0, "hdl": 50.0,
+          "glucose": 95.0, "sex": "F"}, "non-numeric analyte"),
+    ])
+    def test_skips_rather_than_imputes(self, record, why):
+        """A generator that omits a value has not produced a scorable patient.
+
+        Filling one in would flatter it, and the flattery would be invisible in the
+        result — which is the failure mode this whole benchmark exists to catch.
+        """
+        assert list(co.rows_from_records([record])) == [], why
