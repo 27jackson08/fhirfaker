@@ -1,0 +1,61 @@
+{
+  "_comment": [
+    "A learned generator on the same dependence benchmark, and why the training budget",
+    "turned out to be the finding.",
+    "",
+    "Synthea and carebundle are both rule-based, so a shared blind spot between them",
+    "would say nothing about generators in general. CTGAN trained on individual NHANES",
+    "rows is the strongest available test: it has the most direct possible access to the",
+    "dependence structure of any generator here.",
+    "",
+    "Access is deliberately unequal and that must be stated when quoting these:",
+    "  Synthea      never sees NHANES",
+    "  carebundle   fitted to NHANES aggregates (quantiles, correlations)",
+    "  CTGAN        trained on individual NHANES rows",
+    "",
+    "Reproduce: scratchpad/ctgan_sweep.py, ctgan 0.12.1, torch 2.13.0, CPU."
+  ],
+  "measured_on": "2026-08-25",
+  "task": {
+    "population": "NHANES 2017-March 2020, nondiabetic, ages 45-65, complete cases",
+    "n_total": 1213,
+    "n_train": 606,
+    "n_held_out": 607,
+    "analytes": ["bmi", "triglycerides", "hdl", "glucose"],
+    "pairs_scored": 12,
+    "_note": "Train/test split so no generator is scored against rows it was fitted on."
+  },
+  "results": {
+    "nhanes_held_out": {"mean_deviation": 0.000, "sign_agreement": "12/12", "p_ge3": 0.150, "dependence_ratio": 1.76},
+    "ctgan_300_epochs": {"mean_deviation": 0.191, "sign_agreement": "8/12", "p_ge3": 0.367, "dependence_ratio": 0.99},
+    "ctgan_1000_epochs": {"mean_deviation": 0.210, "sign_agreement": "7/12", "p_ge3": 0.091, "dependence_ratio": 1.05},
+    "ctgan_3000_epochs": {"mean_deviation": 0.074, "sign_agreement": "12/12", "p_ge3": 0.145, "dependence_ratio": 1.59},
+    "ctgan_3000_epochs_full_data": {
+      "mean_deviation": 0.070, "sign_agreement": "12/12", "p_ge3": 0.085, "dependence_ratio": 1.55,
+      "_caveat": "Trained on all 1213 rows including the evaluation half. An optimistic bound, not a fair score. Included to separate 'needs more data' from 'loses structure' — it is barely better than the fair 3000-epoch run, so the answer is training budget, not sample size."
+    }
+  },
+  "finding": [
+    "A first run at 300 epochs gave 0.191 mean deviation and 8/12 sign agreement, which",
+    "reads as 'a learned model loses cross-domain dependence'. That was wrong, and it was",
+    "an under-training artefact. At 3000 epochs CTGAN reaches 0.074 and 12/12 — comparable",
+    "to carebundle and far better than Synthea's 0.208.",
+    "",
+    "What survives is more useful than the claim it replaced. The dependence ratio climbs",
+    "0.99 -> 1.05 -> 1.59 across training budgets against a true 1.76: CTGAN produces",
+    "essentially INDEPENDENT analytes until somewhere past 1000 epochs, then acquires the",
+    "joint structure. And the co-occurrence rate swings 36.7% -> 9.1% -> 14.5% against a",
+    "stable truth of 15.0% — a four-fold swing driven purely by a hyperparameter.",
+    "",
+    "The practical warning: a marginal check cannot tell you whether a GAN has converged",
+    "on the joint distribution. At 300 epochs the ratio is 0.99, meaning the analytes are",
+    "independent, while the headline co-occurrence rate is more than twice reality. Both",
+    "numbers are wrong for opposite reasons and neither is visible without the",
+    "independence control."
+  ],
+  "caveats": [
+    "606 training rows is small for a GAN; the full-data run bounds how much that costs.",
+    "CPU-only training; no hyperparameter search beyond the epoch sweep.",
+    "One architecture. TVAE is available in the same package and is not yet run."
+  ]
+}
