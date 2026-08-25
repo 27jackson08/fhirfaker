@@ -783,7 +783,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Albumin [Mass/volume] in Serum or Plasma: 3.6 g/dL (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Albumin [Mass/volume] in Serum or Plasma: 3.7 g/dL (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -821,7 +821,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 3.6,
+          "value": 3.7,
           "unit": "g/dL",
           "system": "http://unitsofmeasure.org",
           "code": "g/dL"
@@ -1252,7 +1252,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Alkaline phosphatase [Enzymatic activity/volume] in Serum or Plasma: 104 U/L (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Alkaline phosphatase [Enzymatic activity/volume] in Serum or Plasma: 110 U/L (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -1290,7 +1290,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 104,
+          "value": 110,
           "unit": "U/L",
           "system": "http://unitsofmeasure.org",
           "code": "U/L"
@@ -1520,7 +1520,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Erythrocytes [#/volume] in Blood by Automated count: 4.31 10*6/uL (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Erythrocytes [#/volume] in Blood by Automated count: 4.24 10*6/uL (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -1558,7 +1558,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 4.31,
+          "value": 4.24,
           "unit": "10*6/uL",
           "system": "http://unitsofmeasure.org",
           "code": "10*6/uL"
@@ -1587,7 +1587,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Leukocytes [#/volume] in Blood by Automated count: 7.9 10*3/uL (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Leukocytes [#/volume] in Blood by Automated count: 8.2 10*3/uL (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -1625,7 +1625,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 7.9,
+          "value": 8.2,
           "unit": "10*3/uL",
           "system": "http://unitsofmeasure.org",
           "code": "10*3/uL"
@@ -1654,7 +1654,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Platelets [#/volume] in Blood by Automated count: 238 10*3/uL (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Platelets [#/volume] in Blood by Automated count: 252 10*3/uL (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -1692,7 +1692,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 238,
+          "value": 252,
           "unit": "10*3/uL",
           "system": "http://unitsofmeasure.org",
           "code": "10*3/uL"

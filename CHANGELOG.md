@@ -93,6 +93,34 @@ Practically, for anyone pinning: **pin the patch version.** `carebundle==0.1.2` 
   On its first run it failed on `synthetic-fhir-generator-build-doc.md`, a fourth
   document that no hand-written list had ever covered.
 
+- **The routine panel's dependence was three hand-set numbers for fifteen analytes.**
+  Swept against NHANES the way the metabolic cluster was, mean absolute error across 210
+  panel pairs came to **0.083**, with twelve pairs above 0.20. The worst was **calcium
+  against albumin: 0.48 in reality and 0.004 here** — textbook physiology, since roughly
+  40% of serum calcium is albumin-bound and corrected-calcium formulas exist because of
+  it. Platelets against white cells was 0.35 against 0.008, chloride against CO2 −0.27
+  against −0.007.
+
+  Two of the three hand-set values were also wrong. Sodium/chloride at 0.65 was lucky
+  (measured 0.646/0.644). ALT/AST at 0.72 was not: measured 0.779 in women and 0.891 in
+  men, and one sex-blind figure cannot be either.
+
+  Sixteen measured pairs now replace them, per sex and per stratum. Mean error falls to
+  **0.061** and pairs above 0.20 from twelve to five.
+
+  **Three qualifying pairs are excluded, and the reason is worth knowing.**
+  Albumin/haemoglobin, albumin/haematocrit and ALT/haemoglobin each break positive
+  definiteness. All three tie a chemistry analyte to a red-cell one, and the red-cell
+  block is already nearly singular — haemoglobin against haematocrit is 0.96 — so it has
+  no room to absorb another constraint. Pairwise correlations estimated on differing
+  missingness subsets are not guaranteed to form a consistent matrix, and solving each to
+  a latent parameter amplifies all of them. They are dropped rather than shrunk: quietly
+  scaling a measured value until the matrix factorises would put a number in the source
+  that is not the number in the data.
+
+  They are also four of the five largest remaining gaps, so the residual is explained
+  rather than merely reported.
+
 ### Documentation
 
 - **Four shipped modules were undiscoverable.** `benchmark.synthea`,

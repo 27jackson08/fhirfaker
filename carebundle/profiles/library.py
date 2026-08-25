@@ -432,13 +432,63 @@ RED_CELL_CORRELATIONS_BY_SEX = {
         ("hematocrit", "rbc", 0.7521),
     ),
 }
-# Urea nitrogen tracks renal function, so it must move with creatinine.
-BUN_CREATININE_CORRELATION = 0.55
-# Sodium and chloride move together; the aminotransferases share a liver signal.
-ELECTROLYTE_CORRELATIONS = (
-    ("sodium", "chloride", 0.65),
-    ("alt", "ast", 0.72),
+# The routine panel's dependence, measured rather than asserted.
+#
+# This was three hand-set numbers for fifteen analytes — BUN/creatinine 0.55,
+# sodium/chloride 0.65, ALT/AST 0.72 — with every other pair implicitly zero. Swept
+# against NHANES the same way the metabolic cluster was, mean absolute error across 210
+# panel pairs came to 0.083 and twelve pairs exceeded 0.20. The worst was **calcium
+# against albumin: 0.48 in reality and 0.004 here**, which is textbook — roughly 40% of
+# serum calcium is albumin-bound, and corrected-calcium formulas exist because of it.
+#
+# Two of the three hand-set values were also wrong where it mattered. Sodium/chloride at
+# 0.65 was lucky (measured 0.646/0.644). ALT/AST at 0.72 was not: the measured values are
+# 0.779 in women and 0.891 in men, and a single sex-blind figure cannot be either.
+#
+# Pairs qualify at |r| >= 0.15 in *both* sexes with a consistent sign, so a relationship
+# has to look like one rather than like one sample's noise.
+# Three further pairs qualified on strength and are deliberately absent, because they
+# break positive-definiteness: albumin/haemoglobin (0.24), albumin/haematocrit (0.20)
+# and ALT/haemoglobin (0.16). All three tie a chemistry analyte to a red-cell one, and
+# the red-cell block is already nearly singular — haemoglobin against haematocrit is
+# 0.96 — so it has essentially no room to absorb another constraint. A pairwise
+# correlation set estimated on differing missingness subsets is not guaranteed to form a
+# consistent matrix, and solving each to a latent parameter amplifies every one of them,
+# which makes the constraint tighter still.
+#
+# Dropped rather than shrunk. Quietly scaling a measured value to make a matrix
+# factorise would put a number in the source that is not the number in the data, which
+# is the defect this table was rewritten to remove.
+_PANEL_PAIRS = (
+    ("alt", "ast"), ("sodium", "chloride"), ("calcium", "albumin"),
+    ("bun", "creatinine"), ("platelets", "wbc"), ("sodium", "co2"),
+    ("chloride", "albumin"), ("chloride", "co2"), ("alkaline_phosphatase", "wbc"),
+    ("potassium", "chloride"), ("chloride", "calcium"),
+    ("albumin", "alkaline_phosphatase"), ("ast", "platelets"),
+    ("bilirubin_total", "platelets"), ("albumin", "rbc"), ("calcium", "rbc"),
 )
+
+
+@lru_cache(maxsize=8)
+def measured_panel_correlations(
+    sex: str, stratum: str = "nondiabetic"
+) -> tuple[tuple[str, str, float], ...]:
+    """Panel correlations for one sex, read from the committed extraction."""
+    strata = _measured_correlations()
+    out = []
+    for first, second in _PANEL_PAIRS:
+        entry = strata.get(f"{sex}/{stratum}/{first}~{second}")
+        if entry is not None:
+            out.append((first, second, round(entry["pearson"], 4)))
+    return tuple(out)
+
+
+@lru_cache(maxsize=1)
+def _measured_correlations() -> dict:
+    path = (
+        Path(__file__).resolve().parents[1] / "calibration" / "data" / "nhanes_targets.json"
+    )
+    return json.loads(path.read_text(encoding="utf-8"))["correlations"]
 
 
 def _routine_marginals(sex: str) -> tuple:
@@ -447,10 +497,14 @@ def _routine_marginals(sex: str) -> tuple:
 
 def _routine_correlations(sex: str, *, has_creatinine: bool = True) -> list[tuple[str, str, float]]:
     """The CKD profile derives creatinine from a target eGFR rather than sampling it,
-    so the BUN/creatinine correlation has nothing to attach to there."""
-    pairs = [*RED_CELL_CORRELATIONS_BY_SEX[sex], *ELECTROLYTE_CORRELATIONS]
-    if has_creatinine:
-        pairs.append(("bun", "creatinine", BUN_CREATININE_CORRELATION))
+    so any pair naming creatinine has nothing to attach to there."""
+    pairs = [
+        *RED_CELL_CORRELATIONS_BY_SEX[sex],
+        *(
+            pair for pair in measured_panel_correlations(sex)
+            if has_creatinine or "creatinine" not in pair[:2]
+        ),
+    ]
     return pairs
 
 

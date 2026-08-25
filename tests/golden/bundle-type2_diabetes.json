@@ -649,7 +649,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Carbon dioxide, total [Moles/volume] in Serum or Plasma: 27 mmol/L (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Carbon dioxide, total [Moles/volume] in Serum or Plasma: 26 mmol/L (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -687,7 +687,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 27,
+          "value": 26,
           "unit": "mmol/L",
           "system": "http://unitsofmeasure.org",
           "code": "mmol/L"
@@ -716,7 +716,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Calcium [Mass/volume] in Serum or Plasma: 9.0 mg/dL (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Calcium [Mass/volume] in Serum or Plasma: 8.9 mg/dL (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -754,7 +754,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 9.0,
+          "value": 8.9,
           "unit": "mg/dL",
           "system": "http://unitsofmeasure.org",
           "code": "mg/dL"
@@ -783,7 +783,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Albumin [Mass/volume] in Serum or Plasma: 4.1 g/dL (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Albumin [Mass/volume] in Serum or Plasma: 3.8 g/dL (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -821,7 +821,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 4.1,
+          "value": 3.8,
           "unit": "g/dL",
           "system": "http://unitsofmeasure.org",
           "code": "g/dL"
@@ -1185,7 +1185,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Aspartate aminotransferase [Enzymatic activity/volume] in Serum or Plasma: 17 U/L (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Aspartate aminotransferase [Enzymatic activity/volume] in Serum or Plasma: 16 U/L (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -1223,7 +1223,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 17,
+          "value": 16,
           "unit": "U/L",
           "system": "http://unitsofmeasure.org",
           "code": "U/L"
@@ -1252,7 +1252,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Alkaline phosphatase [Enzymatic activity/volume] in Serum or Plasma: 82 U/L (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Alkaline phosphatase [Enzymatic activity/volume] in Serum or Plasma: 81 U/L (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -1290,7 +1290,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 82,
+          "value": 81,
           "unit": "U/L",
           "system": "http://unitsofmeasure.org",
           "code": "U/L"
@@ -1520,7 +1520,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Erythrocytes [#/volume] in Blood by Automated count: 4.50 10*6/uL (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Erythrocytes [#/volume] in Blood by Automated count: 4.48 10*6/uL (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -1558,7 +1558,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 4.50,
+          "value": 4.48,
           "unit": "10*6/uL",
           "system": "http://unitsofmeasure.org",
           "code": "10*6/uL"
@@ -1654,7 +1654,7 @@
         },
         "text": {
           "status": "generated",
-          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Platelets [#/volume] in Blood by Automated count: 362 10*3/uL (synthetic).</p></div>"
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>SYNTHETIC TEST DATA \u2014 not a real person.</b></p><p>Platelets [#/volume] in Blood by Automated count: 282 10*3/uL (synthetic).</p></div>"
         },
         "status": "final",
         "category": [
@@ -1692,7 +1692,7 @@
           }
         ],
         "valueQuantity": {
-          "value": 362,
+          "value": 282,
           "unit": "10*3/uL",
           "system": "http://unitsofmeasure.org",
           "code": "10*3/uL"

@@ -316,6 +316,35 @@ CORRELATION_PAIRS = (
     # Still absent: every pair involving blood pressure. Systolic against weight,
     # glucose or lipids is between -0.02 and +0.11 with no consistent sign across
     # sexes, which is noise rather than a relationship.
+
+    # The routine panel. Swept the same way the metabolic cluster was, and it was in the
+    # same state: three hand-set correlations for fifteen analytes, everything else
+    # implicitly zero. Mean absolute error against NHANES across 210 panel pairs was
+    # 0.083, with twelve above 0.20 — the largest being calcium against albumin, 0.48 in
+    # reality and 0.004 here, which is textbook physiology (roughly 40% of serum calcium
+    # is albumin-bound, which is why corrected-calcium formulas exist).
+    #
+    # Included where |r| >= 0.15 in *both* sexes with a consistent sign, so a pair has
+    # to look like a relationship rather than like one sample's noise.
+    ("calcium", "albumin"),
+    ("platelets", "wbc"),
+    ("albumin", "hemoglobin"),
+    ("albumin", "hematocrit"),
+    ("albumin", "rbc"),
+    ("albumin", "alkaline_phosphatase"),
+    ("sodium", "co2"),
+    ("sodium", "chloride"),
+    ("chloride", "co2"),
+    ("chloride", "albumin"),
+    ("chloride", "calcium"),
+    ("potassium", "chloride"),
+    ("calcium", "rbc"),
+    ("alt", "ast"),
+    ("alt", "hemoglobin"),
+    ("ast", "platelets"),
+    ("bilirubin_total", "platelets"),
+    ("alkaline_phosphatase", "wbc"),
+    ("bun", "creatinine"),
 )
 
 

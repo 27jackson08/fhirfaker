@@ -4,9 +4,69 @@
     65
   ],
   "correlations": {
+    "F/all/albumin~alkaline_phosphatase": {
+      "n": 1547,
+      "pearson": -0.2115
+    },
+    "F/all/albumin~hematocrit": {
+      "n": 1547,
+      "pearson": 0.2235
+    },
+    "F/all/albumin~hemoglobin": {
+      "n": 1547,
+      "pearson": 0.2637
+    },
+    "F/all/albumin~rbc": {
+      "n": 1547,
+      "pearson": 0.1727
+    },
+    "F/all/alkaline_phosphatase~wbc": {
+      "n": 1546,
+      "pearson": 0.1797
+    },
+    "F/all/alt~ast": {
+      "n": 1541,
+      "pearson": 0.815
+    },
+    "F/all/alt~hemoglobin": {
+      "n": 1546,
+      "pearson": 0.1623
+    },
+    "F/all/ast~platelets": {
+      "n": 1540,
+      "pearson": -0.2008
+    },
+    "F/all/bilirubin_total~platelets": {
+      "n": 1546,
+      "pearson": -0.185
+    },
     "F/all/bmi~hdl": {
       "n": 1541,
       "pearson": -0.3035
+    },
+    "F/all/bun~creatinine": {
+      "n": 1547,
+      "pearson": 0.5388
+    },
+    "F/all/calcium~albumin": {
+      "n": 1547,
+      "pearson": 0.4843
+    },
+    "F/all/calcium~rbc": {
+      "n": 1546,
+      "pearson": 0.1659
+    },
+    "F/all/chloride~albumin": {
+      "n": 1548,
+      "pearson": -0.2149
+    },
+    "F/all/chloride~calcium": {
+      "n": 1547,
+      "pearson": -0.2315
+    },
+    "F/all/chloride~co2": {
+      "n": 1547,
+      "pearson": -0.2492
     },
     "F/all/glucose~hdl": {
       "n": 1546,
@@ -44,6 +104,22 @@
       "n": 1598,
       "pearson": 0.5381
     },
+    "F/all/platelets~wbc": {
+      "n": 1598,
+      "pearson": 0.3753
+    },
+    "F/all/potassium~chloride": {
+      "n": 1546,
+      "pearson": 0.1947
+    },
+    "F/all/sodium~chloride": {
+      "n": 1548,
+      "pearson": 0.6578
+    },
+    "F/all/sodium~co2": {
+      "n": 1547,
+      "pearson": 0.2178
+    },
     "F/all/systolic~diastolic": {
       "n": 1497,
       "pearson": 0.6771
@@ -72,9 +148,69 @@
       "n": 791,
       "pearson": 0.0691
     },
+    "F/anaemic/albumin~alkaline_phosphatase": {
+      "n": 185,
+      "pearson": -0.3476
+    },
+    "F/anaemic/albumin~hematocrit": {
+      "n": 185,
+      "pearson": 0.0285
+    },
+    "F/anaemic/albumin~hemoglobin": {
+      "n": 185,
+      "pearson": -0.0037
+    },
+    "F/anaemic/albumin~rbc": {
+      "n": 185,
+      "pearson": 0.2912
+    },
+    "F/anaemic/alkaline_phosphatase~wbc": {
+      "n": 185,
+      "pearson": 0.2083
+    },
+    "F/anaemic/alt~ast": {
+      "n": 185,
+      "pearson": 0.7424
+    },
+    "F/anaemic/alt~hemoglobin": {
+      "n": 185,
+      "pearson": 0.1204
+    },
+    "F/anaemic/ast~platelets": {
+      "n": 185,
+      "pearson": -0.3132
+    },
+    "F/anaemic/bilirubin_total~platelets": {
+      "n": 185,
+      "pearson": -0.2412
+    },
     "F/anaemic/bmi~hdl": {
       "n": 181,
       "pearson": -0.2735
+    },
+    "F/anaemic/bun~creatinine": {
+      "n": 185,
+      "pearson": 0.7164
+    },
+    "F/anaemic/calcium~albumin": {
+      "n": 185,
+      "pearson": 0.4986
+    },
+    "F/anaemic/calcium~rbc": {
+      "n": 185,
+      "pearson": 0.0448
+    },
+    "F/anaemic/chloride~albumin": {
+      "n": 185,
+      "pearson": -0.1837
+    },
+    "F/anaemic/chloride~calcium": {
+      "n": 185,
+      "pearson": -0.0968
+    },
+    "F/anaemic/chloride~co2": {
+      "n": 185,
+      "pearson": -0.2511
     },
     "F/anaemic/glucose~hdl": {
       "n": 185,
@@ -112,6 +248,22 @@
       "n": 191,
       "pearson": 0.0402
     },
+    "F/anaemic/platelets~wbc": {
+      "n": 191,
+      "pearson": 0.3494
+    },
+    "F/anaemic/potassium~chloride": {
+      "n": 185,
+      "pearson": 0.2356
+    },
+    "F/anaemic/sodium~chloride": {
+      "n": 185,
+      "pearson": 0.7156
+    },
+    "F/anaemic/sodium~co2": {
+      "n": 185,
+      "pearson": 0.1347
+    },
     "F/anaemic/systolic~diastolic": {
       "n": 164,
       "pearson": 0.6165
@@ -140,9 +292,69 @@
       "n": 90,
       "pearson": 0.091
     },
+    "F/diabetic/albumin~alkaline_phosphatase": {
+      "n": 280,
+      "pearson": -0.2648
+    },
+    "F/diabetic/albumin~hematocrit": {
+      "n": 280,
+      "pearson": 0.2725
+    },
+    "F/diabetic/albumin~hemoglobin": {
+      "n": 280,
+      "pearson": 0.3139
+    },
+    "F/diabetic/albumin~rbc": {
+      "n": 280,
+      "pearson": 0.2814
+    },
+    "F/diabetic/alkaline_phosphatase~wbc": {
+      "n": 280,
+      "pearson": 0.0757
+    },
+    "F/diabetic/alt~ast": {
+      "n": 279,
+      "pearson": 0.9178
+    },
+    "F/diabetic/alt~hemoglobin": {
+      "n": 280,
+      "pearson": 0.1591
+    },
+    "F/diabetic/ast~platelets": {
+      "n": 279,
+      "pearson": -0.2331
+    },
+    "F/diabetic/bilirubin_total~platelets": {
+      "n": 280,
+      "pearson": -0.2465
+    },
     "F/diabetic/bmi~hdl": {
       "n": 279,
       "pearson": -0.195
+    },
+    "F/diabetic/bun~creatinine": {
+      "n": 280,
+      "pearson": 0.6528
+    },
+    "F/diabetic/calcium~albumin": {
+      "n": 280,
+      "pearson": 0.5681
+    },
+    "F/diabetic/calcium~rbc": {
+      "n": 280,
+      "pearson": 0.2055
+    },
+    "F/diabetic/chloride~albumin": {
+      "n": 280,
+      "pearson": -0.1827
+    },
+    "F/diabetic/chloride~calcium": {
+      "n": 280,
+      "pearson": -0.2987
+    },
+    "F/diabetic/chloride~co2": {
+      "n": 280,
+      "pearson": -0.2306
     },
     "F/diabetic/glucose~hdl": {
       "n": 280,
@@ -180,6 +392,22 @@
       "n": 292,
       "pearson": 0.6537
     },
+    "F/diabetic/platelets~wbc": {
+      "n": 292,
+      "pearson": 0.4126
+    },
+    "F/diabetic/potassium~chloride": {
+      "n": 279,
+      "pearson": 0.1997
+    },
+    "F/diabetic/sodium~chloride": {
+      "n": 280,
+      "pearson": 0.6771
+    },
+    "F/diabetic/sodium~co2": {
+      "n": 280,
+      "pearson": 0.1869
+    },
     "F/diabetic/systolic~diastolic": {
       "n": 263,
       "pearson": 0.6079
@@ -208,9 +436,69 @@
       "n": 153,
       "pearson": 0.0118
     },
+    "F/diagnosed/albumin~alkaline_phosphatase": {
+      "n": 272,
+      "pearson": -0.2744
+    },
+    "F/diagnosed/albumin~hematocrit": {
+      "n": 272,
+      "pearson": 0.2956
+    },
+    "F/diagnosed/albumin~hemoglobin": {
+      "n": 272,
+      "pearson": 0.3279
+    },
+    "F/diagnosed/albumin~rbc": {
+      "n": 272,
+      "pearson": 0.3196
+    },
+    "F/diagnosed/alkaline_phosphatase~wbc": {
+      "n": 272,
+      "pearson": 0.0855
+    },
+    "F/diagnosed/alt~ast": {
+      "n": 272,
+      "pearson": 0.8323
+    },
+    "F/diagnosed/alt~hemoglobin": {
+      "n": 272,
+      "pearson": 0.2901
+    },
+    "F/diagnosed/ast~platelets": {
+      "n": 272,
+      "pearson": -0.2999
+    },
+    "F/diagnosed/bilirubin_total~platelets": {
+      "n": 272,
+      "pearson": -0.2331
+    },
     "F/diagnosed/bmi~hdl": {
       "n": 268,
       "pearson": -0.205
+    },
+    "F/diagnosed/bun~creatinine": {
+      "n": 272,
+      "pearson": 0.6387
+    },
+    "F/diagnosed/calcium~albumin": {
+      "n": 272,
+      "pearson": 0.5831
+    },
+    "F/diagnosed/calcium~rbc": {
+      "n": 272,
+      "pearson": 0.2892
+    },
+    "F/diagnosed/chloride~albumin": {
+      "n": 272,
+      "pearson": -0.156
+    },
+    "F/diagnosed/chloride~calcium": {
+      "n": 272,
+      "pearson": -0.226
+    },
+    "F/diagnosed/chloride~co2": {
+      "n": 272,
+      "pearson": -0.281
     },
     "F/diagnosed/glucose~hdl": {
       "n": 272,
@@ -248,6 +536,22 @@
       "n": 283,
       "pearson": 0.6629
     },
+    "F/diagnosed/platelets~wbc": {
+      "n": 283,
+      "pearson": 0.4588
+    },
+    "F/diagnosed/potassium~chloride": {
+      "n": 272,
+      "pearson": 0.2198
+    },
+    "F/diagnosed/sodium~chloride": {
+      "n": 272,
+      "pearson": 0.6209
+    },
+    "F/diagnosed/sodium~co2": {
+      "n": 272,
+      "pearson": 0.2147
+    },
     "F/diagnosed/systolic~diastolic": {
       "n": 267,
       "pearson": 0.5724
@@ -276,9 +580,69 @@
       "n": 154,
       "pearson": 0.0366
     },
+    "F/nondiabetic/albumin~alkaline_phosphatase": {
+      "n": 1265,
+      "pearson": -0.1637
+    },
+    "F/nondiabetic/albumin~hematocrit": {
+      "n": 1265,
+      "pearson": 0.2098
+    },
+    "F/nondiabetic/albumin~hemoglobin": {
+      "n": 1265,
+      "pearson": 0.2471
+    },
+    "F/nondiabetic/albumin~rbc": {
+      "n": 1265,
+      "pearson": 0.1528
+    },
+    "F/nondiabetic/alkaline_phosphatase~wbc": {
+      "n": 1264,
+      "pearson": 0.1809
+    },
+    "F/nondiabetic/alt~ast": {
+      "n": 1260,
+      "pearson": 0.7789
+    },
+    "F/nondiabetic/alt~hemoglobin": {
+      "n": 1264,
+      "pearson": 0.1704
+    },
+    "F/nondiabetic/ast~platelets": {
+      "n": 1259,
+      "pearson": -0.1919
+    },
+    "F/nondiabetic/bilirubin_total~platelets": {
+      "n": 1264,
+      "pearson": -0.1675
+    },
     "F/nondiabetic/bmi~hdl": {
       "n": 1260,
       "pearson": -0.2998
+    },
+    "F/nondiabetic/bun~creatinine": {
+      "n": 1265,
+      "pearson": 0.44
+    },
+    "F/nondiabetic/calcium~albumin": {
+      "n": 1265,
+      "pearson": 0.4672
+    },
+    "F/nondiabetic/calcium~rbc": {
+      "n": 1264,
+      "pearson": 0.1502
+    },
+    "F/nondiabetic/chloride~albumin": {
+      "n": 1266,
+      "pearson": -0.26
+    },
+    "F/nondiabetic/chloride~calcium": {
+      "n": 1265,
+      "pearson": -0.2116
+    },
+    "F/nondiabetic/chloride~co2": {
+      "n": 1265,
+      "pearson": -0.2702
     },
     "F/nondiabetic/glucose~hdl": {
       "n": 1264,
@@ -316,6 +680,22 @@
       "n": 1300,
       "pearson": 0.5097
     },
+    "F/nondiabetic/platelets~wbc": {
+      "n": 1300,
+      "pearson": 0.3709
+    },
+    "F/nondiabetic/potassium~chloride": {
+      "n": 1265,
+      "pearson": 0.2057
+    },
+    "F/nondiabetic/sodium~chloride": {
+      "n": 1266,
+      "pearson": 0.6462
+    },
+    "F/nondiabetic/sodium~co2": {
+      "n": 1265,
+      "pearson": 0.2225
+    },
     "F/nondiabetic/systolic~diastolic": {
       "n": 1182,
       "pearson": 0.7048
@@ -344,9 +724,69 @@
       "n": 636,
       "pearson": 0.0495
     },
+    "M/all/albumin~alkaline_phosphatase": {
+      "n": 1456,
+      "pearson": -0.1975
+    },
+    "M/all/albumin~hematocrit": {
+      "n": 1456,
+      "pearson": 0.2351
+    },
+    "M/all/albumin~hemoglobin": {
+      "n": 1456,
+      "pearson": 0.276
+    },
+    "M/all/albumin~rbc": {
+      "n": 1456,
+      "pearson": 0.1963
+    },
+    "M/all/alkaline_phosphatase~wbc": {
+      "n": 1455,
+      "pearson": 0.1733
+    },
+    "M/all/alt~ast": {
+      "n": 1448,
+      "pearson": 0.8839
+    },
+    "M/all/alt~hemoglobin": {
+      "n": 1455,
+      "pearson": 0.1563
+    },
+    "M/all/ast~platelets": {
+      "n": 1447,
+      "pearson": -0.1584
+    },
+    "M/all/bilirubin_total~platelets": {
+      "n": 1456,
+      "pearson": -0.1633
+    },
     "M/all/bmi~hdl": {
       "n": 1451,
       "pearson": -0.2641
+    },
+    "M/all/bun~creatinine": {
+      "n": 1457,
+      "pearson": 0.5253
+    },
+    "M/all/calcium~albumin": {
+      "n": 1457,
+      "pearson": 0.4812
+    },
+    "M/all/calcium~rbc": {
+      "n": 1456,
+      "pearson": 0.1881
+    },
+    "M/all/chloride~albumin": {
+      "n": 1457,
+      "pearson": -0.1533
+    },
+    "M/all/chloride~calcium": {
+      "n": 1457,
+      "pearson": -0.1903
+    },
+    "M/all/chloride~co2": {
+      "n": 1457,
+      "pearson": -0.1785
     },
     "M/all/glucose~hdl": {
       "n": 1457,
@@ -384,6 +824,22 @@
       "n": 1505,
       "pearson": 0.6479
     },
+    "M/all/platelets~wbc": {
+      "n": 1505,
+      "pearson": 0.3289
+    },
+    "M/all/potassium~chloride": {
+      "n": 1455,
+      "pearson": 0.1742
+    },
+    "M/all/sodium~chloride": {
+      "n": 1457,
+      "pearson": 0.6754
+    },
+    "M/all/sodium~co2": {
+      "n": 1457,
+      "pearson": 0.2332
+    },
     "M/all/systolic~diastolic": {
       "n": 1458,
       "pearson": 0.743
@@ -412,9 +868,69 @@
       "n": 715,
       "pearson": 0.0621
     },
+    "M/anaemic/albumin~alkaline_phosphatase": {
+      "n": 109,
+      "pearson": -0.1925
+    },
+    "M/anaemic/albumin~hematocrit": {
+      "n": 109,
+      "pearson": 0.2721
+    },
+    "M/anaemic/albumin~hemoglobin": {
+      "n": 109,
+      "pearson": 0.2592
+    },
+    "M/anaemic/albumin~rbc": {
+      "n": 109,
+      "pearson": 0.3146
+    },
+    "M/anaemic/alkaline_phosphatase~wbc": {
+      "n": 109,
+      "pearson": -0.0333
+    },
+    "M/anaemic/alt~ast": {
+      "n": 107,
+      "pearson": 0.8831
+    },
+    "M/anaemic/alt~hemoglobin": {
+      "n": 109,
+      "pearson": 0.1385
+    },
+    "M/anaemic/ast~platelets": {
+      "n": 107,
+      "pearson": -0.1847
+    },
+    "M/anaemic/bilirubin_total~platelets": {
+      "n": 109,
+      "pearson": -0.1085
+    },
     "M/anaemic/bmi~hdl": {
       "n": 107,
       "pearson": -0.2864
+    },
+    "M/anaemic/bun~creatinine": {
+      "n": 109,
+      "pearson": 0.6845
+    },
+    "M/anaemic/calcium~albumin": {
+      "n": 109,
+      "pearson": 0.5372
+    },
+    "M/anaemic/calcium~rbc": {
+      "n": 109,
+      "pearson": 0.3579
+    },
+    "M/anaemic/chloride~albumin": {
+      "n": 109,
+      "pearson": -0.0845
+    },
+    "M/anaemic/chloride~calcium": {
+      "n": 109,
+      "pearson": -0.1414
+    },
+    "M/anaemic/chloride~co2": {
+      "n": 109,
+      "pearson": -0.3233
     },
     "M/anaemic/glucose~hdl": {
       "n": 109,
@@ -452,6 +968,22 @@
       "n": 111,
       "pearson": 0.3532
     },
+    "M/anaemic/platelets~wbc": {
+      "n": 111,
+      "pearson": 0.4613
+    },
+    "M/anaemic/potassium~chloride": {
+      "n": 109,
+      "pearson": 0.0979
+    },
+    "M/anaemic/sodium~chloride": {
+      "n": 109,
+      "pearson": 0.6239
+    },
+    "M/anaemic/sodium~co2": {
+      "n": 109,
+      "pearson": 0.243
+    },
     "M/anaemic/systolic~diastolic": {
       "n": 95,
       "pearson": 0.7219
@@ -480,9 +1012,69 @@
       "n": 51,
       "pearson": 0.0682
     },
+    "M/diabetic/albumin~alkaline_phosphatase": {
+      "n": 287,
+      "pearson": -0.1956
+    },
+    "M/diabetic/albumin~hematocrit": {
+      "n": 287,
+      "pearson": 0.3352
+    },
+    "M/diabetic/albumin~hemoglobin": {
+      "n": 287,
+      "pearson": 0.3826
+    },
+    "M/diabetic/albumin~rbc": {
+      "n": 287,
+      "pearson": 0.2635
+    },
+    "M/diabetic/alkaline_phosphatase~wbc": {
+      "n": 287,
+      "pearson": 0.0904
+    },
+    "M/diabetic/alt~ast": {
+      "n": 285,
+      "pearson": 0.8429
+    },
+    "M/diabetic/alt~hemoglobin": {
+      "n": 287,
+      "pearson": 0.1923
+    },
+    "M/diabetic/ast~platelets": {
+      "n": 285,
+      "pearson": -0.1494
+    },
+    "M/diabetic/bilirubin_total~platelets": {
+      "n": 287,
+      "pearson": -0.187
+    },
     "M/diabetic/bmi~hdl": {
       "n": 285,
       "pearson": -0.1917
+    },
+    "M/diabetic/bun~creatinine": {
+      "n": 287,
+      "pearson": 0.5683
+    },
+    "M/diabetic/calcium~albumin": {
+      "n": 287,
+      "pearson": 0.4669
+    },
+    "M/diabetic/calcium~rbc": {
+      "n": 287,
+      "pearson": 0.2898
+    },
+    "M/diabetic/chloride~albumin": {
+      "n": 287,
+      "pearson": -0.1547
+    },
+    "M/diabetic/chloride~calcium": {
+      "n": 287,
+      "pearson": -0.2497
+    },
+    "M/diabetic/chloride~co2": {
+      "n": 287,
+      "pearson": -0.2289
     },
     "M/diabetic/glucose~hdl": {
       "n": 287,
@@ -520,6 +1112,22 @@
       "n": 297,
       "pearson": 0.7351
     },
+    "M/diabetic/platelets~wbc": {
+      "n": 297,
+      "pearson": 0.3479
+    },
+    "M/diabetic/potassium~chloride": {
+      "n": 286,
+      "pearson": 0.217
+    },
+    "M/diabetic/sodium~chloride": {
+      "n": 287,
+      "pearson": 0.7069
+    },
+    "M/diabetic/sodium~co2": {
+      "n": 287,
+      "pearson": 0.2163
+    },
     "M/diabetic/systolic~diastolic": {
       "n": 278,
       "pearson": 0.6924
@@ -548,9 +1156,69 @@
       "n": 129,
       "pearson": -0.0475
     },
+    "M/diagnosed/albumin~alkaline_phosphatase": {
+      "n": 303,
+      "pearson": -0.2574
+    },
+    "M/diagnosed/albumin~hematocrit": {
+      "n": 302,
+      "pearson": 0.3702
+    },
+    "M/diagnosed/albumin~hemoglobin": {
+      "n": 302,
+      "pearson": 0.4055
+    },
+    "M/diagnosed/albumin~rbc": {
+      "n": 302,
+      "pearson": 0.3055
+    },
+    "M/diagnosed/alkaline_phosphatase~wbc": {
+      "n": 302,
+      "pearson": 0.2258
+    },
+    "M/diagnosed/alt~ast": {
+      "n": 302,
+      "pearson": 0.8479
+    },
+    "M/diagnosed/alt~hemoglobin": {
+      "n": 302,
+      "pearson": 0.1977
+    },
+    "M/diagnosed/ast~platelets": {
+      "n": 301,
+      "pearson": -0.1867
+    },
+    "M/diagnosed/bilirubin_total~platelets": {
+      "n": 302,
+      "pearson": -0.2144
+    },
     "M/diagnosed/bmi~hdl": {
       "n": 302,
       "pearson": -0.2056
+    },
+    "M/diagnosed/bun~creatinine": {
+      "n": 303,
+      "pearson": 0.5139
+    },
+    "M/diagnosed/calcium~albumin": {
+      "n": 303,
+      "pearson": 0.4875
+    },
+    "M/diagnosed/calcium~rbc": {
+      "n": 302,
+      "pearson": 0.3532
+    },
+    "M/diagnosed/chloride~albumin": {
+      "n": 303,
+      "pearson": -0.1485
+    },
+    "M/diagnosed/chloride~calcium": {
+      "n": 303,
+      "pearson": -0.196
+    },
+    "M/diagnosed/chloride~co2": {
+      "n": 303,
+      "pearson": -0.209
     },
     "M/diagnosed/glucose~hdl": {
       "n": 303,
@@ -588,6 +1256,22 @@
       "n": 314,
       "pearson": 0.7691
     },
+    "M/diagnosed/platelets~wbc": {
+      "n": 314,
+      "pearson": 0.3721
+    },
+    "M/diagnosed/potassium~chloride": {
+      "n": 302,
+      "pearson": 0.1875
+    },
+    "M/diagnosed/sodium~chloride": {
+      "n": 303,
+      "pearson": 0.7086
+    },
+    "M/diagnosed/sodium~co2": {
+      "n": 303,
+      "pearson": 0.2437
+    },
     "M/diagnosed/systolic~diastolic": {
       "n": 303,
       "pearson": 0.6952
@@ -616,9 +1300,69 @@
       "n": 146,
       "pearson": 0.0292
     },
+    "M/nondiabetic/albumin~alkaline_phosphatase": {
+      "n": 1169,
+      "pearson": -0.1835
+    },
+    "M/nondiabetic/albumin~hematocrit": {
+      "n": 1169,
+      "pearson": 0.1976
+    },
+    "M/nondiabetic/albumin~hemoglobin": {
+      "n": 1169,
+      "pearson": 0.2359
+    },
+    "M/nondiabetic/albumin~rbc": {
+      "n": 1169,
+      "pearson": 0.1833
+    },
+    "M/nondiabetic/alkaline_phosphatase~wbc": {
+      "n": 1168,
+      "pearson": 0.1822
+    },
+    "M/nondiabetic/alt~ast": {
+      "n": 1163,
+      "pearson": 0.8914
+    },
+    "M/nondiabetic/alt~hemoglobin": {
+      "n": 1168,
+      "pearson": 0.1557
+    },
+    "M/nondiabetic/ast~platelets": {
+      "n": 1162,
+      "pearson": -0.1606
+    },
+    "M/nondiabetic/bilirubin_total~platelets": {
+      "n": 1169,
+      "pearson": -0.1564
+    },
     "M/nondiabetic/bmi~hdl": {
       "n": 1165,
       "pearson": -0.2599
+    },
+    "M/nondiabetic/bun~creatinine": {
+      "n": 1170,
+      "pearson": 0.5416
+    },
+    "M/nondiabetic/calcium~albumin": {
+      "n": 1170,
+      "pearson": 0.4947
+    },
+    "M/nondiabetic/calcium~rbc": {
+      "n": 1169,
+      "pearson": 0.1542
+    },
+    "M/nondiabetic/chloride~albumin": {
+      "n": 1170,
+      "pearson": -0.1927
+    },
+    "M/nondiabetic/chloride~calcium": {
+      "n": 1170,
+      "pearson": -0.1672
+    },
+    "M/nondiabetic/chloride~co2": {
+      "n": 1170,
+      "pearson": -0.1864
     },
     "M/nondiabetic/glucose~hdl": {
       "n": 1170,
@@ -655,6 +1399,22 @@
     "M/nondiabetic/hemoglobin~rbc": {
       "n": 1200,
       "pearson": 0.625
+    },
+    "M/nondiabetic/platelets~wbc": {
+      "n": 1200,
+      "pearson": 0.3235
+    },
+    "M/nondiabetic/potassium~chloride": {
+      "n": 1169,
+      "pearson": 0.1753
+    },
+    "M/nondiabetic/sodium~chloride": {
+      "n": 1170,
+      "pearson": 0.6444
+    },
+    "M/nondiabetic/sodium~co2": {
+      "n": 1170,
+      "pearson": 0.2291
     },
     "M/nondiabetic/systolic~diastolic": {
       "n": 1117,
