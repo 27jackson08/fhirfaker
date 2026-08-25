@@ -1,0 +1,60 @@
+{
+  "_comment": [
+    "Why a generator that was going to be benchmarked is not in the benchmark.",
+    "",
+    "PySynthea (tietai-synthea) was the obvious third generator: pip-installable, no JVM,",
+    "231 disease modules, FHIR R4 export. This repository's own README concedes that it",
+    "removes the 'no Java' differentiator. It cannot be scored, and the reason is recorded",
+    "here rather than left as an unexplained absence from the results table.",
+    "",
+    "Its FHIR export emits Observations without values. A systolic blood pressure comes out",
+    "with status 'final', no value[x] and no dataAbsentReason, which is not a measurement.",
+    "Every analyte the fidelity benchmarks read is in this state.",
+    "",
+    "Reproduce:",
+    "  python3.12 -m venv env && env/bin/pip install tietai-synthea",
+    "  env/bin/synthea -p 10 -s 42 -a 18-85 -o ./psout",
+    "  java -jar validator_cli.jar ./psout/fhir/<any>.json -version 4.0.1"
+  ],
+  "assessed_on": "2026-08-25",
+  "package": "tietai-synthea",
+  "version": "1.0.1",
+  "paper": "arXiv:2606.28346",
+  "python_support": ">=3.9,<3.14",
+  "measurability": {
+    "patients": 10,
+    "observations": 406,
+    "with_value_quantity": 60,
+    "with_value_quantity_fraction": 0.148,
+    "vital_signs_with_a_value": 0,
+    "metabolic_analytes_with_a_value": 0,
+    "_note": [
+      "Systolic, diastolic, height and weight are all present and all valueless.",
+      "Glucose, HDL, triglycerides, HbA1c, ALT and AST likewise.",
+      "The 60 valued observations are pain scores, temperatures, DXA T-scores, FEV1/FVC,",
+      "PSA, NT-proBNP and magnesium — none of which any fidelity benchmark here reads.",
+      "No configuration option governs this; FHIR export is on by default and was used."
+    ]
+  },
+  "hl7_validator": {
+    "_comment": "org.hl7.fhir.core validator_cli, FHIR R4 4.0.1, one bundle.",
+    "errors": 166,
+    "warnings": 266,
+    "top_errors": [
+      {"count": 40, "issue": "If a date has a time, it must have a timezone"},
+      {"count": 16, "issue": "Unknown code 'AMBULATORY' in v3-ActCode (the code is 'AMB')"},
+      {"count": 9, "issue": "Wrong display name 'Vital-Signs' for the observation-category code"},
+      {"count": 8, "issue": "Array cannot be empty - the property should not be present"},
+      {"count": 4, "issue": "Coding.system must be an absolute reference — it emits 'LOINC', not http://loinc.org"}
+    ]
+  },
+  "conclusion": [
+    "Not scored, because there is nothing to score. This is reported as a measurement",
+    "with its reproduction rather than as a criticism: the finding is that the FHIR",
+    "export is not yet analysable, not that the project is without merit. Its module",
+    "coverage and JVM-free install are real.",
+    "",
+    "It does mean this repository's README was too generous. 'No Java is no longer a",
+    "reason to pick this project' assumed the alternative produced usable output."
+  ]
+}

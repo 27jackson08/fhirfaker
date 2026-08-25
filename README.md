@@ -82,7 +82,23 @@ data at all — is in
 [arXiv:2606.28346](https://arxiv.org/abs/2606.28346)) is a Python-native reimplementation
 of Synthea: `pip install`, no JVM, 231 disease modules, full lifecycle simulation, FHIR
 R4 / CSV / JSON export. It removes the JVM barrier, so "no Java" on its own is no longer
-a reason to pick this project. If you want Synthea's depth without the JDK, use it.
+a reason to pick this project.
+
+> **Measured, August 2026, and this paragraph was too generous.** Version 1.0.1's FHIR
+> export emits Observations *without values*: systolic, diastolic, height, weight,
+> glucose, HDL, triglycerides, HbA1c, ALT and AST are all present and all valueless, with
+> `status: "final"` and no `dataAbsentReason`. Only 15% of its observations carry a
+> `valueQuantity` at all, and none of them are analytes any fidelity benchmark reads. The
+> HL7 validator returns **166 errors and 266 warnings** on a single bundle — datetimes
+> without timezones, `AMBULATORY` where the ActCode is `AMB`, and `"LOINC"` where a
+> `Coding.system` must be an absolute URI.
+>
+> It could not be added to this project's benchmark for that reason, which is recorded
+> with its reproduction in
+> [`pysynthea_assessment.json`](https://github.com/27jackson08/fhirfaker/blob/main/carebundle/benchmark/data/pysynthea_assessment.json).
+> Reported as a measurement, not a criticism — the module coverage and JVM-free install
+> are real, and this is a young project.
+
 
 Two differences remain, and they are the reasons this exists:
 
