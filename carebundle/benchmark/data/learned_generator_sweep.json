@@ -102,7 +102,7 @@
   "caveats": [
     "606 training rows is small for a GAN; the full-data run bounds how much that costs.",
     "CPU-only training; no hyperparameter search beyond the epoch sweep.",
-    "One architecture. TVAE is available in the same package and is not yet run.",
+    "Two architectures, both from the ctgan package. No diffusion or copula-based model tested.",
     "The dependence measure scores whatever pairs a source carries: CTGAN and TVAE supply four analytes and so are scored over 8 cells, against 14 for a FHIR source that also emits weight and HbA1c. The sign column shows the count; the deviations are not over identical pair sets."
   ],
   "cross_architecture": [
