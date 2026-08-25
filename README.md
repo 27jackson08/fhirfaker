@@ -517,6 +517,9 @@ is reproducible rather than quoted. These read any directory of FHIR bundles, so
 score a competitor's output with the same code that scores this package's:
 
 ```bash
+# Everything below, over any number of generators, as one table
+python -m carebundle.benchmark.suite --fhir Synthea=./pop/fhir --records CTGAN=./gen.csv
+
 # HEDIS quality measures over someone else's export
 python -m carebundle.benchmark.synthea --fhir-dir ./pop/fhir
 

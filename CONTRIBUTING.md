@@ -105,6 +105,7 @@ not vendored either; `carebundle/benchmark/synthea.py` documents the four comman
 produce a population, and then:
 
 ```bash
+python -m carebundle.benchmark.suite --fhir Synthea=./pop/fhir      # all of it, one table
 python -m carebundle.benchmark.synthea      --fhir-dir ./pop/fhir   # HEDIS measures
 python -m carebundle.benchmark.dependence   --fhir-dir ./pop/fhir   # analyte dependence
 python -m carebundle.benchmark.cooccurrence --fhir-dir ./pop/fhir   # co-occurrence
