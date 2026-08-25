@@ -21,31 +21,77 @@
     "n_total": 1213,
     "n_train": 606,
     "n_held_out": 607,
-    "analytes": ["bmi", "triglycerides", "hdl", "glucose"],
+    "analytes": [
+      "bmi",
+      "triglycerides",
+      "hdl",
+      "glucose"
+    ],
     "pairs_scored": 12,
     "_note": "Train/test split so no generator is scored against rows it was fitted on."
   },
   "results": {
-    "nhanes_held_out": {"mean_deviation": 0.000, "sign_agreement": "12/12", "p_ge3": 0.150, "dependence_ratio": 1.76},
-    "ctgan_300_epochs": {"mean_deviation": 0.191, "sign_agreement": "8/12", "p_ge3": 0.367, "dependence_ratio": 0.99},
-    "ctgan_1000_epochs": {"mean_deviation": 0.210, "sign_agreement": "7/12", "p_ge3": 0.091, "dependence_ratio": 1.05},
-    "ctgan_3000_epochs": {"mean_deviation": 0.074, "sign_agreement": "12/12", "p_ge3": 0.145, "dependence_ratio": 1.59},
+    "nhanes_held_out": {
+      "mean_deviation": 0.0,
+      "sign_agreement": "12/12",
+      "p_ge3": 0.15,
+      "dependence_ratio": 1.76
+    },
+    "ctgan_300_epochs": {
+      "mean_deviation": 0.191,
+      "sign_agreement": "8/12",
+      "p_ge3": 0.367,
+      "dependence_ratio": 0.99
+    },
+    "ctgan_1000_epochs": {
+      "mean_deviation": 0.21,
+      "sign_agreement": "7/12",
+      "p_ge3": 0.091,
+      "dependence_ratio": 1.05
+    },
+    "ctgan_3000_epochs": {
+      "mean_deviation": 0.074,
+      "sign_agreement": "12/12",
+      "p_ge3": 0.145,
+      "dependence_ratio": 1.59
+    },
     "ctgan_3000_epochs_full_data": {
-      "mean_deviation": 0.070, "sign_agreement": "12/12", "p_ge3": 0.085, "dependence_ratio": 1.55,
-      "_caveat": "Trained on all 1213 rows including the evaluation half. An optimistic bound, not a fair score. Included to separate 'needs more data' from 'loses structure' — it is barely better than the fair 3000-epoch run, so the answer is training budget, not sample size."
+      "mean_deviation": 0.07,
+      "sign_agreement": "12/12",
+      "p_ge3": 0.085,
+      "dependence_ratio": 1.55,
+      "_caveat": "Trained on all 1213 rows including the evaluation half. An optimistic bound, not a fair score. Included to separate 'needs more data' from 'loses structure' \u2014 it is barely better than the fair 3000-epoch run, so the answer is training budget, not sample size."
+    },
+    "tvae_300_epochs": {
+      "mean_deviation": 0.1,
+      "sign_agreement": "12/12",
+      "p_ge3": 0.02,
+      "dependence_ratio": 2.36
+    },
+    "tvae_1000_epochs": {
+      "mean_deviation": 0.114,
+      "sign_agreement": "12/12",
+      "p_ge3": 0.075,
+      "dependence_ratio": 2.29
+    },
+    "tvae_3000_epochs": {
+      "mean_deviation": 0.059,
+      "sign_agreement": "12/12",
+      "p_ge3": 0.106,
+      "dependence_ratio": 1.8
     }
   },
   "finding": [
     "A first run at 300 epochs gave 0.191 mean deviation and 8/12 sign agreement, which",
     "reads as 'a learned model loses cross-domain dependence'. That was wrong, and it was",
-    "an under-training artefact. At 3000 epochs CTGAN reaches 0.074 and 12/12 — comparable",
+    "an under-training artefact. At 3000 epochs CTGAN reaches 0.074 and 12/12 \u2014 comparable",
     "to carebundle and far better than Synthea's 0.208.",
     "",
     "What survives is more useful than the claim it replaced. The dependence ratio climbs",
     "0.99 -> 1.05 -> 1.59 across training budgets against a true 1.76: CTGAN produces",
     "essentially INDEPENDENT analytes until somewhere past 1000 epochs, then acquires the",
     "joint structure. And the co-occurrence rate swings 36.7% -> 9.1% -> 14.5% against a",
-    "stable truth of 15.0% — a four-fold swing driven purely by a hyperparameter.",
+    "stable truth of 15.0% \u2014 a four-fold swing driven purely by a hyperparameter.",
     "",
     "The practical warning: a marginal check cannot tell you whether a GAN has converged",
     "on the joint distribution. At 300 epochs the ratio is 0.99, meaning the analytes are",
@@ -56,6 +102,32 @@
   "caveats": [
     "606 training rows is small for a GAN; the full-data run bounds how much that costs.",
     "CPU-only training; no hyperparameter search beyond the epoch sweep.",
-    "One architecture. TVAE is available in the same package and is not yet run."
-  ]
+    "One architecture. TVAE is available in the same package and is not yet run.",
+    "The dependence measure scores whatever pairs a source carries: CTGAN and TVAE supply four analytes and so are scored over 8 cells, against 14 for a FHIR source that also emits weight and HbA1c. The sign column shows the count; the deviations are not over identical pair sets."
+  ],
+  "cross_architecture": [
+    "TVAE was added because one model's behaviour is not a property of learned",
+    "generators. It optimises a different objective from a GAN, so a failure appearing in",
+    "both is about the class rather than about adversarial training.",
+    "",
+    "Both converge by 3000 epochs and both are badly wrong before it \u2014 in OPPOSITE",
+    "directions. CTGAN drifts toward independence (ratio 0.99 at 300 epochs, against a",
+    "true 1.76). TVAE over-couples (2.36). Neither error is in the same place, and a",
+    "practitioner tuning one would learn nothing about the other.",
+    "",
+    "The detail that matters most: **TVAE held 12/12 sign agreement at every epoch count**",
+    "while its co-occurrence rate was 2.0% against a true 15.0%. Sign agreement \u2014 the",
+    "obvious sanity check on a correlation table \u2014 was completely uninformative. So was",
+    "mean deviation, which is *lower* at 300 epochs (0.100) than at 1000 (0.114) while the",
+    "joint structure is wrong throughout.",
+    "",
+    "Only the co-occurrence rate and the independence ratio read together separate the two",
+    "failure modes, which is why the suite prints them side by side and refuses to print",
+    "one alone."
+  ],
+  "residual_bias_at_3000_epochs": {
+    "ctgan": "P(>=3) 14.5% against 15.0% \u2014 nearly exact \u2014 but ratio 1.59 against 1.76, so slightly under-clustered with marginals a little too abnormal.",
+    "tvae": "ratio 1.80 against 1.76 \u2014 nearly exact \u2014 but P(>=3) 10.6% against 15.0%, so correctly clustered with marginals too mild.",
+    "_note": "The two converge to different residual biases. Reporting either metric alone would rank them differently, which is an argument for reporting both."
+  }
 }
