@@ -21,7 +21,7 @@ from carebundle.profiles.library import PROFILES
 # The single source of truth for the version. `pyproject.toml` declares the
 # version dynamic and reads it from here, so the two cannot drift — 0.1.1 shipped
 # with metadata saying 0.1.1 and this attribute still saying 0.1.0.
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 __all__ = [
     "PROFILES",

@@ -19,6 +19,17 @@ Practically, for anyone pinning: **pin the patch version.** `carebundle==0.1.2` 
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-08-25
+
+**Seeded output changes.** Fixtures pinned to a seed under 0.4.0 will not reproduce; the
+golden files were regenerated and the diff is values only, no structural change.
+
+This release is about the numbers themselves. 0.4.0 established that the *joint*
+structure was missing; this one found that a large share of the *marginals* and the
+panel's dependence had never been measured at all — eleven analytes and three
+correlations carried hand-set values while NHANES held every one of them. Four
+"obvious fixes" were tested and rejected before writing along the way.
+
 ### Changed — correlations now mean what they say
 
 - **Configured correlations are target Pearson values, solved for their latent
@@ -597,7 +608,8 @@ determinism contract described above starts now.
   draws on CPT-4 (AMA-licensed) and SNOMED CT, so warning-free US Core Encounter
   conformance is not reachable without licensed terminology. See `CONFORMANCE.md`.
 
-[Unreleased]: https://github.com/27jackson08/fhirfaker/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/27jackson08/fhirfaker/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/27jackson08/fhirfaker/releases/tag/v0.5.0
 [0.4.0]: https://github.com/27jackson08/fhirfaker/releases/tag/v0.4.0
 [0.3.0]: https://github.com/27jackson08/fhirfaker/releases/tag/v0.3.0
 [0.2.0]: https://github.com/27jackson08/fhirfaker/releases/tag/v0.2.0
