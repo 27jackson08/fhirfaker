@@ -143,3 +143,35 @@ def test_no_reference_names_an_author_the_repository_has_not_verified(paper):
             f"{name!r} is a misattribution corrected on 2026-08-26; reference 2 is "
             "Hodges, Tokunaga and LeGrand"
         )
+
+
+def test_prior_multivariate_benchmarks_are_cited(flat):
+    """The novelty claim depends on these two being described accurately.
+
+    An earlier draft asserted that the field validates marginally. Two 2026 benchmarks
+    already score multivariate dependency — SFSF across 17 generators, and a
+    PyHealth-based framework across five — and the claim was simply false. A prior-art
+    sweep found them two weeks after one of them was posted and before this was.
+
+    The build document's rule is that the sweep runs before every launch, not once. This
+    test is the standing version of that rule: the paper may not claim novelty without
+    naming what it is novel against.
+    """
+    assert "SFSF" in flat, "the paper must cite the benchmark that scores 17 generators"
+    assert "PyHealth" in flat, "the paper must cite the reproducible-generation framework"
+    assert "That framing is withdrawn" in flat, (
+        "the retraction of the earlier marginal-validation framing must stay visible"
+    )
+    # The contribution has to be stated as narrower than 'first benchmark'.
+    assert "pairwise is not enough" in flat or "Pairwise validation is necessary" in flat
+
+
+def test_the_paper_does_not_claim_to_be_first(flat):
+    """Guards the specific overclaim that the sweep caught.
+
+    'First reproducible fidelity benchmark' was the framing before SFSF was found. It is
+    not recoverable by rewording — it is untrue — so the phrase is banned outright.
+    """
+    for phrase in ("the first reproducible fidelity benchmark",
+                   "first benchmark", "we are the first"):
+        assert phrase.lower() not in flat.lower(), f"overclaim reintroduced: {phrase!r}"

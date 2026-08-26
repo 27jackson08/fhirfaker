@@ -1,4 +1,4 @@
-# Marginal validation cannot detect joint-structure failure in synthetic health data
+# Pairwise correlation checks cannot detect joint-structure failure in synthetic health data
 
 **Jackson Bomongcag**
 
@@ -9,13 +9,19 @@ https://github.com/27jackson08/fhirfaker under Apache 2.0.*
 
 ## Abstract
 
-Synthetic patient data is usually validated one variable at a time: each distribution is
-compared against a reference and the generator is judged by how many match. We show this
-is insufficient in a way that is easy to demonstrate and hard to see. We introduce a
-reproducible benchmark that measures **cross-domain dependence** — whether analytes from
-different body systems co-vary as they do in real patients — and a **multi-criteria
-co-occurrence** measure with an accompanying independence control, and apply both to four
-generators spanning rule-based simulation, copula sampling, and two learned architectures.
+Synthetic health data is increasingly validated beyond the marginals: recent benchmarks
+score **pairwise** dependency — correlation differences, rank correlation, correlation
+matrix distance [8, 9]. We show that this is still insufficient, and demonstrate it with a
+generator that reproduces **every pairwise correlation with the correct sign** while
+producing a four-criteria clinical phenotype at one seventh of its real rate.
+
+We contribute a **multi-criteria co-occurrence** measure with an accompanying
+**independence control**, which separates two failure modes that are indistinguishable in
+any pairwise summary and require opposite remedies, and apply it alongside a cross-domain
+dependence measure to four generators spanning rule-based simulation, copula sampling and
+two learned architectures. Existing benchmarks of this kind cover learned models only [8,
+9]; the most widely deployed open-source generator is a rule-based simulator and is absent
+from both.
 
 Every generator we tested has correct or near-correct marginals. Their joint structure
 differs by a factor of four. A widely used rule-based simulator produces the
@@ -42,10 +48,14 @@ Synthetic health data exists so that people can build and test software without 
 real patient records. Its usefulness depends entirely on whether it resembles reality in
 the ways the consuming task cares about.
 
-The dominant validation practice is marginal: check that age looks like age, that HbA1c
-looks like HbA1c, and report the fraction of distributions that match. This is necessary.
-Our claim is that it is badly insufficient, because a great many real tasks read the
-*joint* distribution:
+Validation practice has moved past the marginals. Recent benchmarks evaluate
+**multivariate dependency**: SFSF [8] scores 17 generators across five tiers, the fourth
+being pairwise Pearson and Kendall differences and correlation matrix distance, and a
+PyHealth-based framework [9] reports pairwise code co-occurrence and discriminator-based
+joint fidelity. Both are real advances and this paper builds on rather than against them.
+
+Our claim is narrower and, we think, still important: **pairwise is not enough either**,
+because a great many real tasks read higher-order structure:
 
 - **Phenotype and cohort queries.** "Patients with three of these five abnormalities" is a
   function of how the abnormalities co-occur, not of any one marginal.
@@ -59,14 +69,18 @@ widely used generators do.
 
 ## 2. Contributions
 
-1. A **reproducible cross-domain dependence benchmark** that reads any FHIR bundle
-   directory or tabular record set, so generators of different architectures are scored by
-   one implementation (§4.1).
-2. A **multi-criteria co-occurrence measure with an independence control** that separates
-   "the components are independent" from "the marginals are mild" — two failures that look
-   identical in the headline rate and need opposite fixes (§4.2).
-3. **Measurements of four generators** plus one assessed and excluded, with the exclusion
-   reported rather than left as a gap (§5, §6).
+1. **A demonstration that pairwise checks are insufficient.** A variational autoencoder
+   reproduces 12 of 12 correlation signs correctly — passing the check that [8]'s fourth
+   tier performs — while producing the target phenotype at 2.0% against a real 15.0%
+   (§6.3).
+2. **A multi-criteria co-occurrence measure with an independence control** that separates
+   "the components are independent" from "the marginals are mild" — two failures identical
+   in the headline rate and requiring opposite fixes. Neither [8] nor [9] reports
+   higher-order co-occurrence of continuous analytes, and neither reports a control of
+   this kind (§4.2).
+3. **A comparison spanning rule-based simulation as well as learned models.** [8] and [9]
+   evaluate learned generators only; Synthea is the most widely deployed open-source
+   generator in the field and appears in neither (§5).
 4. **Four negative results**, including a refutation of our own first explanation for the
    main finding (§7).
 
@@ -84,9 +98,31 @@ diabetic amputation rate is **0.56%** (3 of 537), against a real-world incidence
 integration the way a measurement can, and the field's shared picture of a tool's weakness
 can outlive the weakness by years.
 
-Evaluation frameworks for synthetic health data conventionally report *fidelity*, *utility*
-and *privacy*. Fidelity is generally operationalised marginally. Our contribution sits
-inside fidelity and argues that its usual operationalisation misses a class of failure.
+### 3.1 Existing multivariate benchmarks
+
+Two 2026 benchmarks already evaluate dependency structure, and an earlier draft of this
+paper wrongly characterised the field as validating marginally. That framing is withdrawn.
+
+**SFSF** [8] scores 17 generators — statistical, VAE, GAN and diffusion — across five
+tiers, of which the fourth is multivariate dependency: pairwise Pearson and Kendall
+differences, correlation matrix distance, and contingency similarity. It reports that some
+models fail to preserve relationships between related laboratory measures.
+
+**A PyHealth-based framework** [9] standardises ingestion, training and
+architecture-agnostic evaluation across five learned models, and reports pairwise code
+co-occurrence together with discriminator-based joint fidelity.
+
+Both are more thorough than this work on the axes they cover, and this paper depends on
+their framing rather than competing with it. Two gaps remain, and they are what we
+address. Neither reports **higher-order** co-occurrence of continuous analytes — SFSF's
+dependency tier is explicitly pairwise — and neither includes a **rule-based simulator**,
+though Synthea is the most widely deployed open-source generator in the field.
+
+The second gap matters more than it looks. Our strongest result is that a model can pass a
+tier-4 pairwise check completely — 12 of 12 correlation signs — and still misstate a
+four-criteria phenotype by a factor of seven. That is a statement about the sufficiency of
+the check [8] performs, and it could not have been made without their work defining what
+the current bar is.
 
 ## 4. Method
 
@@ -295,15 +331,15 @@ took mean absolute error on exceedance rates from 4.43 points to 0.73.
 
 ## 9. Conclusion
 
-Marginal validation is necessary and not sufficient. Across four generators of three
-architectures, marginals were broadly right and joint structure varied four-fold, in ways
-invisible to the checks the field customarily reports — including correlation sign
-agreement, mean correlation deviation, and downstream AUC.
+Pairwise validation is necessary and not sufficient. Across four generators of three
+architectures, marginals were broadly right, pairwise correlations were often right too,
+and higher-order structure still varied four-fold — invisibly to correlation sign
+agreement, mean correlation deviation, and downstream AUC alike.
 
-We recommend that synthetic health data be reported with (i) a cross-domain dependence
-measure against a named reference, and (ii) a multi-criteria co-occurrence rate **with its
+Given that current benchmarks [8, 9] have moved the bar to pairwise dependency, we
+recommend one further step: report a multi-criteria co-occurrence rate **with its
 independence control**, since the rate alone cannot distinguish two failure modes that
-require opposite remedies.
+require opposite remedies, and no pairwise summary distinguishes them at all.
 
 The strongest single caution we can offer is empirical rather than theoretical: at 300
 epochs a variational autoencoder reproduced every correlation sign correctly while
@@ -331,6 +367,11 @@ practitioners run would have passed.
 7. Expert Panel on Detection, Evaluation, and Treatment of High Blood Cholesterol in
    Adults. Executive summary of the third report (ATP III). *JAMA.*
    2001;285(19):2486–2497. (Criteria adapted; see §4.2.)
+8. The Synthetic Fidelity–Stability Framework (SFSF): a systematic multi-dimensional
+   benchmark of synthetic clinical laboratory data generators. *bioRxiv.* 2026.
+   doi:10.64898/2026.08.11.741471
+9. Accelerating reproducible research in synthetic EHR generation. *arXiv:2606.06990.*
+   2026.
 
 ## Reproduction
 
