@@ -113,3 +113,33 @@ def test_reproduction_command_names_a_real_module(paper):
     assert (ROOT / "carebundle" / Path(*module.split("."))).with_suffix(".py").exists(), (
         f"paper names {match.group(1)}, which does not exist"
     )
+
+
+def test_every_numbered_citation_has_a_reference(flat, paper):
+    """A citation marker with no entry is a broken claim.
+
+    Worth a test because a citation in this paper was wrong on the first draft: the
+    JAMIA Open amputation result was attributed to the wrong authors, from memory,
+    across five documents. Misattributing someone's work is the kind of error a preprint
+    cannot recover from, and it was found by checking rather than by rereading.
+    """
+    cited = {int(n) for n in re.findall(r"\[(\d+)\]", paper)}
+    assert cited, "the paper makes no numbered citations"
+    references = paper.split("## References", 1)
+    assert len(references) == 2, "the paper has no References section"
+    listed = {int(m) for m in re.findall(r"^(\d+)\. ", references[1], re.MULTILINE)}
+    missing = cited - listed
+    assert not missing, f"cited without a reference entry: {sorted(missing)}"
+
+
+def test_no_reference_names_an_author_the_repository_has_not_verified(paper):
+    """Guards the specific mistake made, not the general category.
+
+    'Kartoun' was the wrong attribution for reference 2 and appeared in five files. If it
+    reappears anywhere, someone has reintroduced it from the same faulty memory.
+    """
+    for name in ("Kartoun",):
+        assert name not in paper, (
+            f"{name!r} is a misattribution corrected on 2026-08-26; reference 2 is "
+            "Hodges, Tokunaga and LeGrand"
+        )

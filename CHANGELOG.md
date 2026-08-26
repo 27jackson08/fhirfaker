@@ -295,7 +295,7 @@ hypotheses of which three were refuted.
   population. **There is no outcome-measure wedge**, and the strategy built on one is
   annotated as wrong rather than deleted.
 
-  A second published criticism also failed to reproduce: Kartoun et al. (JAMIA Open 2023)
+  A second published criticism also failed to reproduce: Hodges et al. (JAMIA Open 2023)
   report 100% of Synthea type-2 diabetics carrying an amputation; measured here it is
   **0.56%** (3 of 537), against a real-world incidence near 5 per 1,000 per year.
 

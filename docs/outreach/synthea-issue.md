@@ -16,7 +16,7 @@ them publicly.
 | Claim | Source | Measured on `d9d07a6` |
 |---|---|---|
 | 0% on Controlling High Blood Pressure | Chen et al., *BMC MIDM* 2019 | **74.4%** — 0.1 pts from the Massachusetts rate you simulate |
-| 100% of type-2 diabetics have an amputation | Kartoun et al., *JAMIA Open* 2023 | **0.56%** (3 of 537), against a real ~5 per 1,000/yr |
+| 100% of type-2 diabetics have an amputation | Hodges et al., *JAMIA Open* 2023 | **0.56%** (3 of 537), against a real ~5 per 1,000/yr |
 
 Whatever produced those has been fixed. My project's own README asserted the 0% figure
 for months and I withdrew it when I measured it.

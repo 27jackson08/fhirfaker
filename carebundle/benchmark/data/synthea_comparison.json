@@ -56,7 +56,7 @@
     "carebundle": {"mean_deviation": 0.047, "observed_seeds": [0.040, 0.040, 0.053, 0.055], "worst": 0.149, "sign_agreement": "14/14", "panels": 2998}
   },
   "diabetic_amputation": {
-    "_comment": "Kartoun et al., JAMIA Open 2023, report 100% of Synthea type-2 diabetics carrying an amputation. It does not reproduce.",
+    "_comment": "Hodges et al., JAMIA Open 2023, report 100% of Synthea type-2 diabetics carrying an amputation. It does not reproduce.",
     "synthea_diabetics": 537,
     "synthea_with_amputation": 3,
     "synthea_rate": 0.0056,

@@ -1,5 +1,7 @@
 # Marginal validation cannot detect joint-structure failure in synthetic health data
 
+**Jackson Bomongcag**
+
 *Preprint draft. Every figure is reproducible from the commands given; the code is at
 https://github.com/27jackson08/fhirfaker under Apache 2.0.*
 
@@ -70,10 +72,10 @@ widely used generators do.
 
 ## 3. Related work
 
-Chen et al. (*BMC Med Inform Decis Mak* 2019) validated Synthea against four CMS quality
+Chen et al. [1] validated Synthea against four CMS quality
 measures and found it tracked reality on the process measure and scored 0% on the outcome
-measures. Kartoun et al. (*JAMIA Open* 2023) reported that 100% of Synthea's type-2
-diabetics carried an amputation.
+measures. Hodges et al. [2] reported that 100% of Synthea's
+type-2 diabetics carried an amputation.
 
 **Both results are stale and we retract our own reliance on them.** Measured against
 Synthea `d9d07a6` (August 2026), blood-pressure control is **74.4%**, not 0%, and the
@@ -307,6 +309,28 @@ The strongest single caution we can offer is empirical rather than theoretical: 
 epochs a variational autoencoder reproduced every correlation sign correctly while
 producing the target phenotype at one seventh of its real rate. Every check most
 practitioners run would have passed.
+
+## References
+
+1. Chen J, Chun D, Patel M, Chiang E, James J. The validity of synthetic clinical data:
+   a validation study of a leading synthetic data generator (Synthea) using clinical
+   quality measures. *BMC Med Inform Decis Mak.* 2019;19:44.
+   doi:10.1186/s12911-019-0793-0
+2. Hodges R, Tokunaga K, LeGrand J. A novel method to create realistic synthetic
+   medication data. *JAMIA Open.* 2023;6(3):ooad052. doi:10.1093/jamiaopen/ooad052
+3. Centers for Disease Control and Prevention, National Center for Health Statistics.
+   National Health and Nutrition Examination Survey, 2017–March 2020 pre-pandemic data
+   files. Hyattsville, MD.
+4. Xu L, Skoularidou M, Cuesta-Infante A, Veeramachaneni K. Modeling tabular data using
+   conditional GAN. *NeurIPS.* 2019. (CTGAN and TVAE, as implemented in `ctgan` 0.12.1.)
+5. Walonoski J, Kramer M, Nichols J, et al. Synthea: an approach, method, and software
+   mechanism for generating synthetic patients and the synthetic electronic health care
+   record. *J Am Med Inform Assoc.* 2018;25(3):230–238. doi:10.1093/jamia/ocx079
+6. Cruz R, Rey-Blanco D. PySynthea: a Python-native framework for scalable synthetic
+   healthcare data generation. *arXiv:2606.28346.* 2026.
+7. Expert Panel on Detection, Evaluation, and Treatment of High Blood Cholesterol in
+   Adults. Executive summary of the third report (ATP III). *JAMA.*
+   2001;285(19):2486–2497. (Criteria adapted; see §4.2.)
 
 ## Reproduction
 

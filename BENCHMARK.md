@@ -69,8 +69,7 @@ NHANES national and lands 0.9 points from the US rate. Both reproduce their own 
 population; neither wins, and a comparison that ignored which population each was aiming
 at would manufacture a difference that is not there.
 
-**A second published criticism also failed to reproduce.** Kartoun et al. (JAMIA Open
-2023) report that "100% of Synthea type-2 diabetics had at least one amputation". In
+**A second published criticism also failed to reproduce.** Hodges et al. (JAMIA Open 2023) report that "100% of Synthea type-2 diabetics had at least one amputation". In
 this population, 3 of 537 diabetes-coded patients carried any amputation code —
 **0.56%**, against a real-world US incidence of roughly 5 per 1,000 diabetics per year.
 Whatever produced that finding has been fixed too.
